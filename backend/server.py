@@ -227,6 +227,33 @@ class PL(BaseModel):
 
 # ============ AUTH HELPERS ============
 
+async def send_email(to_email: str, subject: str, body: str):
+    """Send email via SMTP or log to console if SMTP not configured"""
+    if not SMTP_HOST or not SMTP_USER:
+        logger.info(f"\n{'='*60}\nEmail Mock (SMTP not configured)\nTo: {to_email}\nSubject: {subject}\n{body}\n{'='*60}\n")
+        return True
+    
+    try:
+        message = MIMEMultipart()
+        message['From'] = MAIL_FROM
+        message['To'] = to_email
+        message['Subject'] = subject
+        message.attach(MIMEText(body, 'plain'))
+        
+        await aiosmtplib.send(
+            message,
+            hostname=SMTP_HOST,
+            port=SMTP_PORT,
+            username=SMTP_USER,
+            password=SMTP_PASS,
+            start_tls=True
+        )
+        logger.info(f"Email sent to {to_email}")
+        return True
+    except Exception as e:
+        logger.error(f"Failed to send email: {str(e)}")
+        return False
+
 def create_access_token(data: dict):
     to_encode = data.copy()
     expire = datetime.now(timezone.utc) + timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)

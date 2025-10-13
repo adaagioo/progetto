@@ -76,6 +76,8 @@ class User(BaseModel):
     displayName: str
     restaurantId: str
     role: str
+    roleKey: Optional[str] = "admin"
+    locale: Optional[str] = None
     createdAt: str
 
 class Restaurant(BaseModel):

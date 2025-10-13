@@ -58,6 +58,7 @@ class UserRegister(BaseModel):
     password: str
     displayName: str
     restaurantName: str
+    locale: Optional[str] = None
 
 class UserLogin(BaseModel):
     email: EmailStr

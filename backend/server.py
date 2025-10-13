@@ -32,6 +32,20 @@ SECRET_KEY = os.environ.get('JWT_SECRET_KEY', 'your-secret-key-change-in-product
 ALGORITHM = "HS256"
 ACCESS_TOKEN_EXPIRE_MINUTES = 10080  # 7 days
 
+# App Configuration
+DEFAULT_CURRENCY = os.environ.get('DEFAULT_CURRENCY', 'EUR')
+DEFAULT_LOCALE = os.environ.get('DEFAULT_LOCALE', 'it-IT')
+SUPPORTED_CURRENCIES = os.environ.get('SUPPORTED_CURRENCIES', 'EUR,USD').split(',')
+SUPPORTED_LOCALES = os.environ.get('SUPPORTED_LOCALES', 'en-US,it-IT').split(',')
+
+# Email Configuration
+SMTP_HOST = os.environ.get('SMTP_HOST', '')
+SMTP_PORT = int(os.environ.get('SMTP_PORT', 587))
+SMTP_USER = os.environ.get('SMTP_USER', '')
+SMTP_PASS = os.environ.get('SMTP_PASS', '')
+MAIL_FROM = os.environ.get('MAIL_FROM', 'RistoBrain <no-reply@ristobrain.app>')
+APP_URL = os.environ.get('APP_URL', 'http://localhost:3000')
+
 # Create the main app
 app = FastAPI()
 api_router = APIRouter(prefix="/api")

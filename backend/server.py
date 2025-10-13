@@ -64,6 +64,16 @@ class UserLogin(BaseModel):
     email: EmailStr
     password: str
 
+class ForgotPasswordRequest(BaseModel):
+    email: EmailStr
+
+class ResetPasswordRequest(BaseModel):
+    token: str
+    newPassword: str
+
+class UpdateLocaleRequest(BaseModel):
+    locale: str
+
 class TokenResponse(BaseModel):
     access_token: str
     token_type: str

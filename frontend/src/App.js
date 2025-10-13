@@ -1,53 +1,107 @@
-import { useEffect } from "react";
-import "@/App.css";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
-import axios from "axios";
+import React, { useState, useEffect } from 'react';
+import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import axios from 'axios';
+import '@/App.css';
+import Login from './pages/Login';
+import Dashboard from './pages/Dashboard';
+import Recipes from './pages/Recipes';
+import Inventory from './pages/Inventory';
+import Sales from './pages/Sales';
+import Wastage from './pages/Wastage';
+import ProfitLoss from './pages/ProfitLoss';
+import Ingredients from './pages/Ingredients';
+import Layout from './components/Layout';
+import { Toaster } from './components/ui/sonner';
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
-const API = `${BACKEND_URL}/api`;
+export const API = `${BACKEND_URL}/api`;
 
-const Home = () => {
-  const helloWorldApi = async () => {
+export const AuthContext = React.createContext();
+
+function App() {
+  const [user, setUser] = useState(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const token = localStorage.getItem('token');
+    if (token) {
+      axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
+      fetchUser();
+    } else {
+      setLoading(false);
+    }
+  }, []);
+
+  const fetchUser = async () => {
     try {
-      const response = await axios.get(`${API}/`);
-      console.log(response.data.message);
-    } catch (e) {
-      console.error(e, `errored out requesting / api`);
+      const response = await axios.get(`${API}/auth/me`);
+      setUser(response.data);
+    } catch (error) {
+      console.error('Failed to fetch user:', error);
+      localStorage.removeItem('token');
+      delete axios.defaults.headers.common['Authorization'];
+    } finally {
+      setLoading(false);
     }
   };
 
-  useEffect(() => {
-    helloWorldApi();
-  }, []);
+  const login = (token, userData) => {
+    localStorage.setItem('token', token);
+    axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
+    setUser(userData);
+  };
+
+  const logout = () => {
+    localStorage.removeItem('token');
+    delete axios.defaults.headers.common['Authorization'];
+    setUser(null);
+  };
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen bg-gradient-to-br from-emerald-50 to-teal-50">
+        <div className="text-xl text-emerald-600">Loading...</div>
+      </div>
+    );
+  }
 
   return (
-    <div>
-      <header className="App-header">
-        <a
-          className="App-link"
-          href="https://emergent.sh"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <img src="https://avatars.githubusercontent.com/in/1201222?s=120&u=2686cf91179bbafbc7a71bfbc43004cf9ae1acea&v=4" />
-        </a>
-        <p className="mt-5">Building something incredible ~!</p>
-      </header>
-    </div>
-  );
-};
-
-function App() {
-  return (
-    <div className="App">
+    <AuthContext.Provider value={{ user, login, logout }}>
       <BrowserRouter>
+        <Toaster position="top-right" />
         <Routes>
-          <Route path="/" element={<Home />}>
-            <Route index element={<Home />} />
-          </Route>
+          <Route path="/login" element={user ? <Navigate to="/" /> : <Login />} />
+          <Route
+            path="/"
+            element={user ? <Layout><Dashboard /></Layout> : <Navigate to="/login" />}
+          />
+          <Route
+            path="/recipes"
+            element={user ? <Layout><Recipes /></Layout> : <Navigate to="/login" />}
+          />
+          <Route
+            path="/ingredients"
+            element={user ? <Layout><Ingredients /></Layout> : <Navigate to="/login" />}
+          />
+          <Route
+            path="/inventory"
+            element={user ? <Layout><Inventory /></Layout> : <Navigate to="/login" />}
+          />
+          <Route
+            path="/sales"
+            element={user ? <Layout><Sales /></Layout> : <Navigate to="/login" />}
+          />
+          <Route
+            path="/wastage"
+            element={user ? <Layout><Wastage /></Layout> : <Navigate to="/login" />}
+          />
+          <Route
+            path="/profit-loss"
+            element={user ? <Layout><ProfitLoss /></Layout> : <Navigate to="/login" />}
+          />
         </Routes>
       </BrowserRouter>
-    </div>
+    </AuthContext.Provider>
   );
 }
 

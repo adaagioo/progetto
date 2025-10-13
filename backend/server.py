@@ -87,6 +87,8 @@ class Restaurant(BaseModel):
     plan: str = "Starter"
     subscriptionStatus: str = "active"
     ownerUserId: str
+    currency: Optional[Dict[str, Any]] = None
+    defaultLocale: Optional[str] = None
     createdAt: str
 
 class IngredientCreate(BaseModel):

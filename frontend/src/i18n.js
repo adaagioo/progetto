@@ -310,6 +310,8 @@ const resources = {
       'dashboard.needReorder': 'Articoli da riordinare',
       'dashboard.previousMonth': 'Mese precedente',
       'dashboard.tips': 'Suggerimenti Rapidi',
+      'dashboard.inventoryValuation': 'Valutazione Inventario',
+      'dashboard.clickToView': 'Clicca per visualizzare',
       
       // Ingredients
       'ingredients.title': 'Ingredienti',

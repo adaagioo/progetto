@@ -508,6 +508,7 @@ const resources = {
       'common.cancel': 'Annulla',
       'common.delete': 'Elimina',
       'common.edit': 'Modifica',
+      'common.clearFilters': 'Cancella Filtri',
       'common.add': 'Aggiungi',
       'common.create': 'Crea',
       'common.update': 'Aggiorna',

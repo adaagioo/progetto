@@ -250,18 +250,90 @@ function Ingredients() {
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="allergen">Allergen</Label>
-                <Input
-                  id="allergen"
-                  value={formData.allergen}
-                  onChange={(e) => setFormData({ ...formData, allergen: e.target.value })}
-                  data-testid="ingredient-allergen-input"
-                  className="input-focus"
+                <Label htmlFor="category">{t('ingredients.form.category') || 'Category'}</Label>
+                <Select
+                  value={formData.category}
+                  onValueChange={(value) => setFormData({ ...formData, category: value })}
+                >
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="food">{t('receiving.category.food') || 'Food'}</SelectItem>
+                    <SelectItem value="beverage">{t('receiving.category.beverage') || 'Beverage'}</SelectItem>
+                    <SelectItem value="nofood">{t('receiving.category.nofood') || 'Non-Food'}</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="wastePct">{t('ingredients.form.wastePct') || 'Waste %'} ({formData.wastePct}%)</Label>
+                <input
+                  id="wastePct"
+                  type="range"
+                  min="0"
+                  max="100"
+                  step="1"
+                  value={formData.wastePct}
+                  onChange={(e) => setFormData({ ...formData, wastePct: e.target.value })}
+                  className="w-full"
                 />
+                <p className="text-xs text-muted-foreground">
+                  {t('ingredients.form.wasteHint') || 'Percentage lost to trimming/spoilage'}
+                </p>
+              </div>
+
+              <div className="space-y-2">
+                <Label>{t('ingredients.form.allergens') || 'Allergens'}</Label>
+                <div className="grid grid-cols-3 gap-2 max-h-40 overflow-y-auto border rounded p-2">
+                  {ALLERGENS.map(allergen => (
+                    <label key={allergen} className="flex items-center gap-2 text-sm cursor-pointer">
+                      <input
+                        type="checkbox"
+                        checked={formData.allergens.includes(allergen)}
+                        onChange={() => toggleAllergen(allergen)}
+                        className="rounded"
+                      />
+                      {allergen}
+                    </label>
+                  ))}
+                </div>
+              </div>
+
+              <div className="space-y-2">
+                <Label>{t('ingredients.form.shelfLife') || 'Shelf Life'}</Label>
+                <div className="grid grid-cols-2 gap-2">
+                  <Input
+                    type="number"
+                    placeholder={t('common.value') || 'Value'}
+                    value={formData.shelfLife.value}
+                    onChange={(e) => setFormData({ 
+                      ...formData, 
+                      shelfLife: { ...formData.shelfLife, value: e.target.value }
+                    })}
+                    className="input-focus"
+                  />
+                  <Select
+                    value={formData.shelfLife.unit}
+                    onValueChange={(value) => setFormData({ 
+                      ...formData, 
+                      shelfLife: { ...formData.shelfLife, unit: value }
+                    })}
+                  >
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="days">{t('common.days') || 'Days'}</SelectItem>
+                      <SelectItem value="weeks">{t('common.weeks') || 'Weeks'}</SelectItem>
+                      <SelectItem value="months">{t('common.months') || 'Months'}</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
               </div>
 
               <Button type="submit" className="w-full btn-primary text-white" data-testid="save-ingredient-button">
-                {editingId ? 'Update' : 'Create'} Ingredient
+                {editingId ? (t('common.update') || 'Update') : (t('common.create') || 'Create')} {t('ingredients.title') || 'Ingredient'}
               </Button>
             </form>
           </DialogContent>

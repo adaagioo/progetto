@@ -175,11 +175,14 @@ backend:
     file: "backend/server.py"
     stuck_count: 0
     priority: "high"
-    needs_retesting: true
+    needs_retesting: false
     status_history:
       - working: true
         agent: "main"
         comment: "Added POST /api/suppliers/{id}/files and DELETE /api/suppliers/{id}/files/{file_id} endpoints to attach/detach files from suppliers. Files are stored in suppliers/{id} subfolder with metadata in DB."
+      - working: true
+        agent: "testing"
+        comment: "TESTED: Supplier file attachment system working perfectly. POST /api/suppliers/{id}/files uploads files to suppliers/{id} subfolder, adds file metadata to supplier's files array, returns 404 for non-existent supplier. DELETE /api/suppliers/{id}/files/{file_id} removes file from supplier's files array, deletes from storage, removes from files collection, returns 404 for non-existent file. All operations include audit logging. File validation and tenant isolation working correctly."
 
 frontend:
   - task: "Suppliers Page UI"

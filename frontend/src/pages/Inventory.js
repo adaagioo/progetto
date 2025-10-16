@@ -9,16 +9,23 @@ import { Label } from '../components/ui/label';
 import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/card';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '../components/ui/dialog';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../components/ui/select';
-import { Plus, Trash2, Package } from 'lucide-react';
+import { Plus, Trash2, Package, DollarSign, TrendingUp } from 'lucide-react';
 import { toast } from 'sonner';
 import { format } from 'date-fns';
 
 function Inventory() {
   const { t } = useTranslation();
   const { user } = useContext(AuthContext);
+  const { formatMinor } = useCurrency();
   const [inventory, setInventory] = useState([]);
   const [ingredients, setIngredients] = useState([]);
+  const [valuation, setValuation] = useState([]);
+  const [valuationSummary, setValuationSummary] = useState(null);
+  const [adjustments, setAdjustments] = useState([]);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [isAdjustmentDialogOpen, setIsAdjustmentDialogOpen] = useState(false);
+  const [showValuation, setShowValuation] = useState(true);
+  
   const [formData, setFormData] = useState({
     ingredientId: '',
     qty: '',
@@ -28,9 +35,17 @@ function Inventory() {
     location: ''
   });
 
+  const [adjustmentFormData, setAdjustmentFormData] = useState({
+    ingredientId: '',
+    qtyAdjustment: '',
+    reason: ''
+  });
+
   useEffect(() => {
     fetchInventory();
     fetchIngredients();
+    fetchValuation();
+    fetchAdjustments();
   }, []);
 
   const fetchInventory = async () => {
@@ -38,7 +53,7 @@ function Inventory() {
       const response = await axios.get(`${API}/inventory`);
       setInventory(response.data);
     } catch (error) {
-      toast.error('Failed to load inventory');
+      toast.error(t('inventory.error.load') || 'Failed to load inventory');
     }
   };
 
@@ -47,7 +62,29 @@ function Inventory() {
       const response = await axios.get(`${API}/ingredients`);
       setIngredients(response.data);
     } catch (error) {
-      toast.error('Failed to load ingredients');
+      toast.error(t('ingredients.error.load') || 'Failed to load ingredients');
+    }
+  };
+
+  const fetchValuation = async () => {
+    try {
+      const [valuationRes, summaryRes] = await Promise.all([
+        axios.get(`${API}/inventory/valuation`),
+        axios.get(`${API}/inventory/valuation/summary`)
+      ]);
+      setValuation(valuationRes.data);
+      setValuationSummary(summaryRes.data);
+    } catch (error) {
+      console.error('Failed to load valuation:', error);
+    }
+  };
+
+  const fetchAdjustments = async () => {
+    try {
+      const response = await axios.get(`${API}/inventory/adjustments`);
+      setAdjustments(response.data);
+    } catch (error) {
+      console.error('Failed to load adjustments:', error);
     }
   };
 

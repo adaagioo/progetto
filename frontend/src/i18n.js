@@ -10,6 +10,7 @@ const resources = {
       'nav.dashboard': 'Dashboard',
       'nav.recipes': 'Recipes',
       'nav.ingredients': 'Ingredients',
+      'nav.suppliers': 'Suppliers',
       'nav.inventory': 'Inventory',
       'nav.sales': 'Sales',
       'nav.wastage': 'Wastage',

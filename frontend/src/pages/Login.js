@@ -113,6 +113,11 @@ function Login() {
                   >
                     {isLoading ? 'Signing in...' : 'Sign In'}
                   </Button>
+                  <div className="text-center">
+                    <Link to="/forgot-password" className="text-sm text-emerald-600 hover:text-emerald-700 hover:underline" data-testid="forgot-password-link">
+                      Forgot password?
+                    </Link>
+                  </div>
                 </form>
               </TabsContent>
 

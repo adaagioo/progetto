@@ -48,6 +48,8 @@ const resources = {
       'dashboard.needReorder': 'Items need reordering',
       'dashboard.previousMonth': 'Previous month',
       'dashboard.tips': 'Quick Tips',
+      'dashboard.inventoryValuation': 'Inventory Valuation',
+      'dashboard.clickToView': 'Click to view',
       
       // Ingredients
       'ingredients.title': 'Ingredients',

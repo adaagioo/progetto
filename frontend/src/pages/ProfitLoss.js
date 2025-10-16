@@ -220,17 +220,17 @@ function ProfitLoss() {
               <CardContent className="space-y-3">
                 <div className="flex justify-between items-center">
                   <span className="text-gray-600">Revenue:</span>
-                  <span className="text-lg font-semibold text-emerald-600">${pl.revenue.toFixed(2)}</span>
+                  <span className="text-lg font-semibold text-emerald-600">{format.number(pl.revenue)}</span>
                 </div>
                 <div className="flex justify-between items-center">
                   <span className="text-gray-600">COGS:</span>
-                  <span className="text-lg font-semibold text-orange-600">${pl.cogs.toFixed(2)}</span>
+                  <span className="text-lg font-semibold text-orange-600">{format.number(pl.cogs)}</span>
                 </div>
                 <div className="pt-3 border-t">
                   <div className="flex justify-between items-center mb-2">
                     <span className="font-semibold">Gross Margin:</span>
                     <span className={`text-xl font-bold ${isPositive ? 'text-emerald-600' : 'text-red-600'}`}>
-                      ${pl.grossMargin.toFixed(2)}
+                      {format.number(pl.grossMargin)}
                     </span>
                   </div>
                   <div className="flex justify-between items-center">

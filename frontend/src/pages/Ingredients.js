@@ -93,7 +93,11 @@ function Ingredients() {
       packCost: ingredient.packCost.toString(),
       supplier: ingredient.supplier || '',
       allergen: ingredient.allergen || '',
-      minStockQty: ingredient.minStockQty.toString()
+      allergens: ingredient.allergens || [],
+      minStockQty: ingredient.minStockQty.toString(),
+      category: ingredient.category || 'food',
+      wastePct: (ingredient.wastePct || 0).toString(),
+      shelfLife: ingredient.shelfLife || { value: '', unit: 'days' }
     });
     setIsDialogOpen(true);
   };

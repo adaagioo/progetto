@@ -781,8 +781,11 @@ async def main():
         results = await tester.run_all_tests()
         
         # Return exit code based on results
-        failed_count = sum(1 for r in results if not r["success"])
-        return 0 if failed_count == 0 else 1
+        if results:
+            failed_count = sum(1 for r in results if not r["success"])
+            return 0 if failed_count == 0 else 1
+        else:
+            return 1
 
 
 if __name__ == "__main__":

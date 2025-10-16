@@ -257,11 +257,11 @@ function Ingredients() {
             <CardContent className="space-y-2 text-sm">
               <div className="flex justify-between">
                 <span className="text-gray-600">Unit Cost:</span>
-                <span className="font-semibold text-emerald-600">${ingredient.unitCost.toFixed(4)}/{ingredient.unit}</span>
+                <span className="font-semibold text-emerald-600">{format.number(ingredient.unitCost, 4)}/{ingredient.unit}</span>
               </div>
               <div className="flex justify-between">
                 <span className="text-gray-600">Pack:</span>
-                <span className="font-medium">{ingredient.packSize} {ingredient.unit} @ ${ingredient.packCost}</span>
+                <span className="font-medium">{ingredient.packSize} {ingredient.unit} @ {format.number(ingredient.packCost)}</span>
               </div>
               <div className="flex justify-between">
                 <span className="text-gray-600">Min Stock:</span>

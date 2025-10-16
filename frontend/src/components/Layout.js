@@ -20,6 +20,7 @@ function Layout({ children }) {
     { path: '/', label: t('nav.dashboard'), icon: LayoutDashboard },
     { path: '/recipes', label: t('nav.recipes'), icon: BookOpen },
     { path: '/ingredients', label: t('nav.ingredients'), icon: UtensilsCrossed },
+    { path: '/suppliers', label: t('nav.suppliers'), icon: Truck },
     { path: '/inventory', label: t('nav.inventory'), icon: Package },
     { path: '/sales', label: t('nav.sales'), icon: ShoppingCart },
     { path: '/wastage', label: t('nav.wastage'), icon: AlertTriangle },

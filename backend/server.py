@@ -753,6 +753,199 @@ async def delete_inventory(inventory_id: str, current_user: dict = Depends(get_c
     
     return {"message": "Inventory deleted"}
 
+# ============ INVENTORY VALUATION & ADJUSTMENTS ============
+
+@api_router.get("/inventory/valuation")
+async def get_inventory_valuation(current_user: dict = Depends(get_current_user)):
+    """Calculate weighted average cost for each ingredient"""
+    await check_subscription(current_user)
+    
+    restaurant_id = current_user["restaurantId"]
+    
+    # Get all inventory records with unitCost
+    inventory_records = await db.inventory.find(
+        {"restaurantId": restaurant_id, "unitCost": {"$exists": True}},
+        {"_id": 0}
+    ).to_list(10000)
+    
+    # Get all ingredients to get category
+    ingredients = await db.ingredients.find(
+        {"restaurantId": restaurant_id},
+        {"_id": 0}
+    ).to_list(1000)
+    
+    ingredient_map = {ing["id"]: ing for ing in ingredients}
+    
+    # Calculate weighted average cost per ingredient
+    valuation_data = {}
+    
+    for record in inventory_records:
+        ingredient_id = record.get("ingredientId")
+        if not ingredient_id:
+            continue
+        
+        qty = record.get("qty", 0)
+        unit_cost = record.get("unitCost", 0)
+        
+        if ingredient_id not in valuation_data:
+            valuation_data[ingredient_id] = {
+                "totalQty": 0,
+                "totalValue": 0,
+                "transactions": []
+            }
+        
+        valuation_data[ingredient_id]["totalQty"] += qty
+        valuation_data[ingredient_id]["totalValue"] += qty * unit_cost
+        valuation_data[ingredient_id]["transactions"].append({
+            "qty": qty,
+            "unitCost": unit_cost,
+            "date": record.get("createdAt")
+        })
+    
+    # Build result with weighted average cost
+    result = []
+    for ingredient_id, data in valuation_data.items():
+        ingredient = ingredient_map.get(ingredient_id)
+        if not ingredient:
+            continue
+        
+        weighted_avg_cost = data["totalValue"] / data["totalQty"] if data["totalQty"] > 0 else 0
+        
+        result.append({
+            "ingredientId": ingredient_id,
+            "ingredientName": ingredient["name"],
+            "category": ingredient.get("category", "food"),
+            "unit": ingredient["unit"],
+            "totalQty": data["totalQty"],
+            "weightedAvgCost": weighted_avg_cost,
+            "totalValue": data["totalValue"],
+            "transactionCount": len(data["transactions"])
+        })
+    
+    return result
+
+@api_router.get("/inventory/valuation/summary")
+async def get_inventory_valuation_summary(current_user: dict = Depends(get_current_user)):
+    """Get valuation summary by category and overall total"""
+    await check_subscription(current_user)
+    
+    # Get per-item valuation
+    valuation = await get_inventory_valuation(current_user)
+    
+    # Aggregate by category
+    category_totals = {
+        "food": 0,
+        "beverage": 0,
+        "nofood": 0
+    }
+    
+    for item in valuation:
+        category = item.get("category", "food")
+        if category in category_totals:
+            category_totals[category] += item["totalValue"]
+    
+    overall_total = sum(category_totals.values())
+    
+    return {
+        "categories": {
+            "food": category_totals["food"],
+            "beverage": category_totals["beverage"],
+            "nofood": category_totals["nofood"]
+        },
+        "total": overall_total,
+        "itemCount": len(valuation)
+    }
+
+@api_router.post("/inventory/adjustments")
+async def create_inventory_adjustment(
+    adjustment: dict,
+    current_user: dict = Depends(get_current_user)
+):
+    """Create manual inventory adjustment (admin only)"""
+    await check_subscription(current_user)
+    
+    # RBAC check - admin only
+    if current_user.get("role") != "admin" and current_user.get("roleKey") != "administrator":
+        raise HTTPException(status_code=403, detail="Admin access required")
+    
+    ingredient_id = adjustment.get("ingredientId")
+    qty_adjustment = adjustment.get("qtyAdjustment", 0)
+    reason = adjustment.get("reason", "")
+    
+    if not ingredient_id or not reason:
+        raise HTTPException(status_code=400, detail="ingredientId and reason are required")
+    
+    # Validate ingredient exists
+    ingredient = await db.ingredients.find_one(
+        {"id": ingredient_id, "restaurantId": current_user["restaurantId"]}
+    )
+    
+    if not ingredient:
+        raise HTTPException(status_code=404, detail="Ingredient not found")
+    
+    # Create adjustment record
+    adjustment_record = {
+        "id": str(uuid.uuid4()),
+        "restaurantId": current_user["restaurantId"],
+        "ingredientId": ingredient_id,
+        "ingredientName": ingredient["name"],
+        "qtyAdjustment": qty_adjustment,
+        "unit": ingredient["unit"],
+        "reason": reason,
+        "adjustedBy": current_user["id"],
+        "adjustedByName": current_user.get("displayName", "Unknown"),
+        "createdAt": datetime.now(timezone.utc).isoformat()
+    }
+    
+    await db.inventory_adjustments.insert_one(adjustment_record)
+    
+    # Create corresponding inventory record
+    if qty_adjustment != 0:
+        inventory_record = {
+            "id": str(uuid.uuid4()),
+            "restaurantId": current_user["restaurantId"],
+            "ingredientId": ingredient_id,
+            "qty": qty_adjustment,
+            "unit": ingredient["unit"],
+            "countType": "adjustment",
+            "batchExpiry": None,
+            "location": f"Manual adjustment by {current_user.get('displayName')}",
+            "adjustmentId": adjustment_record["id"],
+            "createdAt": datetime.now(timezone.utc).isoformat()
+        }
+        
+        await db.inventory.insert_one(inventory_record)
+    
+    # Log audit
+    await log_audit(
+        db,
+        current_user["restaurantId"],
+        current_user["id"],
+        "adjustment",
+        "inventory",
+        adjustment_record["id"],
+        {
+            "ingredient": ingredient["name"],
+            "qtyAdjustment": qty_adjustment,
+            "reason": reason
+        }
+    )
+    
+    adjustment_record.pop("_id", None)
+    return adjustment_record
+
+@api_router.get("/inventory/adjustments")
+async def get_inventory_adjustments(current_user: dict = Depends(get_current_user)):
+    """Get all inventory adjustments"""
+    await check_subscription(current_user)
+    
+    adjustments = await db.inventory_adjustments.find(
+        {"restaurantId": current_user["restaurantId"]},
+        {"_id": 0}
+    ).sort("createdAt", -1).to_list(1000)
+    
+    return adjustments
+
 # ============ RECIPES ROUTES ============
 
 @api_router.post("/recipes", response_model=Recipe)

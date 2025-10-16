@@ -179,7 +179,7 @@ function Sales() {
                       <SelectContent>
                         {recipes.map(recipe => (
                           <SelectItem key={recipe.id} value={recipe.id}>
-                            {recipe.name} - ${recipe.price}
+                            {recipe.name} - {format.number(recipe.price)}
                           </SelectItem>
                         ))}
                       </SelectContent>

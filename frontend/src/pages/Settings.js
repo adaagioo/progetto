@@ -119,12 +119,12 @@ function Settings() {
   const currentLang = currentLocale.split('-')[0];
 
   return (
-    <div className=\"space-y-6\" data-testid=\"settings-page\">
+    <div className="space-y-6" data-testid="settings-page">
       <div>
-        <h1 className=\"text-3xl sm:text-4xl lg:text-5xl font-bold gradient-text mb-2\">
+        <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold gradient-text mb-2">
           {t('settings.title')}
         </h1>
-        <p className=\"text-base text-gray-600\">{t('settings.general')}</p>
+        <p className="text-base text-gray-600">{t('settings.general')}</p>
       </div>
 
       <Tabs defaultValue=\"general\" className=\"w-full\">

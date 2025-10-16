@@ -387,31 +387,60 @@ class Receiving(BaseModel):
 # ============ AUTH HELPERS ============
 
 async def send_email(to_email: str, subject: str, body: str):
-    """Send email via SMTP or log to console if SMTP not configured"""
+    """Send email via SMTP"""
     if not SMTP_HOST or not SMTP_USER:
-        logger.info(f"\n{'='*60}\nEmail Mock (SMTP not configured)\nTo: {to_email}\nSubject: {subject}\n{body}\n{'='*60}\n")
-        return True
+        logger.warning(f"Email not configured. Would send:\nTo: {to_email}\nSubject: {subject}\n{body}\n{'='*60}\n")
+        return
     
     try:
-        message = MIMEMultipart()
-        message['From'] = MAIL_FROM
-        message['To'] = to_email
-        message['Subject'] = subject
-        message.attach(MIMEText(body, 'plain'))
+        message = MIMEText(body, "html")
+        message["From"] = MAIL_FROM
+        message["To"] = to_email
+        message["Subject"] = subject
         
-        await aiosmtplib.send(
-            message,
+        async with aiosmtplib.SMTP(
             hostname=SMTP_HOST,
             port=SMTP_PORT,
+            use_tls=True,
             username=SMTP_USER,
             password=SMTP_PASS,
-            start_tls=True
-        )
-        logger.info(f"Email sent to {to_email}")
-        return True
+        ) as smtp:
+            await smtp.send_message(message)
+        logger.info(f"Email sent successfully to {to_email}")
     except Exception as e:
         logger.error(f"Failed to send email: {str(e)}")
-        return False
+        raise
+
+# ============ PREPARATION HELPERS ============
+
+async def compute_preparation_cost_and_allergens(items: List[dict], db) -> tuple[float, List[str]]:
+    """
+    Compute preparation cost and allergens from ingredient items.
+    Cost includes waste percentage: effectiveUnitCost * qty
+    """
+    total_cost = 0
+    all_allergens = set()
+    
+    for item in items:
+        ingredient = await db.ingredients.find_one({"id": item["ingredientId"]}, {"_id": 0})
+        if not ingredient:
+            continue
+        
+        # Use effectiveUnitCost which includes waste
+        effective_cost = ingredient.get("effectiveUnitCost", ingredient.get("unitCost", 0))
+        item_cost = effective_cost * item["qty"]
+        total_cost += item_cost
+        
+        # Collect allergens
+        allergens = ingredient.get("allergens", [])
+        if allergens:
+            all_allergens.update(allergens)
+        
+        # Legacy support for single allergen field
+        if ingredient.get("allergen"):
+            all_allergens.add(ingredient["allergen"])
+    
+    return total_cost, sorted(list(all_allergens))
 
 def create_access_token(data: dict):
     to_encode = data.copy()

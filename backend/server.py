@@ -129,6 +129,7 @@ class IngredientCreate(BaseModel):
     supplier: Optional[str] = None
     allergen: Optional[str] = None
     minStockQty: float = 0
+    category: Optional[str] = "food"  # food, beverage, nofood
 
 class Ingredient(BaseModel):
     model_config = ConfigDict(extra="ignore")
@@ -142,6 +143,7 @@ class Ingredient(BaseModel):
     supplier: Optional[str] = None
     allergen: Optional[str] = None
     minStockQty: float
+    category: Optional[str] = "food"
     createdAt: str
 
 class InventoryCreate(BaseModel):

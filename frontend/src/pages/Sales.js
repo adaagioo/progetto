@@ -232,7 +232,7 @@ function Sales() {
                     <div className="flex justify-between items-center">
                       <span className="text-lg font-semibold">Total:</span>
                       <span className="text-2xl font-bold text-emerald-600" data-testid="sales-total">
-                        ${calculateSaleTotal(formData.lines).toFixed(2)}
+                        {format.number(calculateSaleTotal(formData.lines))}
                       </span>
                     </div>
                   </div>

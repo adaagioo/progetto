@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useContext } from 'react';
+import { useCurrency } from '../contexts/CurrencyContext';
 import axios from 'axios';
 import { API, AuthContext } from '../App';
 import { Button } from '../components/ui/button';

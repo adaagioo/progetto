@@ -127,14 +127,14 @@ function Settings() {
         <p className="text-base text-gray-600">{t('settings.general')}</p>
       </div>
 
-      <Tabs defaultValue=\"general\" className=\"w-full\">
-        <TabsList className=\"grid w-full grid-cols-2 lg:w-auto lg:inline-grid\">
-          <TabsTrigger value=\"general\" data-testid=\"general-tab\">
-            <SettingsIcon className=\"w-4 h-4 mr-2\" />
+      <Tabs defaultValue="general" className="w-full">
+        <TabsList className="grid w-full grid-cols-2 lg:w-auto lg:inline-grid">
+          <TabsTrigger value="general" data-testid="general-tab">
+            <SettingsIcon className="w-4 h-4 mr-2" />
             General
           </TabsTrigger>
-          <TabsTrigger value=\"localization\" data-testid=\"localization-tab\">
-            <Globe className=\"w-4 h-4 mr-2\" />
+          <TabsTrigger value="localization" data-testid="localization-tab">
+            <Globe className="w-4 h-4 mr-2" />
             Language & Currency
           </TabsTrigger>
         </TabsList>

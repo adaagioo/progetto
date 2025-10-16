@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
+import { useNavigate } from 'react-router-dom';
 import { API } from '../App';
 import { useCurrency } from '../contexts/CurrencyContext';
 import { useTranslation } from 'react-i18next';
@@ -9,12 +10,15 @@ import { toast } from 'sonner';
 
 function Dashboard() {
   const { t } = useTranslation();
-  const { format } = useCurrency();
+  const { format, formatMinor } = useCurrency();
+  const navigate = useNavigate();
   const [kpis, setKpis] = useState(null);
+  const [valuationSummary, setValuationSummary] = useState(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     fetchKPIs();
+    fetchValuation();
   }, []);
 
   const fetchKPIs = async () => {
@@ -25,6 +29,15 @@ function Dashboard() {
       toast.error('Failed to load dashboard data');
     } finally {
       setLoading(false);
+    }
+  };
+
+  const fetchValuation = async () => {
+    try {
+      const response = await axios.get(`${API}/inventory/valuation/summary`);
+      setValuationSummary(response.data);
+    } catch (error) {
+      console.error('Failed to load valuation:', error);
     }
   };
 

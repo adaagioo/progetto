@@ -355,6 +355,66 @@ function Inventory() {
         </Dialog>
       </div>
 
+      {/* Valuation Summary Cards */}
+      {valuationSummary && (
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+          <Card className="glass-morphism border-0">
+            <CardHeader className="pb-2">
+              <CardTitle className="text-sm font-medium text-muted-foreground">
+                {t('inventory.valuation.food') || 'Food Inventory'}
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold text-green-600">
+                {formatMinor(valuationSummary.categories.food)}
+              </div>
+            </CardContent>
+          </Card>
+          
+          <Card className="glass-morphism border-0">
+            <CardHeader className="pb-2">
+              <CardTitle className="text-sm font-medium text-muted-foreground">
+                {t('inventory.valuation.beverage') || 'Beverage Inventory'}
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold text-blue-600">
+                {formatMinor(valuationSummary.categories.beverage)}
+              </div>
+            </CardContent>
+          </Card>
+          
+          <Card className="glass-morphism border-0">
+            <CardHeader className="pb-2">
+              <CardTitle className="text-sm font-medium text-muted-foreground">
+                {t('inventory.valuation.nofood') || 'Non-Food Inventory'}
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold text-gray-600">
+                {formatMinor(valuationSummary.categories.nofood)}
+              </div>
+            </CardContent>
+          </Card>
+          
+          <Card className="glass-morphism border-0 bg-gradient-to-br from-emerald-500 to-teal-600 text-white">
+            <CardHeader className="pb-2">
+              <CardTitle className="text-sm font-medium text-white/90">
+                {t('inventory.valuation.total') || 'Total Inventory Value'}
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">
+                {formatMinor(valuationSummary.total)}
+              </div>
+              <p className="text-xs text-white/80 mt-1">
+                {valuationSummary.itemCount} {t('inventory.valuation.items') || 'items'}
+              </p>
+            </CardContent>
+          </Card>
+        </div>
+      )}
+
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
         {inventory.map((inv) => (
           <Card key={inv.id} className="glass-morphism border-0 card-hover" data-testid="inventory-card">

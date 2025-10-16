@@ -17,14 +17,14 @@ function Layout({ children }) {
   };
 
   const navItems = [
-    { path: '/', label: 'Dashboard', icon: LayoutDashboard },
-    { path: '/recipes', label: 'Recipes', icon: BookOpen },
-    { path: '/ingredients', label: 'Ingredients', icon: UtensilsCrossed },
-    { path: '/inventory', label: 'Inventory', icon: Package },
-    { path: '/sales', label: 'Sales', icon: ShoppingCart },
-    { path: '/wastage', label: 'Wastage', icon: AlertTriangle },
-    { path: '/profit-loss', label: 'P&L', icon: TrendingUp },
-    { path: '/settings', label: 'Settings', icon: SettingsIcon }
+    { path: '/', label: t('nav.dashboard'), icon: LayoutDashboard },
+    { path: '/recipes', label: t('nav.recipes'), icon: BookOpen },
+    { path: '/ingredients', label: t('nav.ingredients'), icon: UtensilsCrossed },
+    { path: '/inventory', label: t('nav.inventory'), icon: Package },
+    { path: '/sales', label: t('nav.sales'), icon: ShoppingCart },
+    { path: '/wastage', label: t('nav.wastage'), icon: AlertTriangle },
+    { path: '/profit-loss', label: t('nav.pl'), icon: TrendingUp },
+    { path: '/settings', label: t('nav.settings'), icon: SettingsIcon }
   ];
 
   return (

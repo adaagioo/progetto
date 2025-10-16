@@ -351,8 +351,9 @@ function Inventory() {
                 Record Movement
               </Button>
             </form>
-          </DialogContent>
-        </Dialog>
+            </DialogContent>
+          </Dialog>
+        </div>
       </div>
 
       {/* Valuation Summary Cards */}

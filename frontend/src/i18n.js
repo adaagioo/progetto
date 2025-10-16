@@ -210,6 +210,7 @@ const resources = {
       'nav.dashboard': 'Cruscotto',
       'nav.recipes': 'Ricette',
       'nav.ingredients': 'Ingredienti',
+      'nav.suppliers': 'Fornitori',
       'nav.inventory': 'Inventario',
       'nav.sales': 'Vendite',
       'nav.wastage': 'Scarti',

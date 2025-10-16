@@ -1381,7 +1381,7 @@ async def get_dashboard_kpis(current_user: dict = Depends(get_current_user)):
                     expiring_2day += 1
                 elif days_until <= 3:
                     expiring_3day += 1
-            except:
+            except Exception:
                 pass
     
     # Last month P&L

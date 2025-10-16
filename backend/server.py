@@ -668,6 +668,8 @@ async def create_ingredient(ingredient_data: IngredientCreate, current_user: dic
     
     ingredient_id = str(uuid.uuid4())
     unit_cost = ingredient_data.packCost / ingredient_data.packSize
+    waste_pct = ingredient_data.wastePct or 0
+    effective_unit_cost = unit_cost * (1 + waste_pct / 100)
     
     ingredient = {
         "id": ingredient_id,
@@ -677,10 +679,14 @@ async def create_ingredient(ingredient_data: IngredientCreate, current_user: dic
         "packSize": ingredient_data.packSize,
         "packCost": ingredient_data.packCost,
         "unitCost": unit_cost,
+        "effectiveUnitCost": effective_unit_cost,
         "supplier": ingredient_data.supplier,
         "allergen": ingredient_data.allergen,
+        "allergens": ingredient_data.allergens or [],
         "minStockQty": ingredient_data.minStockQty,
         "category": ingredient_data.category or "food",
+        "wastePct": waste_pct,
+        "shelfLife": ingredient_data.shelfLife.dict() if ingredient_data.shelfLife else None,
         "createdAt": datetime.now(timezone.utc).isoformat()
     }
     

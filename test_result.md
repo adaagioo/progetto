@@ -130,11 +130,14 @@ backend:
     file: "backend/audit_utils.py"
     stuck_count: 0
     priority: "high"
-    needs_retesting: true
+    needs_retesting: false
     status_history:
       - working: true
         agent: "main"
         comment: "Created audit logging utility with log_audit() and get_audit_logs() functions. Tracks user actions, entity types, and details with timestamps."
+      - working: true
+        agent: "testing"
+        comment: "TESTED: Audit logging working correctly. All supplier and file operations (create, update, delete, upload, attach, detach) are being logged with proper restaurant/user context, timestamps, and action details."
 
   - task: "File Upload/Download Endpoints"
     implemented: true

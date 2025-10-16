@@ -245,6 +245,48 @@ class PL(BaseModel):
     notes: Optional[str] = None
     createdAt: str
 
+class FileMetadata(BaseModel):
+    """File metadata model"""
+    id: str
+    restaurantId: str
+    filename: str
+    path: str
+    size: int
+    mimeType: str
+    hash: str
+    uploadedBy: str
+    uploadedAt: str
+
+class SupplierContact(BaseModel):
+    """Supplier contact information"""
+    name: Optional[str] = None
+    phone: Optional[str] = None
+    email: Optional[str] = None
+
+class SupplierCreate(BaseModel):
+    """Create supplier request"""
+    name: str
+    contacts: Optional[SupplierContact] = None
+    notes: Optional[str] = None
+
+class SupplierUpdate(BaseModel):
+    """Update supplier request"""
+    name: Optional[str] = None
+    contacts: Optional[SupplierContact] = None
+    notes: Optional[str] = None
+
+class Supplier(BaseModel):
+    """Supplier model"""
+    model_config = ConfigDict(extra="ignore")
+    id: str
+    restaurantId: str
+    name: str
+    contacts: Optional[SupplierContact] = None
+    notes: Optional[str] = None
+    files: List[FileMetadata] = []
+    createdAt: str
+    updatedAt: Optional[str] = None
+
 # ============ AUTH HELPERS ============
 
 async def send_email(to_email: str, subject: str, body: str):

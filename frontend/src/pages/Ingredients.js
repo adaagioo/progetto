@@ -122,9 +122,22 @@ function Ingredients() {
       packCost: '',
       supplier: '',
       allergen: '',
-      minStockQty: ''
+      allergens: [],
+      minStockQty: '',
+      category: 'food',
+      wastePct: '0',
+      shelfLife: { value: '', unit: 'days' }
     });
     setEditingId(null);
+  };
+
+  const toggleAllergen = (allergen) => {
+    setFormData(prev => ({
+      ...prev,
+      allergens: prev.allergens.includes(allergen)
+        ? prev.allergens.filter(a => a !== allergen)
+        : [...prev.allergens, allergen]
+    }));
   };
 
   return (

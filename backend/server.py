@@ -121,15 +121,23 @@ class Restaurant(BaseModel):
     defaultLocale: Optional[str] = None
     createdAt: str
 
+class ShelfLife(BaseModel):
+    """Shelf life specification"""
+    value: int
+    unit: str  # 'days', 'weeks', 'months'
+
 class IngredientCreate(BaseModel):
     name: str
     unit: str
     packSize: float
     packCost: float
     supplier: Optional[str] = None
-    allergen: Optional[str] = None
+    allergen: Optional[str] = None  # Deprecated, use allergens array
+    allergens: Optional[List[str]] = []  # EU-14 + Other
     minStockQty: float = 0
     category: Optional[str] = "food"  # food, beverage, nofood
+    wastePct: Optional[float] = 0  # 0-100%
+    shelfLife: Optional[ShelfLife] = None
 
 class Ingredient(BaseModel):
     model_config = ConfigDict(extra="ignore")
@@ -140,10 +148,14 @@ class Ingredient(BaseModel):
     packSize: float
     packCost: float
     unitCost: float
+    effectiveUnitCost: float  # unitCost * (1 + wastePct/100)
     supplier: Optional[str] = None
-    allergen: Optional[str] = None
+    allergen: Optional[str] = None  # Deprecated
+    allergens: List[str] = []
     minStockQty: float
-    category: Optional[str] = "food"
+    category: str = "food"
+    wastePct: float = 0
+    shelfLife: Optional[ShelfLife] = None
     createdAt: str
 
 class InventoryCreate(BaseModel):

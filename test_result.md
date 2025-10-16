@@ -229,7 +229,6 @@ metadata:
 
 test_plan:
   current_focus:
-    - "Backend: Storage service, file upload/download, suppliers CRUD, file attachments"
     - "Frontend: Suppliers page UI, navigation, file upload component"
   stuck_tasks: []
   test_all: false

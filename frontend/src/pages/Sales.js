@@ -14,6 +14,7 @@ import { format } from 'date-fns';
 
 function Sales() {
   const { user } = useContext(AuthContext);
+  const { format } = useCurrency();
   const [sales, setSales] = useState([]);
   const [recipes, setRecipes] = useState([]);
   const [isDialogOpen, setIsDialogOpen] = useState(false);

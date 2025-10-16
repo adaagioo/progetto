@@ -25,6 +25,7 @@ export const AuthContext = React.createContext();
 
 function App() {
   const [user, setUser] = useState(null);
+  const [restaurant, setRestaurant] = useState(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -41,6 +42,10 @@ function App() {
     try {
       const response = await axios.get(`${API}/auth/me`);
       setUser(response.data);
+      
+      // Fetch restaurant data
+      const restaurantResponse = await axios.get(`${API}/restaurant`);
+      setRestaurant(restaurantResponse.data);
     } catch (error) {
       console.error('Failed to fetch user:', error);
       localStorage.removeItem('token');
@@ -50,16 +55,25 @@ function App() {
     }
   };
 
-  const login = (token, userData) => {
+  const login = async (token, userData) => {
     localStorage.setItem('token', token);
     axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
     setUser(userData);
+    
+    // Fetch restaurant data after login
+    try {
+      const restaurantResponse = await axios.get(`${API}/restaurant`);
+      setRestaurant(restaurantResponse.data);
+    } catch (error) {
+      console.error('Failed to fetch restaurant:', error);
+    }
   };
 
   const logout = () => {
     localStorage.removeItem('token');
     delete axios.defaults.headers.common['Authorization'];
     setUser(null);
+    setRestaurant(null);
   };
 
   if (loading) {

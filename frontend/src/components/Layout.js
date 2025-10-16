@@ -2,7 +2,7 @@ import React, { useContext } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { AuthContext } from '../App';
 import { Button } from './ui/button';
-import { ChefHat, LayoutDashboard, BookOpen, Package, ShoppingCart, AlertTriangle, TrendingUp, UtensilsCrossed, LogOut } from 'lucide-react';
+import { ChefHat, LayoutDashboard, BookOpen, Package, ShoppingCart, AlertTriangle, TrendingUp, UtensilsCrossed, LogOut, Settings as SettingsIcon } from 'lucide-react';
 
 function Layout({ children }) {
   const { user, logout } = useContext(AuthContext);

@@ -21,6 +21,7 @@ function Layout({ children }) {
     { path: '/recipes', label: t('nav.recipes'), icon: BookOpen },
     { path: '/ingredients', label: t('nav.ingredients'), icon: UtensilsCrossed },
     { path: '/suppliers', label: t('nav.suppliers'), icon: Truck },
+    { path: '/receiving', label: t('nav.receiving'), icon: PackageCheck },
     { path: '/inventory', label: t('nav.inventory'), icon: Package },
     { path: '/sales', label: t('nav.sales'), icon: ShoppingCart },
     { path: '/wastage', label: t('nav.wastage'), icon: AlertTriangle },

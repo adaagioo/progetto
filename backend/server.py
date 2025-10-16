@@ -895,6 +895,417 @@ async def delete_pl(pl_id: str, current_user: dict = Depends(get_current_user)):
     
     return {"message": "P&L deleted"}
 
+# ============ FILE UPLOAD & DOWNLOAD ============
+
+from fastapi import File, UploadFile
+from fastapi.responses import Response
+
+@api_router.post("/files/upload")
+async def upload_file(
+    file: UploadFile = File(...),
+    subfolder: str = "general",
+    current_user: dict = Depends(get_current_user)
+):
+    """Upload a file with validation"""
+    await check_subscription(current_user)
+    
+    try:
+        # Read file content
+        file_data = await file.read()
+        
+        # Get storage service and save file
+        storage = get_storage_service()
+        file_metadata = await storage.save_file(file_data, file.filename, subfolder)
+        
+        # Save metadata to database
+        file_record = {
+            "id": str(uuid.uuid4()),
+            "restaurantId": current_user["restaurantId"],
+            "filename": file_metadata["filename"],
+            "path": file_metadata["path"],
+            "size": file_metadata["size"],
+            "mimeType": file_metadata["mime_type"],
+            "hash": file_metadata["hash"],
+            "uploadedBy": current_user["id"],
+            "uploadedAt": datetime.now(timezone.utc).isoformat()
+        }
+        
+        await db.files.insert_one(file_record)
+        
+        # Log audit
+        await log_audit(
+            db,
+            current_user["restaurantId"],
+            current_user["id"],
+            "upload",
+            "file",
+            file_record["id"],
+            {"filename": file.filename, "size": file_metadata["size"]}
+        )
+        
+        # Return without _id
+        file_record.pop("_id", None)
+        return file_record
+    
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
+    except Exception as e:
+        logger.error(f"File upload error: {str(e)}")
+        raise HTTPException(status_code=500, detail="File upload failed")
+
+@api_router.get("/files/{file_id}")
+async def download_file(
+    file_id: str,
+    current_user: dict = Depends(get_current_user)
+):
+    """Download a file with authentication and tenant check"""
+    await check_subscription(current_user)
+    
+    # Get file metadata from database
+    file_record = await db.files.find_one(
+        {"id": file_id, "restaurantId": current_user["restaurantId"]},
+        {"_id": 0}
+    )
+    
+    if not file_record:
+        raise HTTPException(status_code=404, detail="File not found")
+    
+    try:
+        # Read file from storage
+        storage = get_storage_service()
+        file_data = await storage.read_file(file_record["path"])
+        
+        # Return file with appropriate headers
+        return Response(
+            content=file_data,
+            media_type=file_record["mimeType"],
+            headers={
+                "Content-Disposition": f'attachment; filename="{file_record["filename"]}"'
+            }
+        )
+    except FileNotFoundError:
+        raise HTTPException(status_code=404, detail="File not found in storage")
+    except Exception as e:
+        logger.error(f"File download error: {str(e)}")
+        raise HTTPException(status_code=500, detail="File download failed")
+
+@api_router.delete("/files/{file_id}")
+async def delete_file(
+    file_id: str,
+    current_user: dict = Depends(get_current_user)
+):
+    """Delete a file"""
+    await check_subscription(current_user)
+    
+    # Get file metadata
+    file_record = await db.files.find_one(
+        {"id": file_id, "restaurantId": current_user["restaurantId"]},
+        {"_id": 0}
+    )
+    
+    if not file_record:
+        raise HTTPException(status_code=404, detail="File not found")
+    
+    try:
+        # Delete from storage
+        storage = get_storage_service()
+        await storage.delete_file(file_record["path"])
+        
+        # Delete from database
+        await db.files.delete_one({"id": file_id})
+        
+        # Log audit
+        await log_audit(
+            db,
+            current_user["restaurantId"],
+            current_user["id"],
+            "delete",
+            "file",
+            file_id,
+            {"filename": file_record["filename"]}
+        )
+        
+        return {"message": "File deleted"}
+    except Exception as e:
+        logger.error(f"File delete error: {str(e)}")
+        raise HTTPException(status_code=500, detail="File delete failed")
+
+# ============ SUPPLIERS ============
+
+@api_router.post("/suppliers", response_model=Supplier)
+async def create_supplier(supplier: SupplierCreate, current_user: dict = Depends(get_current_user)):
+    """Create a new supplier"""
+    await check_subscription(current_user)
+    
+    supplier_data = {
+        "id": str(uuid.uuid4()),
+        "restaurantId": current_user["restaurantId"],
+        "name": supplier.name,
+        "contacts": supplier.contacts.dict() if supplier.contacts else None,
+        "notes": supplier.notes,
+        "files": [],
+        "createdAt": datetime.now(timezone.utc).isoformat(),
+        "updatedAt": None
+    }
+    
+    await db.suppliers.insert_one(supplier_data)
+    
+    # Log audit
+    await log_audit(
+        db,
+        current_user["restaurantId"],
+        current_user["id"],
+        "create",
+        "supplier",
+        supplier_data["id"],
+        {"name": supplier.name}
+    )
+    
+    supplier_data.pop("_id", None)
+    return Supplier(**supplier_data)
+
+@api_router.get("/suppliers", response_model=List[Supplier])
+async def get_suppliers(current_user: dict = Depends(get_current_user)):
+    """Get all suppliers for the restaurant"""
+    await check_subscription(current_user)
+    
+    suppliers = await db.suppliers.find(
+        {"restaurantId": current_user["restaurantId"]},
+        {"_id": 0}
+    ).to_list(1000)
+    
+    return [Supplier(**s) for s in suppliers]
+
+@api_router.get("/suppliers/{supplier_id}", response_model=Supplier)
+async def get_supplier(supplier_id: str, current_user: dict = Depends(get_current_user)):
+    """Get a specific supplier"""
+    await check_subscription(current_user)
+    
+    supplier = await db.suppliers.find_one(
+        {"id": supplier_id, "restaurantId": current_user["restaurantId"]},
+        {"_id": 0}
+    )
+    
+    if not supplier:
+        raise HTTPException(status_code=404, detail="Supplier not found")
+    
+    return Supplier(**supplier)
+
+@api_router.put("/suppliers/{supplier_id}", response_model=Supplier)
+async def update_supplier(
+    supplier_id: str,
+    supplier_update: SupplierUpdate,
+    current_user: dict = Depends(get_current_user)
+):
+    """Update a supplier"""
+    await check_subscription(current_user)
+    
+    # Check if supplier exists
+    existing = await db.suppliers.find_one(
+        {"id": supplier_id, "restaurantId": current_user["restaurantId"]}
+    )
+    
+    if not existing:
+        raise HTTPException(status_code=404, detail="Supplier not found")
+    
+    # Build update data
+    update_data = {}
+    if supplier_update.name is not None:
+        update_data["name"] = supplier_update.name
+    if supplier_update.contacts is not None:
+        update_data["contacts"] = supplier_update.contacts.dict()
+    if supplier_update.notes is not None:
+        update_data["notes"] = supplier_update.notes
+    
+    update_data["updatedAt"] = datetime.now(timezone.utc).isoformat()
+    
+    # Update in database
+    await db.suppliers.update_one(
+        {"id": supplier_id},
+        {"$set": update_data}
+    )
+    
+    # Log audit
+    await log_audit(
+        db,
+        current_user["restaurantId"],
+        current_user["id"],
+        "update",
+        "supplier",
+        supplier_id,
+        update_data
+    )
+    
+    # Get updated supplier
+    updated_supplier = await db.suppliers.find_one(
+        {"id": supplier_id},
+        {"_id": 0}
+    )
+    
+    return Supplier(**updated_supplier)
+
+@api_router.delete("/suppliers/{supplier_id}")
+async def delete_supplier(supplier_id: str, current_user: dict = Depends(get_current_user)):
+    """Delete a supplier"""
+    await check_subscription(current_user)
+    
+    # Check if supplier exists
+    supplier = await db.suppliers.find_one(
+        {"id": supplier_id, "restaurantId": current_user["restaurantId"]},
+        {"_id": 0}
+    )
+    
+    if not supplier:
+        raise HTTPException(status_code=404, detail="Supplier not found")
+    
+    # Delete associated files
+    storage = get_storage_service()
+    for file_meta in supplier.get("files", []):
+        try:
+            await storage.delete_file(file_meta["path"])
+            await db.files.delete_one({"id": file_meta["id"]})
+        except Exception as e:
+            logger.warning(f"Error deleting file {file_meta['id']}: {str(e)}")
+    
+    # Delete supplier
+    await db.suppliers.delete_one({"id": supplier_id})
+    
+    # Log audit
+    await log_audit(
+        db,
+        current_user["restaurantId"],
+        current_user["id"],
+        "delete",
+        "supplier",
+        supplier_id,
+        {"name": supplier["name"]}
+    )
+    
+    return {"message": "Supplier deleted"}
+
+@api_router.post("/suppliers/{supplier_id}/files")
+async def attach_file_to_supplier(
+    supplier_id: str,
+    file: UploadFile = File(...),
+    current_user: dict = Depends(get_current_user)
+):
+    """Attach a file to a supplier"""
+    await check_subscription(current_user)
+    
+    # Check if supplier exists
+    supplier = await db.suppliers.find_one(
+        {"id": supplier_id, "restaurantId": current_user["restaurantId"]}
+    )
+    
+    if not supplier:
+        raise HTTPException(status_code=404, detail="Supplier not found")
+    
+    try:
+        # Upload file
+        file_data = await file.read()
+        storage = get_storage_service()
+        file_metadata = await storage.save_file(file_data, file.filename, f"suppliers/{supplier_id}")
+        
+        # Save file metadata to database
+        file_record = {
+            "id": str(uuid.uuid4()),
+            "restaurantId": current_user["restaurantId"],
+            "filename": file_metadata["filename"],
+            "path": file_metadata["path"],
+            "size": file_metadata["size"],
+            "mimeType": file_metadata["mime_type"],
+            "hash": file_metadata["hash"],
+            "uploadedBy": current_user["id"],
+            "uploadedAt": datetime.now(timezone.utc).isoformat()
+        }
+        
+        await db.files.insert_one(file_record)
+        
+        # Add file reference to supplier
+        file_record.pop("_id", None)
+        await db.suppliers.update_one(
+            {"id": supplier_id},
+            {"$push": {"files": file_record}}
+        )
+        
+        # Log audit
+        await log_audit(
+            db,
+            current_user["restaurantId"],
+            current_user["id"],
+            "attach_file",
+            "supplier",
+            supplier_id,
+            {"filename": file.filename}
+        )
+        
+        return file_record
+    
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
+    except Exception as e:
+        logger.error(f"File attachment error: {str(e)}")
+        raise HTTPException(status_code=500, detail="File attachment failed")
+
+@api_router.delete("/suppliers/{supplier_id}/files/{file_id}")
+async def detach_file_from_supplier(
+    supplier_id: str,
+    file_id: str,
+    current_user: dict = Depends(get_current_user)
+):
+    """Detach a file from a supplier"""
+    await check_subscription(current_user)
+    
+    # Check if supplier exists
+    supplier = await db.suppliers.find_one(
+        {"id": supplier_id, "restaurantId": current_user["restaurantId"]},
+        {"_id": 0}
+    )
+    
+    if not supplier:
+        raise HTTPException(status_code=404, detail="Supplier not found")
+    
+    # Find the file in supplier's files
+    file_to_remove = None
+    for f in supplier.get("files", []):
+        if f["id"] == file_id:
+            file_to_remove = f
+            break
+    
+    if not file_to_remove:
+        raise HTTPException(status_code=404, detail="File not found in supplier")
+    
+    try:
+        # Delete from storage
+        storage = get_storage_service()
+        await storage.delete_file(file_to_remove["path"])
+        
+        # Delete from files collection
+        await db.files.delete_one({"id": file_id})
+        
+        # Remove from supplier's files array
+        await db.suppliers.update_one(
+            {"id": supplier_id},
+            {"$pull": {"files": {"id": file_id}}}
+        )
+        
+        # Log audit
+        await log_audit(
+            db,
+            current_user["restaurantId"],
+            current_user["id"],
+            "detach_file",
+            "supplier",
+            supplier_id,
+            {"filename": file_to_remove["filename"]}
+        )
+        
+        return {"message": "File detached"}
+    
+    except Exception as e:
+        logger.error(f"File detach error: {str(e)}")
+        raise HTTPException(status_code=500, detail="File detach failed")
+
 # ============ DASHBOARD KPIs ============
 
 @api_router.get("/dashboard/kpis")

@@ -34,6 +34,8 @@ def test_ingredient_models():
     
     # Test that the model can be created (this tests the Pydantic models)
     try:
+        import sys
+        sys.path.append('/app/backend')
         from server import IngredientCreate, Ingredient, ShelfLife
         
         # Test ShelfLife model

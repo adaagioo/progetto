@@ -265,10 +265,10 @@ function Inventory() {
                 {t('inventory.add') || 'Add Movement'}
               </Button>
             </DialogTrigger>
-          <DialogContent className="max-w-md max-h-[90vh] overflow-y-auto" data-testid="inventory-dialog">
-            <DialogHeader>
-              <DialogTitle>New Inventory Movement</DialogTitle>
-            </DialogHeader>
+            <DialogContent className="max-w-md max-h-[90vh] overflow-y-auto" data-testid="inventory-dialog">
+              <DialogHeader>
+                <DialogTitle>New Inventory Movement</DialogTitle>
+              </DialogHeader>
             <form onSubmit={handleSubmit} className="space-y-4">
               <div className="space-y-2">
                 <Label htmlFor="ingredient">Ingredient *</Label>

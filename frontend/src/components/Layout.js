@@ -1,10 +1,12 @@
 import React, { useContext } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { AuthContext } from '../App';
+import { useTranslation } from 'react-i18next';
 import { Button } from './ui/button';
 import { ChefHat, LayoutDashboard, BookOpen, Package, ShoppingCart, AlertTriangle, TrendingUp, UtensilsCrossed, LogOut, Settings as SettingsIcon } from 'lucide-react';
 
 function Layout({ children }) {
+  const { t } = useTranslation();
   const { user, logout } = useContext(AuthContext);
   const location = useLocation();
   const navigate = useNavigate();

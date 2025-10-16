@@ -127,6 +127,7 @@ function App() {
           />
         </Routes>
       </BrowserRouter>
+    </CurrencyProvider>
     </AuthContext.Provider>
   );
 }

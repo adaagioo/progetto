@@ -31,7 +31,7 @@ function Dashboard() {
   if (loading) {
     return (
       <div className="flex items-center justify-center h-96">
-        <div className="text-lg text-emerald-600">Loading dashboard...</div>
+        <div className="text-lg text-emerald-600">{t('common.loading')}</div>
       </div>
     );
   }
@@ -40,9 +40,9 @@ function Dashboard() {
     <div className="space-y-6" data-testid="dashboard-page">
       <div>
         <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold gradient-text mb-2">
-          Dashboard
+          {t('dashboard.title')}
         </h1>
-        <p className="text-base text-gray-600">Overview of your restaurant performance</p>
+        <p className="text-base text-gray-600">{t('dashboard.subtitle')}</p>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">

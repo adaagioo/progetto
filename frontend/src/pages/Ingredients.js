@@ -13,6 +13,7 @@ import { toast } from 'sonner';
 
 function Ingredients() {
   const { user } = useContext(AuthContext);
+  const { format } = useCurrency();
   const [ingredients, setIngredients] = useState([]);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingId, setEditingId] = useState(null);

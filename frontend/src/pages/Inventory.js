@@ -164,6 +164,64 @@ function Inventory() {
     return ing ? ing.name : 'Unknown';
   };
 
+  const getIngredient = (id) => {
+    return ingredients.find(i => i.id === id);
+  };
+
+  const clearFilters = () => {
+    setSearchParams({});
+  };
+
+  // Filter inventory based on URL params
+  const getFilteredInventory = () => {
+    let filtered = [...inventory];
+
+    // Category filter (from valuation cards)
+    if (categoryFilter) {
+      filtered = filtered.filter(inv => {
+        const ingredient = getIngredient(inv.ingredientId);
+        return ingredient?.category === categoryFilter;
+      });
+    }
+
+    // Low stock filter
+    if (filterType === 'lowStock') {
+      filtered = filtered.filter(inv => {
+        const ingredient = getIngredient(inv.ingredientId);
+        if (!ingredient) return false;
+        
+        // Calculate current stock
+        const currentStock = filtered
+          .filter(i => i.ingredientId === inv.ingredientId)
+          .reduce((sum, i) => {
+            if (i.countType === 'opening' || i.countType === 'adjustment' || i.countType === 'receiving') {
+              return sum + i.qty;
+            } else if (i.countType === 'closing') {
+              return i.qty;
+            }
+            return sum;
+          }, 0);
+        
+        return currentStock < ingredient.minStockQty;
+      });
+    }
+
+    // Expiring filter
+    if (filterType === 'expiring') {
+      filtered = filtered.filter(inv => {
+        if (!inv.batchExpiry) return false;
+        const expiry = new Date(inv.batchExpiry);
+        const now = new Date();
+        const daysUntil = Math.ceil((expiry - now) / (1000 * 60 * 60 * 24));
+        return daysUntil <= 3 && daysUntil >= 0;
+      });
+    }
+
+    return filtered;
+  };
+
+  const filteredInventory = getFilteredInventory();
+
   const isExpiringSoon = (expiryDate) => {
     if (!expiryDate) return null;
     try {

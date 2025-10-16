@@ -160,11 +160,14 @@ backend:
     file: "backend/server.py"
     stuck_count: 0
     priority: "high"
-    needs_retesting: true
+    needs_retesting: false
     status_history:
       - working: true
         agent: "main"
         comment: "Added Supplier models (SupplierCreate, SupplierUpdate, Supplier) and full CRUD endpoints: POST /api/suppliers, GET /api/suppliers, GET /api/suppliers/{id}, PUT /api/suppliers/{id}, DELETE /api/suppliers/{id}. Includes contact information and notes fields."
+      - working: true
+        agent: "testing"
+        comment: "TESTED: All supplier CRUD operations working correctly. POST /api/suppliers creates suppliers with full fields (name, contacts, notes) and minimal fields (name only), rejects missing name with 422. GET /api/suppliers returns restaurant-scoped suppliers only. GET /api/suppliers/{id} retrieves specific supplier, returns 404 for non-existent. PUT /api/suppliers/{id} updates full and partial data, sets updatedAt timestamp. DELETE /api/suppliers/{id} removes supplier and associated files, returns 404 for non-existent. All operations include proper audit logging."
 
   - task: "Supplier File Attachments"
     implemented: true

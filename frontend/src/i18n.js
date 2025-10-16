@@ -240,6 +240,7 @@ const resources = {
       'common.cancel': 'Cancel',
       'common.delete': 'Delete',
       'common.edit': 'Edit',
+      'common.clearFilters': 'Clear Filters',
       'common.add': 'Add',
       'common.create': 'Create',
       'common.update': 'Update',

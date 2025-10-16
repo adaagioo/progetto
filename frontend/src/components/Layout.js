@@ -21,7 +21,8 @@ function Layout({ children }) {
     { path: '/inventory', label: 'Inventory', icon: Package },
     { path: '/sales', label: 'Sales', icon: ShoppingCart },
     { path: '/wastage', label: 'Wastage', icon: AlertTriangle },
-    { path: '/profit-loss', label: 'P&L', icon: TrendingUp }
+    { path: '/profit-loss', label: 'P&L', icon: TrendingUp },
+    { path: '/settings', label: 'Settings', icon: SettingsIcon }
   ];
 
   return (

@@ -211,7 +211,7 @@ function Sales() {
                       <div key={index} className="flex items-center justify-between bg-emerald-50 p-3 rounded" data-testid="sales-line">
                         <div>
                           <p className="font-medium">{getRecipeName(line.recipeId)}</p>
-                          <p className="text-sm text-gray-600">Qty: {line.qty} × ${recipe?.price} = ${lineTotal.toFixed(2)}</p>
+                          <p className="text-sm text-gray-600">Qty: {line.qty} × {format.number(recipe?.price)} = {format.number(lineTotal)}</p>
                         </div>
                         <Button
                           type="button"

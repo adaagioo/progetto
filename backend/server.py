@@ -708,6 +708,8 @@ async def update_ingredient(ingredient_id: str, ingredient_data: IngredientCreat
         raise HTTPException(status_code=404, detail="Ingredient not found")
     
     unit_cost = ingredient_data.packCost / ingredient_data.packSize
+    waste_pct = ingredient_data.wastePct or 0
+    effective_unit_cost = unit_cost * (1 + waste_pct / 100)
     
     update_data = {
         "name": ingredient_data.name,
@@ -715,9 +717,13 @@ async def update_ingredient(ingredient_id: str, ingredient_data: IngredientCreat
         "packSize": ingredient_data.packSize,
         "packCost": ingredient_data.packCost,
         "unitCost": unit_cost,
+        "effectiveUnitCost": effective_unit_cost,
         "supplier": ingredient_data.supplier,
         "allergen": ingredient_data.allergen,
-        "minStockQty": ingredient_data.minStockQty
+        "allergens": ingredient_data.allergens or [],
+        "minStockQty": ingredient_data.minStockQty,
+        "wastePct": waste_pct,
+        "shelfLife": ingredient_data.shelfLife.dict() if ingredient_data.shelfLife else None
     }
     
     await db.ingredients.update_one({"id": ingredient_id}, {"$set": update_data})

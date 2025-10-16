@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useContext } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { useCurrency } from '../contexts/CurrencyContext';
 import { useTranslation } from 'react-i18next';
 import axios from 'axios';
@@ -9,7 +10,7 @@ import { Label } from '../components/ui/label';
 import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/card';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '../components/ui/dialog';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../components/ui/select';
-import { Plus, Trash2, Package, DollarSign, TrendingUp } from 'lucide-react';
+import { Plus, Trash2, Package, DollarSign, TrendingUp, X } from 'lucide-react';
 import { toast } from 'sonner';
 import { format } from 'date-fns';
 
@@ -17,6 +18,7 @@ function Inventory() {
   const { t } = useTranslation();
   const { user } = useContext(AuthContext);
   const { formatMinor } = useCurrency();
+  const [searchParams, setSearchParams] = useSearchParams();
   const [inventory, setInventory] = useState([]);
   const [ingredients, setIngredients] = useState([]);
   const [valuation, setValuation] = useState([]);
@@ -25,6 +27,10 @@ function Inventory() {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [isAdjustmentDialogOpen, setIsAdjustmentDialogOpen] = useState(false);
   const [showValuation, setShowValuation] = useState(true);
+  
+  // Get filters from URL
+  const categoryFilter = searchParams.get('category');
+  const filterType = searchParams.get('filter'); // lowStock, expiring
   
   const [formData, setFormData] = useState({
     ingredientId: '',

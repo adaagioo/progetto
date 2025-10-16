@@ -123,6 +123,10 @@ function App() {
             element={user ? <Layout><ProfitLoss /></Layout> : <Navigate to="/login" />}
           />
           <Route
+            path="/suppliers"
+            element={user ? <Layout><Suppliers /></Layout> : <Navigate to="/login" />}
+          />
+          <Route
             path="/settings"
             element={user ? <Layout><Settings /></Layout> : <Navigate to="/login" />}
           />

@@ -145,11 +145,14 @@ backend:
     file: "backend/server.py"
     stuck_count: 0
     priority: "high"
-    needs_retesting: true
+    needs_retesting: false
     status_history:
       - working: true
         agent: "main"
         comment: "Added POST /api/files/upload, GET /api/files/{file_id}, DELETE /api/files/{file_id} endpoints with authentication, tenant checks, and audit logging."
+      - working: true
+        agent: "testing"
+        comment: "TESTED: All file endpoints working perfectly. POST /api/files/upload validates MIME types (rejects text/plain), enforces 10MB size limit, returns proper metadata (id, filename, path, size, mimeType, hash, uploadedBy, uploadedAt). GET /api/files/{id} downloads with correct Content-Type and Content-Disposition headers. DELETE /api/files/{id} removes files from storage and returns 404 for non-existent files. Tenant isolation working correctly."
 
   - task: "Suppliers CRUD Endpoints"
     implemented: true

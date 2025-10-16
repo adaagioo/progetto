@@ -280,7 +280,7 @@ function Sales() {
               <div className="pt-3 border-t flex justify-between items-center">
                 <span className="font-semibold">Total:</span>
                 <span className="text-xl font-bold text-emerald-600">
-                  ${calculateSaleTotal(sale.lines).toFixed(2)}
+                  {format.number(calculateSaleTotal(sale.lines))}
                 </span>
               </div>
             </CardContent>

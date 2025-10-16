@@ -480,8 +480,41 @@ function Inventory() {
         </div>
       )}
 
+      {/* Active Filters Display */}
+      {(categoryFilter || filterType) && (
+        <div className="flex items-center gap-2 p-3 bg-blue-50 border border-blue-200 rounded-lg">
+          <span className="text-sm font-medium text-blue-900">
+            {t('inventory.activeFilters') || 'Active Filters'}:
+          </span>
+          {categoryFilter && (
+            <span className="inline-flex items-center gap-1 px-2 py-1 bg-blue-100 text-blue-800 rounded text-sm">
+              {t(`receiving.category.${categoryFilter}`) || categoryFilter}
+            </span>
+          )}
+          {filterType === 'lowStock' && (
+            <span className="inline-flex items-center gap-1 px-2 py-1 bg-amber-100 text-amber-800 rounded text-sm">
+              {t('dashboard.lowStock') || 'Low Stock'}
+            </span>
+          )}
+          {filterType === 'expiring' && (
+            <span className="inline-flex items-center gap-1 px-2 py-1 bg-orange-100 text-orange-800 rounded text-sm">
+              {t('dashboard.expiringSoon') || 'Expiring Soon'}
+            </span>
+          )}
+          <Button
+            size="sm"
+            variant="ghost"
+            onClick={clearFilters}
+            className="ml-auto"
+          >
+            <X className="h-4 w-4 mr-1" />
+            {t('common.clearFilters') || 'Clear Filters'}
+          </Button>
+        </div>
+      )}
+
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-        {inventory.map((inv) => (
+        {filteredInventory.map((inv) => (
           <Card key={inv.id} className="glass-morphism border-0 card-hover" data-testid="inventory-card">
             <CardHeader>
               <CardTitle className="flex items-center justify-between">

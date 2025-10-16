@@ -287,6 +287,47 @@ class Supplier(BaseModel):
     createdAt: str
     updatedAt: Optional[str] = None
 
+class ReceivingLine(BaseModel):
+    """Line item in a receiving record"""
+    ingredientId: Optional[str] = None
+    description: str
+    qty: float
+    unit: str
+    unitPrice: float  # in minor units (cents)
+    packFormat: Optional[str] = None
+    expiryDate: Optional[str] = None
+
+class ReceivingCreate(BaseModel):
+    """Create receiving request"""
+    supplierId: str
+    category: str  # 'food', 'beverage', 'nofood'
+    lines: List[ReceivingLine]
+    arrivedAt: str
+    notes: Optional[str] = None
+
+class ReceivingUpdate(BaseModel):
+    """Update receiving request"""
+    supplierId: Optional[str] = None
+    category: Optional[str] = None
+    lines: Optional[List[ReceivingLine]] = None
+    arrivedAt: Optional[str] = None
+    notes: Optional[str] = None
+
+class Receiving(BaseModel):
+    """Receiving model"""
+    model_config = ConfigDict(extra="ignore")
+    id: str
+    restaurantId: str
+    supplierId: str
+    category: str
+    lines: List[ReceivingLine]
+    total: float  # in minor units, calculated from lines
+    files: List[FileMetadata] = []
+    arrivedAt: str
+    notes: Optional[str] = None
+    createdAt: str
+    updatedAt: Optional[str] = None
+
 # ============ AUTH HELPERS ============
 
 async def send_email(to_email: str, subject: str, body: str):

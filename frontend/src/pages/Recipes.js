@@ -14,6 +14,7 @@ import { toast } from 'sonner';
 
 function Recipes() {
   const { user } = useContext(AuthContext);
+  const { format } = useCurrency();
   const [recipes, setRecipes] = useState([]);
   const [ingredients, setIngredients] = useState([]);
   const [isDialogOpen, setIsDialogOpen] = useState(false);

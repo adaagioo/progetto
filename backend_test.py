@@ -731,8 +731,8 @@ class BackendTester:
         print("🚀 Starting Backend Testing Suite for Suppliers Module")
         print("=" * 60)
         
-        # Authenticate
-        if not await self.authenticate("admin"):
+        # Authenticate (register if needed)
+        if not await self.register_test_user():
             print("❌ Authentication failed - cannot continue tests")
             return
         

@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import axios from 'axios';
+import './i18n'; // Initialize i18n
 import '@/App.css';
 import Login from './pages/Login';
 import Dashboard from './pages/Dashboard';
@@ -10,6 +11,7 @@ import Sales from './pages/Sales';
 import Wastage from './pages/Wastage';
 import ProfitLoss from './pages/ProfitLoss';
 import Ingredients from './pages/Ingredients';
+import Settings from './pages/Settings';
 import Layout from './components/Layout';
 import { Toaster } from './components/ui/sonner';
 

@@ -107,7 +107,7 @@ function Ingredients() {
           <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold gradient-text mb-2">
             Ingredients
           </h1>
-          <p className="text-base text-gray-600">Manage your ingredient inventory</p>
+          <p className="text-base text-gray-600">{t('ingredients.subtitle')}</p>
         </div>
 
         <Dialog open={isDialogOpen} onOpenChange={(open) => {
@@ -288,7 +288,7 @@ function Ingredients() {
       {ingredients.length === 0 && (
         <Card className="glass-morphism border-0">
           <CardContent className="flex flex-col items-center justify-center py-12">
-            <p className="text-gray-500 mb-4">No ingredients yet</p>
+            <p className="text-gray-500 mb-4">{`${t('ingredients.noData')}`}</p>
             <Button className="btn-primary text-white" onClick={() => setIsDialogOpen(true)}>
               <Plus className="w-4 h-4 mr-2" />
               Add Your First Ingredient

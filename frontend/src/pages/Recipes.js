@@ -153,7 +153,7 @@ function Recipes() {
           <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold gradient-text mb-2">
             Recipes
           </h1>
-          <p className="text-base text-gray-600">Manage your menu items and pricing</p>
+          <p className="text-base text-gray-600">{t('recipes.subtitle')}</p>
         </div>
 
         <Dialog open={isDialogOpen} onOpenChange={(open) => {
@@ -168,7 +168,7 @@ function Recipes() {
           </DialogTrigger>
           <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto" data-testid="recipe-dialog">
             <DialogHeader>
-              <DialogTitle>New Recipe</DialogTitle>
+              <DialogTitle>{`${t('recipes.new')}`}</DialogTitle>
             </DialogHeader>
             <form onSubmit={handleSubmit} className="space-y-4">
               <div className="grid grid-cols-2 gap-4">
@@ -375,7 +375,7 @@ function Recipes() {
       {recipes.length === 0 && (
         <Card className="glass-morphism border-0">
           <CardContent className="flex flex-col items-center justify-center py-12">
-            <p className="text-gray-500 mb-4">No recipes yet</p>
+            <p className="text-gray-500 mb-4">{`${t('recipes.noData')}`}</p>
             <Button className="btn-primary text-white" onClick={() => setIsDialogOpen(true)}>
               <Plus className="w-4 h-4 mr-2" />
               Add Your First Recipe

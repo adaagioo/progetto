@@ -135,7 +135,7 @@ function Sales() {
           <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold gradient-text mb-2">
             Sales
           </h1>
-          <p className="text-base text-gray-600">Record daily sales transactions</p>
+          <p className="text-base text-gray-600">{t('sales.subtitle')}</p>
         </div>
 
         <Dialog open={isDialogOpen} onOpenChange={(open) => {
@@ -293,7 +293,7 @@ function Sales() {
       {sales.length === 0 && (
         <Card className="glass-morphism border-0">
           <CardContent className="flex flex-col items-center justify-center py-12">
-            <p className="text-gray-500 mb-4">No sales records yet</p>
+            <p className="text-gray-500 mb-4">{`${t('sales.noData')}`}</p>
             <Button className="btn-primary text-white" onClick={() => setIsDialogOpen(true)}>
               <Plus className="w-4 h-4 mr-2" />
               Add Your First Sale

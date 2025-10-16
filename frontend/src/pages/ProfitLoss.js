@@ -82,7 +82,7 @@ function ProfitLoss() {
           <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold gradient-text mb-2">
             Profit & Loss
           </h1>
-          <p className="text-base text-gray-600">Monthly P&L snapshots</p>
+          <p className="text-base text-gray-600">{t('pl.subtitle')}</p>
         </div>
 
         {user?.role === 'admin' && (
@@ -256,7 +256,7 @@ function ProfitLoss() {
       {plRecords.length === 0 && (
         <Card className="glass-morphism border-0">
           <CardContent className="flex flex-col items-center justify-center py-12">
-            <p className="text-gray-500 mb-4">No P&L records yet</p>
+            <p className="text-gray-500 mb-4">{`${t('pl.noData')}`}</p>
             {user?.role === 'admin' && (
               <Button className="btn-primary text-white" onClick={() => setIsDialogOpen(true)}>
                 <Plus className="w-4 h-4 mr-2" />

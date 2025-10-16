@@ -158,6 +158,48 @@ class Ingredient(BaseModel):
     shelfLife: Optional[ShelfLife] = None
     createdAt: str
 
+class PreparationItem(BaseModel):
+    """Item in a preparation (raw ingredient only in v1)"""
+    ingredientId: str
+    qty: float
+    unit: str
+
+class Yield(BaseModel):
+    """Preparation yield"""
+    value: float
+    unit: str
+
+class PreparationCreate(BaseModel):
+    """Create preparation request"""
+    name: str
+    items: List[PreparationItem]
+    yield_: Optional[Yield] = None
+    shelfLife: Optional[ShelfLife] = None
+    notes: Optional[str] = None
+
+class PreparationUpdate(BaseModel):
+    """Update preparation request"""
+    name: Optional[str] = None
+    items: Optional[List[PreparationItem]] = None
+    yield_: Optional[Yield] = None
+    shelfLife: Optional[ShelfLife] = None
+    notes: Optional[str] = None
+
+class Preparation(BaseModel):
+    """Preparation model"""
+    model_config = ConfigDict(extra="ignore")
+    id: str
+    restaurantId: str
+    name: str
+    items: List[PreparationItem]
+    yield_: Optional[Yield] = None
+    shelfLife: Optional[ShelfLife] = None
+    notes: Optional[str] = None
+    cost: float  # Computed from ingredients with waste
+    allergens: List[str]  # Computed from ingredients
+    createdAt: str
+    updatedAt: Optional[str] = None
+
 class InventoryCreate(BaseModel):
     ingredientId: str
     qty: float

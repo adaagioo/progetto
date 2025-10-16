@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useContext } from 'react';
 import { useCurrency } from '../contexts/CurrencyContext';
+import { useTranslation } from 'react-i18next';
 import axios from 'axios';
 import { API, AuthContext } from '../App';
 import { Button } from '../components/ui/button';
@@ -12,6 +13,7 @@ import { Plus, Trash2, Edit } from 'lucide-react';
 import { toast } from 'sonner';
 
 function Ingredients() {
+  const { t } = useTranslation();
   const { user } = useContext(AuthContext);
   const { format } = useCurrency();
   const [ingredients, setIngredients] = useState([]);

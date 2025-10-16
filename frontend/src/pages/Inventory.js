@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useContext } from 'react';
 import { useCurrency } from '../contexts/CurrencyContext';
+import { useTranslation } from 'react-i18next';
 import axios from 'axios';
 import { API, AuthContext } from '../App';
 import { Button } from '../components/ui/button';
@@ -13,6 +14,7 @@ import { toast } from 'sonner';
 import { format } from 'date-fns';
 
 function Inventory() {
+  const { t } = useTranslation();
   const { user } = useContext(AuthContext);
   const [inventory, setInventory] = useState([]);
   const [ingredients, setIngredients] = useState([]);

@@ -305,7 +305,7 @@ async def register(user_data: UserRegister):
     # Hash password
     hashed_password = bcrypt.hashpw(user_data.password.encode('utf-8'), bcrypt.gensalt())
     
-    # Create restaurant
+    # Create restaurant with currency and locale
     restaurant_id = str(uuid.uuid4())
     restaurant = {
         "id": restaurant_id,
@@ -313,12 +313,22 @@ async def register(user_data: UserRegister):
         "plan": "Starter",
         "subscriptionStatus": "active",
         "ownerUserId": str(uuid.uuid4()),
+        "currency": {
+            "code": DEFAULT_CURRENCY,
+            "symbol": "€" if DEFAULT_CURRENCY == "EUR" else "$",
+            "decimals": 2
+        },
+        "defaultLocale": DEFAULT_LOCALE,
         "createdAt": datetime.now(timezone.utc).isoformat()
     }
     await db.restaurants.insert_one(restaurant)
     
-    # Create user
+    # Seed default roles for restaurant
+    await seed_default_roles(db, restaurant_id)
+    
+    # Create user with locale
     user_id = str(uuid.uuid4())
+    user_locale = user_data.locale or DEFAULT_LOCALE
     user = {
         "id": user_id,
         "email": user_data.email,
@@ -326,6 +336,8 @@ async def register(user_data: UserRegister):
         "displayName": user_data.displayName,
         "restaurantId": restaurant_id,
         "role": "admin",
+        "roleKey": "admin",
+        "locale": user_locale,
         "createdAt": datetime.now(timezone.utc).isoformat()
     }
     await db.users.insert_one(user)
@@ -338,7 +350,9 @@ async def register(user_data: UserRegister):
         "email": user["email"],
         "displayName": user["displayName"],
         "restaurantId": restaurant_id,
-        "role": user["role"]
+        "role": user["role"],
+        "roleKey": user["roleKey"],
+        "locale": user_locale
     }
     
     return {

@@ -61,12 +61,12 @@ function Dashboard() {
               {kpis?.foodCostPct || 0}%
             </div>
             <p className="text-xs text-gray-500 mt-1">
-              {kpis?.foodCostPct > 35 ? '{t('dashboard.aboveTarget')}' : '{t('dashboard.withinTarget')}'}
+              {kpis?.foodCostPct > 35 ? t('dashboard.aboveTarget') : t('dashboard.withinTarget')}
             </p>
           </CardContent>
         </Card>
 
-        {/* {t('dashboard.lowStock')} Items */}
+        {/* Low Stock Items */}
         <Card className="glass-morphism border-0 card-hover" data-testid="low-stock-card">
           <CardHeader className="flex flex-row items-center justify-between pb-2">
             <CardTitle className="text-sm font-medium text-gray-600">{t('dashboard.lowStock')}</CardTitle>

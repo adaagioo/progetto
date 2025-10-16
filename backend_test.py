@@ -48,6 +48,39 @@ class BackendTester:
         if details and not success:
             print(f"   Details: {details}")
     
+    async def register_test_user(self) -> bool:
+        """Register test user if not exists"""
+        try:
+            register_data = {
+                "email": "admin@test.com",
+                "password": "password123",
+                "displayName": "Test Admin",
+                "restaurantName": "Test Restaurant",
+                "locale": "en-US"
+            }
+            
+            async with self.session.post(
+                f"{BACKEND_URL}/auth/register",
+                json=register_data,
+                headers={"Content-Type": "application/json"}
+            ) as response:
+                if response.status == 200:
+                    data = await response.json()
+                    self.auth_token = data["access_token"]
+                    self.user_data = data["user"]
+                    self.log_result("User Registration", True, "Test user registered successfully")
+                    return True
+                elif response.status == 400:
+                    # User already exists, try to login
+                    return await self.authenticate("admin")
+                else:
+                    error_text = await response.text()
+                    self.log_result("User Registration", False, f"Registration failed: {response.status}", error_text)
+                    return False
+        except Exception as e:
+            self.log_result("User Registration", False, f"Registration error: {str(e)}")
+            return False
+
     async def authenticate(self, user_type: str = "admin") -> bool:
         """Authenticate with the backend"""
         try:

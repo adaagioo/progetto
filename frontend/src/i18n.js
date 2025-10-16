@@ -121,6 +121,7 @@ const resources = {
       'inventory.valuation.nofood': 'Non-Food Inventory',
       'inventory.valuation.total': 'Total Inventory Value',
       'inventory.valuation.items': 'items',
+      'inventory.activeFilters': 'Active Filters',
       
       // Sales
       'sales.title': 'Sales',

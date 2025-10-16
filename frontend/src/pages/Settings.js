@@ -29,6 +29,10 @@ function Settings() {
   }, [user, i18n]);
 
   const fetchRestaurant = async () => {
+    if (restaurant) {
+      setLoading(false);
+      return;
+    }
     try {
       const response = await axios.get(`${API}/restaurant`);
       setRestaurant(response.data);

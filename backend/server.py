@@ -392,6 +392,136 @@ async def login(credentials: UserLogin):
 async def get_me(current_user: dict = Depends(get_current_user)):
     return User(**current_user)
 
+# ============ PASSWORD RESET ROUTES ============
+
+# Rate limiting tracking (in-memory for MVP; use Redis in production)
+reset_attempts = {}
+
+@api_router.post("/auth/forgot")
+async def forgot_password(request: ForgotPasswordRequest):
+    """Request password reset - sends email with reset token"""
+    email = request.email
+    
+    # Rate limiting check
+    now = datetime.now(timezone.utc)
+    if email in reset_attempts:
+        last_attempt, count = reset_attempts[email]
+        if (now - last_attempt).seconds < 300 and count >= 3:  # 3 attempts per 5 min
+            raise HTTPException(status_code=429, detail="Too many requests. Please try again later")
+    
+    # Find user
+    user = await db.users.find_one({"email": email})
+    if not user:
+        # Don't reveal if email exists
+        return {"message": "If the email exists, a reset link has been sent"}
+    
+    # Generate reset token
+    token = str(uuid.uuid4())
+    token_hash = hashlib.sha256(token.encode()).hexdigest()
+    expires_at = now + timedelta(minutes=60)
+    
+    # Store reset token
+    await db.passwordResetTokens.insert_one({
+        "userId": user["id"],
+        "tokenHash": token_hash,
+        "expiresAt": expires_at.isoformat(),
+        "consumed": False,
+        "createdAt": now.isoformat(),
+        "ipMeta": {}  # Add request IP in production
+    })
+    
+    # Send email
+    reset_url = f"{APP_URL}/reset?token={token}"
+    user_locale = user.get("locale", DEFAULT_LOCALE)
+    email_template = get_reset_email_template(user_locale, reset_url, user["displayName"])
+    
+    await send_email(
+        to_email=email,
+        subject=email_template["subject"],
+        body=email_template["body"]
+    )
+    
+    # Update rate limit tracking
+    if email in reset_attempts:
+        reset_attempts[email] = (now, reset_attempts[email][1] + 1)
+    else:
+        reset_attempts[email] = (now, 1)
+    
+    return {"message": "If the email exists, a reset link has been sent"}
+
+@api_router.post("/auth/reset")
+async def reset_password(request: ResetPasswordRequest):
+    """Reset password using token"""
+    token = request.token
+    new_password = request.newPassword
+    
+    # Hash token to find in DB
+    token_hash = hashlib.sha256(token.encode()).hexdigest()
+    
+    # Find token
+    reset_token = await db.passwordResetTokens.find_one({"tokenHash": token_hash})
+    
+    if not reset_token:
+        raise HTTPException(status_code=400, detail="Invalid or expired reset token")
+    
+    # Check if consumed
+    if reset_token["consumed"]:
+        raise HTTPException(status_code=400, detail="Reset token already used")
+    
+    # Check if expired
+    expires_at = datetime.fromisoformat(reset_token["expiresAt"].replace('Z', '+00:00'))
+    if datetime.now(timezone.utc) > expires_at:
+        raise HTTPException(status_code=400, detail="Reset token expired")
+    
+    # Find user
+    user = await db.users.find_one({"id": reset_token["userId"]})
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+    
+    # Hash new password
+    hashed_password = bcrypt.hashpw(new_password.encode('utf-8'), bcrypt.gensalt())
+    
+    # Update password
+    await db.users.update_one(
+        {"id": user["id"]},
+        {"$set": {"password": hashed_password.decode('utf-8')}}
+    )
+    
+    # Mark token as consumed
+    await db.passwordResetTokens.update_one(
+        {"_id": reset_token["_id"]},
+        {"$set": {"consumed": True, "consumedAt": datetime.now(timezone.utc).isoformat()}}
+    )
+    
+    # Send confirmation email
+    user_locale = user.get("locale", DEFAULT_LOCALE)
+    email_template = get_password_changed_email_template(user_locale, user["displayName"])
+    
+    await send_email(
+        to_email=user["email"],
+        subject=email_template["subject"],
+        body=email_template["body"]
+    )
+    
+    return {"message": "Password reset successful"}
+
+# ============ USER PROFILE ROUTES ============
+
+@api_router.put("/auth/locale")
+async def update_locale(request: UpdateLocaleRequest, current_user: dict = Depends(get_current_user)):
+    """Update user locale"""
+    locale = request.locale
+    
+    if locale not in SUPPORTED_LOCALES:
+        raise HTTPException(status_code=400, detail=f"Unsupported locale. Choose from: {', '.join(SUPPORTED_LOCALES)}")
+    
+    await db.users.update_one(
+        {"id": current_user["id"]},
+        {"$set": {"locale": locale}}
+    )
+    
+    return {"message": "Locale updated successfully", "locale": locale}
+
 # ============ INGREDIENTS ROUTES ============
 
 @api_router.post("/ingredients", response_model=Ingredient)

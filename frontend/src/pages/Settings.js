@@ -13,8 +13,7 @@ import { toast } from 'sonner';
 
 function Settings() {
   const { t, i18n } = useTranslation();
-  const { user, setUser } = useContext(AuthContext);
-  const [restaurant, setRestaurant] = useState(null);
+  const { user, setUser, restaurant, setRestaurant } = useContext(AuthContext);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
 

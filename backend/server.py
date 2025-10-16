@@ -399,7 +399,9 @@ async def login(credentials: UserLogin):
         "email": user["email"],
         "displayName": user["displayName"],
         "restaurantId": user["restaurantId"],
-        "role": user["role"]
+        "role": user["role"],
+        "roleKey": user.get("roleKey", "admin"),
+        "locale": user.get("locale", DEFAULT_LOCALE)
     }
     
     return {

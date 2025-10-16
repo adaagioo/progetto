@@ -13,6 +13,7 @@ import { toast } from 'sonner';
 
 function ProfitLoss() {
   const { user } = useContext(AuthContext);
+  const { format } = useCurrency();
   const [plRecords, setPlRecords] = useState([]);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [formData, setFormData] = useState({

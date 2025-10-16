@@ -812,6 +812,188 @@ async def delete_ingredient(ingredient_id: str, current_user: dict = Depends(get
     
     return {"message": "Ingredient deleted"}
 
+# ============ PREPARATIONS (SUB-RECIPES) ============
+
+@api_router.post("/preparations", response_model=Preparation)
+async def create_preparation(prep: PreparationCreate, current_user: dict = Depends(get_current_user)):
+    """Create a new preparation (sub-recipe)"""
+    await check_subscription(current_user)
+    
+    # Validate all ingredients exist
+    for item in prep.items:
+        ingredient = await db.ingredients.find_one(
+            {"id": item.ingredientId, "restaurantId": current_user["restaurantId"]}
+        )
+        if not ingredient:
+            raise HTTPException(status_code=404, detail=f"Ingredient {item.ingredientId} not found")
+    
+    # Compute cost and allergens
+    items_dict = [item.dict() for item in prep.items]
+    cost, allergens = await compute_preparation_cost_and_allergens(items_dict, db)
+    
+    preparation = {
+        "id": str(uuid.uuid4()),
+        "restaurantId": current_user["restaurantId"],
+        "name": prep.name,
+        "items": items_dict,
+        "yield": prep.yield_.dict() if prep.yield_ else None,
+        "shelfLife": prep.shelfLife.dict() if prep.shelfLife else None,
+        "notes": prep.notes,
+        "cost": cost,
+        "allergens": allergens,
+        "createdAt": datetime.now(timezone.utc).isoformat(),
+        "updatedAt": None
+    }
+    
+    await db.preparations.insert_one(preparation)
+    
+    # Log audit
+    await log_audit(
+        db,
+        current_user["restaurantId"],
+        current_user["id"],
+        "create",
+        "preparation",
+        preparation["id"],
+        {"name": prep.name, "cost": cost}
+    )
+    
+    preparation.pop("_id", None)
+    return Preparation(**preparation)
+
+@api_router.get("/preparations", response_model=List[Preparation])
+async def get_preparations(current_user: dict = Depends(get_current_user)):
+    """Get all preparations for the restaurant"""
+    await check_subscription(current_user)
+    
+    preparations = await db.preparations.find(
+        {"restaurantId": current_user["restaurantId"]},
+        {"_id": 0}
+    ).to_list(1000)
+    
+    return [Preparation(**p) for p in preparations]
+
+@api_router.get("/preparations/{prep_id}", response_model=Preparation)
+async def get_preparation(prep_id: str, current_user: dict = Depends(get_current_user)):
+    """Get a specific preparation"""
+    await check_subscription(current_user)
+    
+    preparation = await db.preparations.find_one(
+        {"id": prep_id, "restaurantId": current_user["restaurantId"]},
+        {"_id": 0}
+    )
+    
+    if not preparation:
+        raise HTTPException(status_code=404, detail="Preparation not found")
+    
+    return Preparation(**preparation)
+
+@api_router.put("/preparations/{prep_id}", response_model=Preparation)
+async def update_preparation(
+    prep_id: str,
+    prep_update: PreparationUpdate,
+    current_user: dict = Depends(get_current_user)
+):
+    """Update a preparation"""
+    await check_subscription(current_user)
+    
+    # Check if preparation exists
+    existing = await db.preparations.find_one(
+        {"id": prep_id, "restaurantId": current_user["restaurantId"]}
+    )
+    
+    if not existing:
+        raise HTTPException(status_code=404, detail="Preparation not found")
+    
+    # Build update data
+    update_data = {}
+    
+    if prep_update.name is not None:
+        update_data["name"] = prep_update.name
+    
+    if prep_update.items is not None:
+        # Validate ingredients
+        for item in prep_update.items:
+            ingredient = await db.ingredients.find_one(
+                {"id": item.ingredientId, "restaurantId": current_user["restaurantId"]}
+            )
+            if not ingredient:
+                raise HTTPException(status_code=404, detail=f"Ingredient {item.ingredientId} not found")
+        
+        items_dict = [item.dict() for item in prep_update.items]
+        update_data["items"] = items_dict
+        
+        # Recompute cost and allergens
+        cost, allergens = await compute_preparation_cost_and_allergens(items_dict, db)
+        update_data["cost"] = cost
+        update_data["allergens"] = allergens
+    
+    if prep_update.yield_ is not None:
+        update_data["yield"] = prep_update.yield_.dict()
+    
+    if prep_update.shelfLife is not None:
+        update_data["shelfLife"] = prep_update.shelfLife.dict()
+    
+    if prep_update.notes is not None:
+        update_data["notes"] = prep_update.notes
+    
+    update_data["updatedAt"] = datetime.now(timezone.utc).isoformat()
+    
+    # Update in database
+    await db.preparations.update_one(
+        {"id": prep_id},
+        {"$set": update_data}
+    )
+    
+    # Log audit
+    await log_audit(
+        db,
+        current_user["restaurantId"],
+        current_user["id"],
+        "update",
+        "preparation",
+        prep_id,
+        update_data
+    )
+    
+    # Get updated preparation
+    updated_prep = await db.preparations.find_one(
+        {"id": prep_id},
+        {"_id": 0}
+    )
+    
+    return Preparation(**updated_prep)
+
+@api_router.delete("/preparations/{prep_id}")
+async def delete_preparation(prep_id: str, current_user: dict = Depends(get_current_user)):
+    """Delete a preparation"""
+    await check_subscription(current_user)
+    
+    # Check if preparation exists
+    preparation = await db.preparations.find_one(
+        {"id": prep_id, "restaurantId": current_user["restaurantId"]},
+        {"_id": 0}
+    )
+    
+    if not preparation:
+        raise HTTPException(status_code=404, detail="Preparation not found")
+    
+    # Delete preparation
+    await db.preparations.delete_one({"id": prep_id})
+    
+    # Log audit
+    await log_audit(
+        db,
+        current_user["restaurantId"],
+        current_user["id"],
+        "delete",
+        "preparation",
+        prep_id,
+        {"name": preparation["name"]}
+    )
+    
+    return {"message": "Preparation deleted"}
+
 # ============ INVENTORY ROUTES ============
 
 @api_router.post("/inventory", response_model=Inventory)

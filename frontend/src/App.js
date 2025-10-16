@@ -101,6 +101,10 @@ function App() {
             path="/profit-loss"
             element={user ? <Layout><ProfitLoss /></Layout> : <Navigate to="/login" />}
           />
+          <Route
+            path="/settings"
+            element={user ? <Layout><Settings /></Layout> : <Navigate to="/login" />}
+          />
         </Routes>
       </BrowserRouter>
     </AuthContext.Provider>

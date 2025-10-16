@@ -415,7 +415,7 @@ function Recipes() {
                 <div className="bg-emerald-50 p-4 rounded-lg space-y-2">
                   <div className="flex justify-between">
                     <span className="text-gray-600">Actual Cost:</span>
-                    <span className="font-semibold">${calculateRecipeCost(selectedRecipe).toFixed(2)}</span>
+                    <span className="font-semibold">{format.number(calculateRecipeCost(selectedRecipe))}</span>
                   </div>
                   <div className="flex justify-between">
                     <span className="text-gray-600">New Food Cost %:</span>

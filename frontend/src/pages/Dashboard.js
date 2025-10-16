@@ -49,7 +49,7 @@ function Dashboard() {
         {/* Food Cost % */}
         <Card className="glass-morphism border-0 card-hover" data-testid="food-cost-card">
           <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium text-gray-600">Food Cost %</CardTitle>
+            <CardTitle className="text-sm font-medium text-gray-600">{t('dashboard.foodCost')}</CardTitle>
             {kpis?.foodCostPct > 35 ? (
               <TrendingUp className="h-5 w-5 text-red-500" />
             ) : (

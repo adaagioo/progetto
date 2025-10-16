@@ -12,8 +12,11 @@ import Wastage from './pages/Wastage';
 import ProfitLoss from './pages/ProfitLoss';
 import Ingredients from './pages/Ingredients';
 import Settings from './pages/Settings';
+import ForgotPassword from './pages/ForgotPassword';
+import ResetPassword from './pages/ResetPassword';
 import Layout from './components/Layout';
 import { Toaster } from './components/ui/sonner';
+import { CurrencyProvider } from './contexts/CurrencyContext';
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
 export const API = `${BACKEND_URL}/api`;

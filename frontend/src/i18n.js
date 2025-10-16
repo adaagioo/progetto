@@ -255,6 +255,7 @@ const resources = {
       'nav.recipes': 'Ricette',
       'nav.ingredients': 'Ingredienti',
       'nav.suppliers': 'Fornitori',
+      'nav.receiving': 'Ricevute',
       'nav.inventory': 'Inventario',
       'nav.sales': 'Vendite',
       'nav.wastage': 'Scarti',

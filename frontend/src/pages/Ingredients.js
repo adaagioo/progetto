@@ -9,8 +9,15 @@ import { Label } from '../components/ui/label';
 import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/card';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '../components/ui/dialog';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../components/ui/select';
-import { Plus, Trash2, Edit } from 'lucide-react';
+import { Plus, Trash2, Edit, AlertCircle } from 'lucide-react';
 import { toast } from 'sonner';
+
+// EU-14 Allergens
+const ALLERGENS = [
+  'Gluten', 'Crustaceans', 'Molluscs', 'Eggs', 'Fish', 
+  'Nuts', 'Peanuts', 'Soy', 'Celery', 'Mustard', 
+  'Sesame', 'Sulphites', 'Lupin', 'Dairy', 'Other'
+];
 
 function Ingredients() {
   const { t } = useTranslation();
@@ -26,7 +33,11 @@ function Ingredients() {
     packCost: '',
     supplier: '',
     allergen: '',
-    minStockQty: ''
+    allergens: [],
+    minStockQty: '',
+    category: 'food',
+    wastePct: '0',
+    shelfLife: { value: '', unit: 'days' }
   });
 
   useEffect(() => {

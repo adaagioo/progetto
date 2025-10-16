@@ -38,8 +38,11 @@ export const CurrencyProvider = ({ children, user, restaurant }) => {
     date: (date) => formatDate(date, locale)
   };
 
+  // Alias for currency formatter (for backward compatibility and clarity)
+  const formatMinor = (minorUnits) => formatCurrency(minorUnits, currency, locale);
+
   return (
-    <CurrencyContext.Provider value={{ currency, locale, format }}>
+    <CurrencyContext.Provider value={{ currency, locale, format, formatMinor }}>
       {children}
     </CurrencyContext.Provider>
   );

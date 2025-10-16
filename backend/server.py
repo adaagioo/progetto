@@ -49,6 +49,23 @@ SMTP_PASS = os.environ.get('SMTP_PASS', '')
 MAIL_FROM = os.environ.get('MAIL_FROM', 'RistoBrain <no-reply@ristobrain.app>')
 APP_URL = os.environ.get('APP_URL', 'http://localhost:3000')
 
+# Storage Configuration
+STORAGE_DRIVER = os.environ.get('STORAGE_DRIVER', 'local')
+UPLOAD_BASE_PATH = os.environ.get('UPLOAD_BASE_PATH', '/app/uploads')
+UPLOAD_MAX_MB = int(os.environ.get('UPLOAD_MAX_MB', 10))
+UPLOAD_ALLOWED_MIME = os.environ.get(
+    'UPLOAD_ALLOWED_MIME',
+    'application/pdf,image/jpeg,image/png'
+)
+
+# Initialize storage service
+init_storage_service(
+    driver_type=STORAGE_DRIVER,
+    base_path=UPLOAD_BASE_PATH,
+    max_size_mb=UPLOAD_MAX_MB,
+    allowed_mimes=UPLOAD_ALLOWED_MIME
+)
+
 # Create the main app
 app = FastAPI()
 api_router = APIRouter(prefix="/api")

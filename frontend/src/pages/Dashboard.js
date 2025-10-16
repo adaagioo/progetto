@@ -116,7 +116,7 @@ function Dashboard() {
           </CardHeader>
           <CardContent>
             <div className="text-3xl font-bold text-emerald-600" data-testid="gross-margin-value">
-              ${kpis?.lastMonthGrossMargin || 0}
+              {format.number(kpis?.lastMonthGrossMargin || 0)}
             </div>
             <p className="text-xs text-gray-500 mt-1">Previous month</p>
           </CardContent>
@@ -131,7 +131,7 @@ function Dashboard() {
           </CardHeader>
           <CardContent>
             <div className="text-4xl font-bold text-emerald-600" data-testid="total-revenue">
-              ${kpis?.totalRevenue || 0}
+              {format.number(kpis?.totalRevenue || 0)}
             </div>
             <p className="text-sm text-gray-500 mt-2">From all sales</p>
           </CardContent>
@@ -143,7 +143,7 @@ function Dashboard() {
           </CardHeader>
           <CardContent>
             <div className="text-4xl font-bold text-orange-600" data-testid="total-cogs">
-              ${kpis?.totalCogs || 0}
+              {format.number(kpis?.totalCogs || 0)}
             </div>
             <p className="text-sm text-gray-500 mt-2">Cost of goods sold</p>
           </CardContent>

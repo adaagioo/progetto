@@ -60,7 +60,11 @@ function Dashboard() {
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
         {/* Food Cost % */}
-        <Card className="glass-morphism border-0 card-hover" data-testid="food-cost-card">
+        <Card 
+          className="glass-morphism border-0 card-hover cursor-pointer" 
+          data-testid="food-cost-card"
+          onClick={() => navigate('/recipes')}
+        >
           <CardHeader className="flex flex-row items-center justify-between pb-2">
             <CardTitle className="text-sm font-medium text-gray-600">{t('dashboard.foodCost')}</CardTitle>
             {kpis?.foodCostPct > 35 ? (
@@ -80,7 +84,11 @@ function Dashboard() {
         </Card>
 
         {/* Low Stock Items */}
-        <Card className="glass-morphism border-0 card-hover" data-testid="low-stock-card">
+        <Card 
+          className="glass-morphism border-0 card-hover cursor-pointer" 
+          data-testid="low-stock-card"
+          onClick={() => navigate('/inventory?filter=lowStock')}
+        >
           <CardHeader className="flex flex-row items-center justify-between pb-2">
             <CardTitle className="text-sm font-medium text-gray-600">{t('dashboard.lowStock')}</CardTitle>
             <Package className="h-5 w-5 text-amber-500" />
@@ -94,7 +102,11 @@ function Dashboard() {
         </Card>
 
         {/* Expiring Items */}
-        <Card className="glass-morphism border-0 card-hover" data-testid="expiring-card">
+        <Card 
+          className="glass-morphism border-0 card-hover cursor-pointer" 
+          data-testid="expiring-card"
+          onClick={() => navigate('/inventory?filter=expiring')}
+        >
           <CardHeader className="flex flex-row items-center justify-between pb-2">
             <CardTitle className="text-sm font-medium text-gray-600">{t('dashboard.expiringSoon')}</CardTitle>
             <AlertTriangle className="h-5 w-5 text-orange-500" />
@@ -124,7 +136,11 @@ function Dashboard() {
         </Card>
 
         {/* Gross Margin */}
-        <Card className="glass-morphism border-0 card-hover" data-testid="gross-margin-card">
+        <Card 
+          className="glass-morphism border-0 card-hover cursor-pointer" 
+          data-testid="gross-margin-card"
+          onClick={() => navigate('/profit-loss')}
+        >
           <CardHeader className="flex flex-row items-center justify-between pb-2">
             <CardTitle className="text-sm font-medium text-gray-600">{t('dashboard.lastMonthGM')}</CardTitle>
             <DollarSign className="h-5 w-5 text-emerald-500" />
@@ -138,9 +154,91 @@ function Dashboard() {
         </Card>
       </div>
 
+      {/* Inventory Valuation by Category */}
+      {valuationSummary && (
+        <div>
+          <h2 className="text-xl font-bold mb-4">{t('dashboard.inventoryValuation') || 'Inventory Valuation'}</h2>
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+            <Card 
+              className="glass-morphism border-0 card-hover cursor-pointer" 
+              onClick={() => navigate('/inventory?category=food')}
+            >
+              <CardHeader className="pb-2">
+                <CardTitle className="text-sm font-medium text-gray-600">
+                  {t('inventory.valuation.food') || 'Food Inventory'}
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-bold text-green-600">
+                  {formatMinor(valuationSummary.categories.food)}
+                </div>
+                <p className="text-xs text-gray-500 mt-1">{t('dashboard.clickToView') || 'Click to view'}</p>
+              </CardContent>
+            </Card>
+
+            <Card 
+              className="glass-morphism border-0 card-hover cursor-pointer"
+              onClick={() => navigate('/inventory?category=beverage')}
+            >
+              <CardHeader className="pb-2">
+                <CardTitle className="text-sm font-medium text-gray-600">
+                  {t('inventory.valuation.beverage') || 'Beverage Inventory'}
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-bold text-blue-600">
+                  {formatMinor(valuationSummary.categories.beverage)}
+                </div>
+                <p className="text-xs text-gray-500 mt-1">{t('dashboard.clickToView') || 'Click to view'}</p>
+              </CardContent>
+            </Card>
+
+            <Card 
+              className="glass-morphism border-0 card-hover cursor-pointer"
+              onClick={() => navigate('/inventory?category=nofood')}
+            >
+              <CardHeader className="pb-2">
+                <CardTitle className="text-sm font-medium text-gray-600">
+                  {t('inventory.valuation.nofood') || 'Non-Food Inventory'}
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-bold text-gray-600">
+                  {formatMinor(valuationSummary.categories.nofood)}
+                </div>
+                <p className="text-xs text-gray-500 mt-1">{t('dashboard.clickToView') || 'Click to view'}</p>
+              </CardContent>
+            </Card>
+
+            <Card 
+              className="glass-morphism border-0 bg-gradient-to-br from-emerald-500 to-teal-600 text-white cursor-pointer"
+              onClick={() => navigate('/inventory')}
+            >
+              <CardHeader className="pb-2">
+                <CardTitle className="text-sm font-medium text-white/90">
+                  {t('inventory.valuation.total') || 'Total Inventory Value'}
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-bold">
+                  {formatMinor(valuationSummary.total)}
+                </div>
+                <p className="text-xs text-white/80 mt-1">
+                  {valuationSummary.itemCount} {t('inventory.valuation.items') || 'items'}
+                </p>
+              </CardContent>
+            </Card>
+          </div>
+        </div>
+      )}
+
       {/* Revenue & COGS Summary */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <Card className="glass-morphism border-0" data-testid="revenue-card">
+        <Card 
+          className="glass-morphism border-0 cursor-pointer" 
+          data-testid="revenue-card"
+          onClick={() => navigate('/sales')}
+        >
           <CardHeader>
             <CardTitle className="text-lg">{t('dashboard.totalRevenue')}</CardTitle>
           </CardHeader>
@@ -152,7 +250,11 @@ function Dashboard() {
           </CardContent>
         </Card>
 
-        <Card className="glass-morphism border-0" data-testid="cogs-card">
+        <Card 
+          className="glass-morphism border-0 cursor-pointer" 
+          data-testid="cogs-card"
+          onClick={() => navigate('/receiving')}
+        >
           <CardHeader>
             <CardTitle className="text-lg">{t('dashboard.totalCogs')}</CardTitle>
           </CardHeader>

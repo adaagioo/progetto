@@ -108,8 +108,8 @@ function Settings() {
 
   if (loading) {
     return (
-      <div className=\"flex items-center justify-center h-96\">
-        <div className=\"text-lg text-emerald-600\">{t('common.loading')}</div>
+      <div className="flex items-center justify-center h-96">
+        <div className="text-lg text-emerald-600">{t('common.loading')}</div>
       </div>
     );
   }

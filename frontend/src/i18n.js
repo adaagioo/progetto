@@ -11,6 +11,7 @@ const resources = {
       'nav.recipes': 'Recipes',
       'nav.ingredients': 'Ingredients',
       'nav.suppliers': 'Suppliers',
+      'nav.receiving': 'Receiving',
       'nav.inventory': 'Inventory',
       'nav.sales': 'Sales',
       'nav.wastage': 'Wastage',

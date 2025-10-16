@@ -2,11 +2,13 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { API } from '../App';
 import { useCurrency } from '../contexts/CurrencyContext';
+import { useTranslation } from 'react-i18next';
 import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/card';
 import { TrendingUp, TrendingDown, AlertTriangle, DollarSign, Package, AlertCircle } from 'lucide-react';
 import { toast } from 'sonner';
 
 function Dashboard() {
+  const { t } = useTranslation();
   const { format } = useCurrency();
   const [kpis, setKpis] = useState(null);
   const [loading, setLoading] = useState(true);

@@ -295,6 +295,25 @@ async def check_subscription(user: dict):
 
 # ============ AUTH ROUTES ============
 
+@api_router.get("/health")
+async def health_check():
+    """Health check endpoint"""
+    try:
+        # Check DB connection
+        await db.command("ping")
+        return {
+            "status": "healthy",
+            "timestamp": datetime.now(timezone.utc).isoformat(),
+            "database": "connected",
+            "currency": DEFAULT_CURRENCY,
+            "locale": DEFAULT_LOCALE
+        }
+    except Exception as e:
+        return {
+            "status": "unhealthy",
+            "error": str(e)
+        }
+
 @api_router.post("/auth/register", response_model=TokenResponse)
 async def register(user_data: UserRegister):
     # Check if user exists

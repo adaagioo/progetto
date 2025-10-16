@@ -56,19 +56,31 @@ function Ingredients() {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
+    const payload = {
+      ...formData,
+      packSize: parseFloat(formData.packSize),
+      packCost: parseFloat(formData.packCost),
+      minStockQty: parseFloat(formData.minStockQty),
+      wastePct: parseFloat(formData.wastePct),
+      shelfLife: formData.shelfLife.value ? {
+        value: parseInt(formData.shelfLife.value),
+        unit: formData.shelfLife.unit
+      } : null
+    };
+
     try {
       if (editingId) {
-        await axios.put(`${API}/ingredients/${editingId}`, formData);
-        toast.success('Ingredient updated successfully');
+        await axios.put(`${API}/ingredients/${editingId}`, payload);
+        toast.success(t('ingredients.success.updated') || 'Ingredient updated successfully');
       } else {
-        await axios.post(`${API}/ingredients`, formData);
-        toast.success('Ingredient created successfully');
+        await axios.post(`${API}/ingredients`, payload);
+        toast.success(t('ingredients.success.created') || 'Ingredient created successfully');
       }
       fetchIngredients();
       resetForm();
       setIsDialogOpen(false);
     } catch (error) {
-      toast.error(error.response?.data?.detail || 'Failed to save ingredient');
+      toast.error(error.response?.data?.detail || t('ingredients.error.save') || 'Failed to save ingredient');
     }
   };
 

@@ -346,11 +346,11 @@ function Recipes() {
                 </div>
                 <div className="flex justify-between items-center">
                   <span className="text-gray-600">Price:</span>
-                  <span className="text-lg font-bold text-emerald-600">${recipe.price}</span>
+                  <span className="text-lg font-bold text-emerald-600">{format.number(recipe.price)}</span>
                 </div>
                 <div className="flex justify-between items-center">
                   <span className="text-gray-600">Actual Cost:</span>
-                  <span className="font-semibold">${actualCost.toFixed(2)}</span>
+                  <span className="font-semibold">{format.number(actualCost)}</span>
                 </div>
                 <div className="pt-2 border-t">
                   <div className="flex justify-between items-center mb-1">

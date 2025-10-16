@@ -15,7 +15,7 @@ from typing import Dict, Any, Optional
 # Configuration
 BACKEND_URL = "https://ristobrain.preview.emergentagent.com/api"
 TEST_CREDENTIALS = {
-    "admin": {"email": "admin@test.com", "password": "password123"},
+    "admin": {"email": "testadmin@test.com", "password": "password123"},
     "restaurant": {"email": "ristorante1", "password": "password123"}
 }
 

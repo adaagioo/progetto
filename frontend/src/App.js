@@ -12,6 +12,7 @@ import Wastage from './pages/Wastage';
 import ProfitLoss from './pages/ProfitLoss';
 import Ingredients from './pages/Ingredients';
 import Settings from './pages/Settings';
+import Suppliers from './pages/Suppliers';
 import ForgotPassword from './pages/ForgotPassword';
 import ResetPassword from './pages/ResetPassword';
 import Layout from './components/Layout';

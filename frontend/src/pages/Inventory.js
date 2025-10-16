@@ -179,21 +179,92 @@ function Inventory() {
       <div className="flex justify-between items-center">
         <div>
           <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold gradient-text mb-2">
-            Inventory
+            {t('inventory.title') || 'Inventory'}
           </h1>
           <p className="text-base text-gray-600">{t('inventory.subtitle')}</p>
         </div>
 
-        <Dialog open={isDialogOpen} onOpenChange={(open) => {
-          setIsDialogOpen(open);
-          if (!open) resetForm();
-        }}>
-          <DialogTrigger asChild>
-            <Button className="btn-primary text-white" data-testid="add-inventory-button">
-              <Plus className="w-4 h-4 mr-2" />
-              Add Movement
-            </Button>
-          </DialogTrigger>
+        <div className="flex gap-2">
+          {user?.role === 'admin' && (
+            <Dialog open={isAdjustmentDialogOpen} onOpenChange={(open) => {
+              setIsAdjustmentDialogOpen(open);
+              if (!open) resetAdjustmentForm();
+            }}>
+              <DialogTrigger asChild>
+                <Button variant="outline">
+                  <TrendingUp className="w-4 h-4 mr-2" />
+                  {t('inventory.adjust') || 'Adjust'}
+                </Button>
+              </DialogTrigger>
+              <DialogContent className="max-w-md">
+                <DialogHeader>
+                  <DialogTitle>{t('inventory.adjustmentTitle') || 'Manual Adjustment'}</DialogTitle>
+                </DialogHeader>
+                <form onSubmit={handleAdjustmentSubmit} className="space-y-4">
+                  <div>
+                    <Label htmlFor="adjustIngredient">{t('inventory.form.ingredient') || 'Ingredient'} *</Label>
+                    <Select
+                      value={adjustmentFormData.ingredientId}
+                      onValueChange={(value) => setAdjustmentFormData({ ...adjustmentFormData, ingredientId: value })}
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder={t('inventory.form.selectIngredient') || 'Select ingredient'} />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {ingredients.map(ing => (
+                          <SelectItem key={ing.id} value={ing.id}>{ing.name}</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div>
+                    <Label htmlFor="qtyAdjustment">{t('inventory.form.qtyAdjustment') || 'Quantity Adjustment'} *</Label>
+                    <Input
+                      id="qtyAdjustment"
+                      type="number"
+                      step="0.01"
+                      value={adjustmentFormData.qtyAdjustment}
+                      onChange={(e) => setAdjustmentFormData({ ...adjustmentFormData, qtyAdjustment: e.target.value })}
+                      placeholder={t('inventory.form.adjustmentPlaceholder') || 'Positive or negative'}
+                      required
+                    />
+                    <p className="text-xs text-muted-foreground mt-1">
+                      {t('inventory.form.adjustmentHint') || 'Use negative values to reduce stock'}
+                    </p>
+                  </div>
+                  <div>
+                    <Label htmlFor="adjustReason">{t('inventory.form.reason') || 'Reason'} *</Label>
+                    <textarea
+                      id="adjustReason"
+                      className="flex min-h-[80px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                      value={adjustmentFormData.reason}
+                      onChange={(e) => setAdjustmentFormData({ ...adjustmentFormData, reason: e.target.value })}
+                      required
+                    />
+                  </div>
+                  <div className="flex justify-end gap-2">
+                    <Button type="button" variant="outline" onClick={() => setIsAdjustmentDialogOpen(false)}>
+                      {t('common.cancel') || 'Cancel'}
+                    </Button>
+                    <Button type="submit">
+                      {t('common.create') || 'Create'}
+                    </Button>
+                  </div>
+                </form>
+              </DialogContent>
+            </Dialog>
+          )}
+
+          <Dialog open={isDialogOpen} onOpenChange={(open) => {
+            setIsDialogOpen(open);
+            if (!open) resetForm();
+          }}>
+            <DialogTrigger asChild>
+              <Button className="btn-primary text-white" data-testid="add-inventory-button">
+                <Plus className="w-4 h-4 mr-2" />
+                {t('inventory.add') || 'Add Movement'}
+              </Button>
+            </DialogTrigger>
           <DialogContent className="max-w-md max-h-[90vh] overflow-y-auto" data-testid="inventory-dialog">
             <DialogHeader>
               <DialogTitle>New Inventory Movement</DialogTitle>

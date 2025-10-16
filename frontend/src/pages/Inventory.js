@@ -125,6 +125,34 @@ function Inventory() {
     });
   };
 
+  const handleAdjustmentSubmit = async (e) => {
+    e.preventDefault();
+
+    try {
+      await axios.post(`${API}/inventory/adjustments`, {
+        ingredientId: adjustmentFormData.ingredientId,
+        qtyAdjustment: parseFloat(adjustmentFormData.qtyAdjustment),
+        reason: adjustmentFormData.reason
+      });
+      toast.success(t('inventory.success.adjusted') || 'Adjustment created successfully');
+      fetchInventory();
+      fetchValuation();
+      fetchAdjustments();
+      resetAdjustmentForm();
+      setIsAdjustmentDialogOpen(false);
+    } catch (error) {
+      toast.error(error.response?.data?.detail || t('inventory.error.adjust') || 'Failed to create adjustment');
+    }
+  };
+
+  const resetAdjustmentForm = () => {
+    setAdjustmentFormData({
+      ingredientId: '',
+      qtyAdjustment: '',
+      reason: ''
+    });
+  };
+
   const getIngredientName = (id) => {
     const ing = ingredients.find(i => i.id === id);
     return ing ? ing.name : 'Unknown';

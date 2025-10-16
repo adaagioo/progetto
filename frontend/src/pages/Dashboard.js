@@ -7,6 +7,7 @@ import { TrendingUp, TrendingDown, AlertTriangle, DollarSign, Package, AlertCirc
 import { toast } from 'sonner';
 
 function Dashboard() {
+  const { format } = useCurrency();
   const [kpis, setKpis] = useState(null);
   const [loading, setLoading] = useState(true);
 

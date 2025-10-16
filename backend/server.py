@@ -668,6 +668,7 @@ async def create_ingredient(ingredient_data: IngredientCreate, current_user: dic
         "supplier": ingredient_data.supplier,
         "allergen": ingredient_data.allergen,
         "minStockQty": ingredient_data.minStockQty,
+        "category": ingredient_data.category or "food",
         "createdAt": datetime.now(timezone.utc).isoformat()
     }
     

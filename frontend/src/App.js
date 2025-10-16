@@ -13,6 +13,7 @@ import ProfitLoss from './pages/ProfitLoss';
 import Ingredients from './pages/Ingredients';
 import Settings from './pages/Settings';
 import Suppliers from './pages/Suppliers';
+import Receiving from './pages/Receiving';
 import ForgotPassword from './pages/ForgotPassword';
 import ResetPassword from './pages/ResetPassword';
 import Layout from './components/Layout';

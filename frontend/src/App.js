@@ -85,15 +85,18 @@ function App() {
   }
 
   return (
-    <AuthContext.Provider value={{ user, setUser, login, logout }}>
-      <BrowserRouter>
-        <Toaster position="top-right" />
-        <Routes>
-          <Route path="/login" element={user ? <Navigate to="/" /> : <Login />} />
-          <Route
-            path="/"
-            element={user ? <Layout><Dashboard /></Layout> : <Navigate to="/login" />}
-          />
+    <AuthContext.Provider value={{ user, setUser, restaurant, setRestaurant, login, logout }}>
+      <CurrencyProvider user={user} restaurant={restaurant}>
+        <BrowserRouter>
+          <Toaster position="top-right" />
+          <Routes>
+            <Route path="/login" element={user ? <Navigate to="/" /> : <Login />} />
+            <Route path="/forgot-password" element={user ? <Navigate to="/" /> : <ForgotPassword />} />
+            <Route path="/reset" element={user ? <Navigate to="/" /> : <ResetPassword />} />
+            <Route
+              path="/"
+              element={user ? <Layout><Dashboard /></Layout> : <Navigate to="/login" />}
+            />
           <Route
             path="/recipes"
             element={user ? <Layout><Recipes /></Layout> : <Navigate to="/login" />}

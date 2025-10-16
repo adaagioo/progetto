@@ -1347,6 +1347,348 @@ async def detach_file_from_supplier(
         logger.error(f"File detach error: {str(e)}")
         raise HTTPException(status_code=500, detail="File detach failed")
 
+# ============ RECEIVING (Goods In) ============
+
+@api_router.post("/receiving", response_model=Receiving)
+async def create_receiving(receiving: ReceivingCreate, current_user: dict = Depends(get_current_user)):
+    """Create a new receiving record and update inventory"""
+    await check_subscription(current_user)
+    
+    # Validate supplier exists
+    supplier = await db.suppliers.find_one(
+        {"id": receiving.supplierId, "restaurantId": current_user["restaurantId"]}
+    )
+    if not supplier:
+        raise HTTPException(status_code=404, detail="Supplier not found")
+    
+    # Validate category
+    if receiving.category not in ['food', 'beverage', 'nofood']:
+        raise HTTPException(status_code=400, detail="Invalid category. Must be: food, beverage, or nofood")
+    
+    # Calculate total
+    total = sum(line.qty * line.unitPrice for line in receiving.lines)
+    
+    # Create receiving record
+    receiving_data = {
+        "id": str(uuid.uuid4()),
+        "restaurantId": current_user["restaurantId"],
+        "supplierId": receiving.supplierId,
+        "category": receiving.category,
+        "lines": [line.dict() for line in receiving.lines],
+        "total": total,
+        "files": [],
+        "arrivedAt": receiving.arrivedAt,
+        "notes": receiving.notes,
+        "createdAt": datetime.now(timezone.utc).isoformat(),
+        "updatedAt": None
+    }
+    
+    await db.receiving.insert_one(receiving_data)
+    
+    # Write-through to Inventory (add quantities)
+    for line in receiving.lines:
+        if line.ingredientId:
+            # Check if ingredient exists
+            ingredient = await db.ingredients.find_one(
+                {"id": line.ingredientId, "restaurantId": current_user["restaurantId"]}
+            )
+            
+            if ingredient:
+                # Create inventory record for received goods
+                inventory_record = {
+                    "id": str(uuid.uuid4()),
+                    "restaurantId": current_user["restaurantId"],
+                    "ingredientId": line.ingredientId,
+                    "qty": line.qty,
+                    "unit": line.unit,
+                    "countType": "receiving",
+                    "batchExpiry": line.expiryDate,
+                    "location": f"Receiving from {supplier['name']}",
+                    "receivingId": receiving_data["id"],
+                    "unitCost": line.unitPrice,  # Store unit cost for valuation
+                    "createdAt": datetime.now(timezone.utc).isoformat()
+                }
+                
+                await db.inventory.insert_one(inventory_record)
+    
+    # Log audit
+    await log_audit(
+        db,
+        current_user["restaurantId"],
+        current_user["id"],
+        "create",
+        "receiving",
+        receiving_data["id"],
+        {"supplier": supplier["name"], "category": receiving.category, "total": total}
+    )
+    
+    receiving_data.pop("_id", None)
+    return Receiving(**receiving_data)
+
+@api_router.get("/receiving", response_model=List[Receiving])
+async def get_receiving(current_user: dict = Depends(get_current_user)):
+    """Get all receiving records for the restaurant"""
+    await check_subscription(current_user)
+    
+    receiving_records = await db.receiving.find(
+        {"restaurantId": current_user["restaurantId"]},
+        {"_id": 0}
+    ).sort("arrivedAt", -1).to_list(1000)
+    
+    return [Receiving(**r) for r in receiving_records]
+
+@api_router.get("/receiving/{receiving_id}", response_model=Receiving)
+async def get_receiving_by_id(receiving_id: str, current_user: dict = Depends(get_current_user)):
+    """Get a specific receiving record"""
+    await check_subscription(current_user)
+    
+    receiving = await db.receiving.find_one(
+        {"id": receiving_id, "restaurantId": current_user["restaurantId"]},
+        {"_id": 0}
+    )
+    
+    if not receiving:
+        raise HTTPException(status_code=404, detail="Receiving record not found")
+    
+    return Receiving(**receiving)
+
+@api_router.put("/receiving/{receiving_id}", response_model=Receiving)
+async def update_receiving(
+    receiving_id: str,
+    receiving_update: ReceivingUpdate,
+    current_user: dict = Depends(get_current_user)
+):
+    """Update a receiving record"""
+    await check_subscription(current_user)
+    
+    # Check if receiving exists
+    existing = await db.receiving.find_one(
+        {"id": receiving_id, "restaurantId": current_user["restaurantId"]}
+    )
+    
+    if not existing:
+        raise HTTPException(status_code=404, detail="Receiving record not found")
+    
+    # Build update data
+    update_data = {}
+    
+    if receiving_update.supplierId is not None:
+        # Validate supplier
+        supplier = await db.suppliers.find_one(
+            {"id": receiving_update.supplierId, "restaurantId": current_user["restaurantId"]}
+        )
+        if not supplier:
+            raise HTTPException(status_code=404, detail="Supplier not found")
+        update_data["supplierId"] = receiving_update.supplierId
+    
+    if receiving_update.category is not None:
+        if receiving_update.category not in ['food', 'beverage', 'nofood']:
+            raise HTTPException(status_code=400, detail="Invalid category")
+        update_data["category"] = receiving_update.category
+    
+    if receiving_update.lines is not None:
+        update_data["lines"] = [line.dict() for line in receiving_update.lines]
+        # Recalculate total
+        update_data["total"] = sum(line.qty * line.unitPrice for line in receiving_update.lines)
+    
+    if receiving_update.arrivedAt is not None:
+        update_data["arrivedAt"] = receiving_update.arrivedAt
+    
+    if receiving_update.notes is not None:
+        update_data["notes"] = receiving_update.notes
+    
+    update_data["updatedAt"] = datetime.now(timezone.utc).isoformat()
+    
+    # Update in database
+    await db.receiving.update_one(
+        {"id": receiving_id},
+        {"$set": update_data}
+    )
+    
+    # Log audit
+    await log_audit(
+        db,
+        current_user["restaurantId"],
+        current_user["id"],
+        "update",
+        "receiving",
+        receiving_id,
+        update_data
+    )
+    
+    # Get updated receiving
+    updated_receiving = await db.receiving.find_one(
+        {"id": receiving_id},
+        {"_id": 0}
+    )
+    
+    return Receiving(**updated_receiving)
+
+@api_router.delete("/receiving/{receiving_id}")
+async def delete_receiving(receiving_id: str, current_user: dict = Depends(get_current_user)):
+    """Delete a receiving record"""
+    await check_subscription(current_user)
+    
+    # Check if receiving exists
+    receiving = await db.receiving.find_one(
+        {"id": receiving_id, "restaurantId": current_user["restaurantId"]},
+        {"_id": 0}
+    )
+    
+    if not receiving:
+        raise HTTPException(status_code=404, detail="Receiving record not found")
+    
+    # Delete associated inventory records
+    await db.inventory.delete_many({"receivingId": receiving_id})
+    
+    # Delete associated files
+    storage = get_storage_service()
+    for file_meta in receiving.get("files", []):
+        try:
+            await storage.delete_file(file_meta["path"])
+            await db.files.delete_one({"id": file_meta["id"]})
+        except Exception as e:
+            logger.warning(f"Error deleting file {file_meta['id']}: {str(e)}")
+    
+    # Delete receiving
+    await db.receiving.delete_one({"id": receiving_id})
+    
+    # Log audit
+    await log_audit(
+        db,
+        current_user["restaurantId"],
+        current_user["id"],
+        "delete",
+        "receiving",
+        receiving_id,
+        {"category": receiving["category"], "total": receiving["total"]}
+    )
+    
+    return {"message": "Receiving record deleted"}
+
+@api_router.post("/receiving/{receiving_id}/files")
+async def attach_file_to_receiving(
+    receiving_id: str,
+    file: UploadFile = File(...),
+    current_user: dict = Depends(get_current_user)
+):
+    """Attach a file to a receiving record"""
+    await check_subscription(current_user)
+    
+    # Check if receiving exists
+    receiving = await db.receiving.find_one(
+        {"id": receiving_id, "restaurantId": current_user["restaurantId"]}
+    )
+    
+    if not receiving:
+        raise HTTPException(status_code=404, detail="Receiving record not found")
+    
+    try:
+        # Upload file
+        file_data = await file.read()
+        storage = get_storage_service()
+        file_metadata = await storage.save_file(file_data, file.filename, f"receiving/{receiving_id}")
+        
+        # Save file metadata to database
+        file_record = {
+            "id": str(uuid.uuid4()),
+            "restaurantId": current_user["restaurantId"],
+            "filename": file_metadata["filename"],
+            "path": file_metadata["path"],
+            "size": file_metadata["size"],
+            "mimeType": file_metadata["mime_type"],
+            "hash": file_metadata["hash"],
+            "uploadedBy": current_user["id"],
+            "uploadedAt": datetime.now(timezone.utc).isoformat()
+        }
+        
+        await db.files.insert_one(file_record)
+        
+        # Add file reference to receiving
+        file_record.pop("_id", None)
+        await db.receiving.update_one(
+            {"id": receiving_id},
+            {"$push": {"files": file_record}}
+        )
+        
+        # Log audit
+        await log_audit(
+            db,
+            current_user["restaurantId"],
+            current_user["id"],
+            "attach_file",
+            "receiving",
+            receiving_id,
+            {"filename": file.filename}
+        )
+        
+        return file_record
+    
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
+    except Exception as e:
+        logger.error(f"File attachment error: {str(e)}")
+        raise HTTPException(status_code=500, detail="File attachment failed")
+
+@api_router.delete("/receiving/{receiving_id}/files/{file_id}")
+async def detach_file_from_receiving(
+    receiving_id: str,
+    file_id: str,
+    current_user: dict = Depends(get_current_user)
+):
+    """Detach a file from a receiving record"""
+    await check_subscription(current_user)
+    
+    # Check if receiving exists
+    receiving = await db.receiving.find_one(
+        {"id": receiving_id, "restaurantId": current_user["restaurantId"]},
+        {"_id": 0}
+    )
+    
+    if not receiving:
+        raise HTTPException(status_code=404, detail="Receiving record not found")
+    
+    # Find the file in receiving's files
+    file_to_remove = None
+    for f in receiving.get("files", []):
+        if f["id"] == file_id:
+            file_to_remove = f
+            break
+    
+    if not file_to_remove:
+        raise HTTPException(status_code=404, detail="File not found in receiving record")
+    
+    try:
+        # Delete from storage
+        storage = get_storage_service()
+        await storage.delete_file(file_to_remove["path"])
+        
+        # Delete from files collection
+        await db.files.delete_one({"id": file_id})
+        
+        # Remove from receiving's files array
+        await db.receiving.update_one(
+            {"id": receiving_id},
+            {"$pull": {"files": {"id": file_id}}}
+        )
+        
+        # Log audit
+        await log_audit(
+            db,
+            current_user["restaurantId"],
+            current_user["id"],
+            "detach_file",
+            "receiving",
+            receiving_id,
+            {"filename": file_to_remove["filename"]}
+        )
+        
+        return {"message": "File detached"}
+    
+    except Exception as e:
+        logger.error(f"File detach error: {str(e)}")
+        raise HTTPException(status_code=500, detail="File detach failed")
+
 # ============ DASHBOARD KPIs ============
 
 @api_router.get("/dashboard/kpis")

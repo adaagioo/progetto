@@ -60,7 +60,9 @@
   "scripts": {
     "start": "craco start",
     "build": "craco build",
-    "test": "craco test"
+    "test": "craco test",
+    "test:smoke": "playwright test tests/smoke-suppliers.spec.js",
+    "test:smoke:headed": "playwright test tests/smoke-suppliers.spec.js --headed"
   },
   "browserslist": {
     "production": [

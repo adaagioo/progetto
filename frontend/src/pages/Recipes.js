@@ -395,12 +395,12 @@ function Recipes() {
             <div className="space-y-6">
               <div>
                 <h3 className="font-semibold mb-2">{selectedRecipe.name}</h3>
-                <p className="text-sm text-gray-600">Current Price: ${selectedRecipe.price}</p>
+                <p className="text-sm text-gray-600">Current Price: {format.number(selectedRecipe.price)}</p>
               </div>
 
               <div className="space-y-4">
                 <div>
-                  <Label>Adjust Price: ${whatIfPrice}</Label>
+                  <Label>Adjust Price: {format.number(whatIfPrice)}</Label>
                   <Slider
                     value={[whatIfPrice]}
                     onValueChange={(value) => setWhatIfPrice(value[0])}

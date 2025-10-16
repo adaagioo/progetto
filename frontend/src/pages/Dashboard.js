@@ -61,29 +61,29 @@ function Dashboard() {
               {kpis?.foodCostPct || 0}%
             </div>
             <p className="text-xs text-gray-500 mt-1">
-              {kpis?.foodCostPct > 35 ? 'Above target' : 'Within target'}
+              {kpis?.foodCostPct > 35 ? '{t('dashboard.aboveTarget')}' : '{t('dashboard.withinTarget')}'}
             </p>
           </CardContent>
         </Card>
 
-        {/* Low Stock Items */}
+        {/* {t('dashboard.lowStock')} Items */}
         <Card className="glass-morphism border-0 card-hover" data-testid="low-stock-card">
           <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium text-gray-600">Low Stock</CardTitle>
+            <CardTitle className="text-sm font-medium text-gray-600">{t('dashboard.lowStock')}</CardTitle>
             <Package className="h-5 w-5 text-amber-500" />
           </CardHeader>
           <CardContent>
             <div className="text-3xl font-bold text-amber-600" data-testid="low-stock-value">
               {kpis?.lowStockCount || 0}
             </div>
-            <p className="text-xs text-gray-500 mt-1">Items need reordering</p>
+            <p className="text-xs text-gray-500 mt-1">{t('dashboard.needReorder')}</p>
           </CardContent>
         </Card>
 
         {/* Expiring Items */}
         <Card className="glass-morphism border-0 card-hover" data-testid="expiring-card">
           <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium text-gray-600">Expiring Soon</CardTitle>
+            <CardTitle className="text-sm font-medium text-gray-600">{t('dashboard.expiringSoon')}</CardTitle>
             <AlertTriangle className="h-5 w-5 text-orange-500" />
           </CardHeader>
           <CardContent>
@@ -113,14 +113,14 @@ function Dashboard() {
         {/* Gross Margin */}
         <Card className="glass-morphism border-0 card-hover" data-testid="gross-margin-card">
           <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium text-gray-600">Last Month GM</CardTitle>
+            <CardTitle className="text-sm font-medium text-gray-600">{t('dashboard.lastMonthGM')}</CardTitle>
             <DollarSign className="h-5 w-5 text-emerald-500" />
           </CardHeader>
           <CardContent>
             <div className="text-3xl font-bold text-emerald-600" data-testid="gross-margin-value">
               {format.number(kpis?.lastMonthGrossMargin || 0)}
             </div>
-            <p className="text-xs text-gray-500 mt-1">Previous month</p>
+            <p className="text-xs text-gray-500 mt-1">{t('dashboard.previousMonth')}</p>
           </CardContent>
         </Card>
       </div>
@@ -129,35 +129,35 @@ function Dashboard() {
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <Card className="glass-morphism border-0" data-testid="revenue-card">
           <CardHeader>
-            <CardTitle className="text-lg">Total Revenue</CardTitle>
+            <CardTitle className="text-lg">{t('dashboard.totalRevenue')}</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="text-4xl font-bold text-emerald-600" data-testid="total-revenue">
               {format.number(kpis?.totalRevenue || 0)}
             </div>
-            <p className="text-sm text-gray-500 mt-2">From all sales</p>
+            <p className="text-sm text-gray-500 mt-2">{t('dashboard.fromAllSales')}</p>
           </CardContent>
         </Card>
 
         <Card className="glass-morphism border-0" data-testid="cogs-card">
           <CardHeader>
-            <CardTitle className="text-lg">Total COGS</CardTitle>
+            <CardTitle className="text-lg">{t('dashboard.totalCogs')}</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="text-4xl font-bold text-orange-600" data-testid="total-cogs">
               {format.number(kpis?.totalCogs || 0)}
             </div>
-            <p className="text-sm text-gray-500 mt-2">Cost of goods sold</p>
+            <p className="text-sm text-gray-500 mt-2">{t('dashboard.costOfGoods')}</p>
           </CardContent>
         </Card>
       </div>
 
-      {/* Quick Tips */}
+      {/* {t('dashboard.tips')} */}
       <Card className="glass-morphism border-0" data-testid="tips-card">
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <AlertCircle className="h-5 w-5 text-emerald-500" />
-            Quick Tips
+            {t('dashboard.tips')}
           </CardTitle>
         </CardHeader>
         <CardContent>

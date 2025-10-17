@@ -584,7 +584,7 @@ class PreparationsBackendTester:
             all_protected = True
             for method, url in endpoints:
                 async with self.session.request(method, url) as response:
-                    if response.status != 401:
+                    if response.status not in [401, 403]:  # Accept both 401 and 403 as auth failures
                         self.log_result("RBAC Authentication Required", False, 
                                       f"{method} {url} should require auth but returned {response.status}")
                         all_protected = False

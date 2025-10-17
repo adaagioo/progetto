@@ -41,7 +41,7 @@ async def seed_ingredients():
             "unitCost": 250,
             "wastePct": 5.0,
             "effectiveUnitCost": 262,  # 2.50 * 1.05 = 2.625 EUR
-            "allergens": ["gluten"],
+            "allergens": ["Cereals containing gluten"],
             "category": "food",
             "minStockQty": 5,
             "shelfLife": {"value": 6, "unit": "months"},

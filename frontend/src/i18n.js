@@ -347,6 +347,11 @@ const resources = {
       'common.days': 'Days',
       'common.weeks': 'Weeks',
       'common.months': 'Months',
+      'common.date': 'Date',
+      'common.qty': 'Quantity',
+      'common.notes': 'Notes',
+      'common.total': 'Total',
+      'common.unknown': 'Unknown',
       
       // Settings
       'settings.title': 'Settings',

@@ -513,34 +513,76 @@ test_plan:
 agent_communication:
   - agent: "main"
     message: |
-      Sprint 3B: Preparations Frontend - COMPLETED
+      Sprint 3A: Enhanced Recipe Editor - COMPLETED ✅
       
-      BACKEND (Already Implemented):
-      ✅ Preparation models (PreparationItem, PreparationCreate, PreparationUpdate, Preparation)
-      ✅ CRUD endpoints (POST/GET/PUT/DELETE /api/preparations)
-      ✅ Cost computation with waste% (compute_preparation_cost_and_allergens helper)
-      ✅ Allergen propagation from ingredients
-      ✅ Tenant isolation and authentication
+      BACKEND (Pre-existing & Verified):
+      ✅ Recipe models support type='ingredient' OR 'preparation' in RecipeItem
+      ✅ compute_recipe_allergens() aggregates allergens from all items
+      ✅ CRUD endpoints ready (POST/GET/PUT/DELETE /api/recipes)
       
       FRONTEND (Completed This Session):
-      ✅ Enhanced Preparations.js with RBAC enforcement
-        - Admin/Manager: Can create, edit, delete preparations
-        - Staff/Waiter: Read-only access (Add/Edit/Delete buttons hidden)
-      ✅ Full CRUD UI with ingredient selection
-      ✅ Displays computed cost (with waste%), allergens, shelf life
-      ✅ Global currency formatting (formatMinor)
-      ✅ Complete i18n translations (EN/IT)
-      ✅ Auto-unit selection from ingredient
-      ✅ Fixed syntax error in Recipes.js (line 117)
+      ✅ Complete rewrite of Recipes.js with all requirements met
+      
+      🎯 KEY FEATURES IMPLEMENTED:
+      
+      1. **Dual Item Support**:
+         - Type selector for each item (ingredient/preparation)
+         - Dynamic dropdowns based on type
+         - Auto-unit selection from selected item
+      
+      2. **Fully Editable Items**:
+         - Edit items in-place (4 fields: type, itemId, qty, unit)
+         - No delete/recreate pattern
+         - Add new rows with button or Ctrl+Enter
+      
+      3. **Keyboard UX** (EXACT SPECIFICATION):
+         - ✅ Tab/Shift+Tab: Field navigation (browser default)
+         - ✅ Enter: Move to next field (NOT submit)
+         - ✅ Ctrl/Cmd + Enter: Add new item row
+         - ✅ Esc: Cancel in-row edit
+         - ✅ Ctrl/Cmd + S: Trigger save + toast
+         - Focus management with refs
+      
+      4. **Live Cost Breakdown**:
+         - Per-item cost (uses effectiveUnitCost with waste%)
+         - Total cost across all items
+         - Per-portion cost (total / portions)
+         - Food cost % calculation
+         - Updates in real-time
+      
+      5. **Allergen Display**:
+         - Union of all allergens from items
+         - Red badges with AlertCircle icon
+         - Shown during editing and in recipe cards
+      
+      6. **RBAC Enforcement**:
+         - Admin/Manager: Full edit access
+         - Staff: Read-only view
+         - Buttons conditionally rendered
+      
+      7. **i18n & Currency**:
+         - Complete EN/IT translations
+         - formatMinor() for all monetary values
+         - All new labels localized
+      
+      8. **Additional Features**:
+         - Shelf life support
+         - Category field
+         - Target food cost %
+         - Empty state messages
+         - Type indicators [I]/[P] in recipe cards
+      
       ✅ Frontend compiled successfully
+      ✅ All i18n translations added
+      ✅ Test ingredients seeded (6 ingredients with waste% and allergens)
+      ✅ Test preparations available for testing
       
       PENDING:
-      ⏳ Frontend E2E testing (create prep, verify RBAC with admin/staff)
-      ⏳ Integration with Recipe Editor (Sprint 3A)
+      ⏳ Backend testing for recipe endpoints
+      ⏳ Frontend E2E testing (keyboard UX, live cost, allergen display)
+      ⏳ RBAC verification with all user roles
       
-      NEXT STEPS:
-      1. Frontend testing with admin@test.com and staff@test.com
-      2. Proceed to Sprint 3A: Enhanced Recipe Editor
+      READY FOR: Comprehensive testing via testing agents
   
   - agent: "testing"
     message: |

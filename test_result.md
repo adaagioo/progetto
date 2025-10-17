@@ -103,10 +103,11 @@
 #====================================================================================================
 
 user_problem_statement: |
-  Phase 1: Suppliers + Receiving + Inventory Valuation
-  Build suppliers module with CRUD operations and file attachments (local storage).
-  Files must be validated by MIME type and magic bytes, with SHA256 hashing.
-  All operations must have audit logging and localization (EN/IT).
+  Phase 2: Enhanced Ingredients & Preparations
+  Sprint 3B: Preparations Frontend - Build CRUD UI for preparations (sub-recipes) that use raw ingredients only.
+  Features: cost computation (including waste%), allergen propagation, shelf life management.
+  RBAC: Admin/Manager can edit, Staff read-only.
+  Full i18n (EN/IT) and global currency/locale formatting.
 
 backend:
   - task: "Storage Service Infrastructure"

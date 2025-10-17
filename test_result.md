@@ -411,3 +411,42 @@ agent_communication:
       TOTAL: 23/23 tests passed (100% success rate)
       
       All backend endpoints are production-ready. No critical issues found.
+  
+  - agent: "testing"
+    message: |
+      PREPARATIONS MODULE BACKEND TESTING COMPLETE ✅
+      
+      🎯 SPRINT 3B BACKEND TESTING RESULTS:
+      
+      📊 COMPREHENSIVE TESTING COMPLETED (20/20 tests passed - 100% success rate):
+      
+      🔧 PREPARATIONS CRUD OPERATIONS:
+      ✅ POST /api/preparations - Creates preparations with multi-ingredient support
+      ✅ GET /api/preparations - Lists all preparations with tenant isolation
+      ✅ GET /api/preparations/{id} - Retrieves specific preparation
+      ✅ PUT /api/preparations/{id} - Updates with automatic cost/allergen recomputation
+      ✅ DELETE /api/preparations/{id} - Deletes preparations successfully
+      ✅ Proper validation and error handling (404, 422 status codes)
+      
+      💰 COST COMPUTATION WITH WASTE% VERIFICATION:
+      ✅ Formula verified: effectiveUnitCost = unitCost * (1 + wastePct/100)
+      ✅ Total cost = sum(effectiveUnitCost * qty) for all ingredients
+      ✅ Realistic test data: flour (5% waste), tomatoes (15% waste), mozzarella (8% waste)
+      ✅ Example calculation: Pizza base = 8.353 EUR (flour 2.625 + tomatoes 1.84 + mozzarella 3.888)
+      ✅ Cost automatically recomputed on ingredient changes
+      
+      🚨 ALLERGEN PROPAGATION VERIFICATION:
+      ✅ Allergens are union of all ingredient allergens
+      ✅ Allergens sorted alphabetically for consistency
+      ✅ Automatic recomputation when ingredients change
+      ✅ Tested with EU-14 allergens: gluten, dairy, nuts
+      
+      🔐 SECURITY & RBAC VERIFICATION:
+      ✅ Authentication required for all endpoints (proper 401/403 responses)
+      ✅ Tenant isolation enforced (restaurant-scoped data only)
+      ✅ Admin, Manager, Staff roles all have access (RBAC UI-only as specified)
+      ✅ Test credentials working: admin@test.com, manager@test.com, staff@test.com
+      
+      🎯 BACKEND PREPARATIONS MODULE IS PRODUCTION-READY
+      
+      NEXT: Frontend UI testing and E2E flow verification needed.

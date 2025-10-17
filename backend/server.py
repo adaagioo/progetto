@@ -1925,7 +1925,7 @@ async def create_sales(sales_data: SalesCreate, current_user: dict = Depends(get
         current_user["restaurantId"],
         "sales",
         "create",
-        current_user["userId"],
+        current_user["id"],
         {"salesId": sales_id, "date": sales_data.date, "linesCount": len(sales_data.lines)}
     )
     
@@ -2037,7 +2037,7 @@ async def create_wastage(wastage_data: WastageCreate, current_user: dict = Depen
         current_user["restaurantId"],
         "wastage",
         "create",
-        current_user["userId"],
+        current_user["id"],
         {"wastageId": wastage_id, "type": wastage_data.type, "itemId": wastage_data.itemId, "qty": wastage_data.qty}
     )
     

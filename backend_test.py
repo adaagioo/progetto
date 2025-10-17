@@ -13,7 +13,7 @@ from pathlib import Path
 from typing import Dict, Any, Optional
 
 # Configuration
-BACKEND_URL = "https://ristobrain.preview.emergentagent.com/api"
+BACKEND_URL = "https://kitchen-finance.preview.emergentagent.com/api"
 TEST_CREDENTIALS = {
     "admin": {"email": "testadmin@test.com", "password": "password123"},
     "restaurant": {"email": "ristorante1", "password": "password123"}

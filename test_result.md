@@ -298,30 +298,36 @@ test_plan:
 agent_communication:
   - agent: "main"
     message: |
-      Completed Step 1 of Phase 1: Suppliers Module
+      Sprint 3B: Preparations Frontend - COMPLETED
       
-      BACKEND (Completed):
-      ✅ Storage service infrastructure with local driver (pluggable for S3/GCS later)
-      ✅ MIME type validation + magic bytes detection + SHA256 hashing
-      ✅ File upload/download/delete endpoints with auth + tenant checks
-      ✅ Audit logging utility
-      ✅ Suppliers CRUD endpoints (create, read, update, delete)
-      ✅ Supplier file attachment/detachment endpoints
-      ✅ Backend is running successfully
+      BACKEND (Already Implemented):
+      ✅ Preparation models (PreparationItem, PreparationCreate, PreparationUpdate, Preparation)
+      ✅ CRUD endpoints (POST/GET/PUT/DELETE /api/preparations)
+      ✅ Cost computation with waste% (compute_preparation_cost_and_allergens helper)
+      ✅ Allergen propagation from ingredients
+      ✅ Tenant isolation and authentication
       
-      FRONTEND (Completed):
-      ✅ Suppliers page with CRUD UI
-      ✅ File upload/download/delete UI components
-      ✅ i18n translations (EN/IT) for all supplier strings
-      ✅ Navigation link added with Truck icon
-      ✅ Routing configured in App.js
+      FRONTEND (Completed This Session):
+      ✅ Enhanced Preparations.js with RBAC enforcement
+        - Admin/Manager: Can create, edit, delete preparations
+        - Staff/Waiter: Read-only access (Add/Edit/Delete buttons hidden)
+      ✅ Full CRUD UI with ingredient selection
+      ✅ Displays computed cost (with waste%), allergens, shelf life
+      ✅ Global currency formatting (formatMinor)
+      ✅ Complete i18n translations (EN/IT)
+      ✅ Auto-unit selection from ingredient
+      ✅ Fixed syntax error in Recipes.js (line 117)
+      ✅ Frontend compiled successfully
       
       PENDING:
-      ⏳ Backend testing via curl or testing agent
-      ⏳ Frontend verification - suppliers link not appearing in initial screenshot test
-      ⏳ E2E testing of file upload flow
+      ⏳ Backend testing (endpoints, cost computation, allergen propagation)
+      ⏳ Frontend E2E testing (create prep, verify RBAC with admin/staff)
+      ⏳ Integration with Recipe Editor (Sprint 3A)
       
-      NEXT: Backend testing agent should test all new endpoints with test credentials (admin@test.com / password123)
+      NEXT STEPS:
+      1. Backend testing via deep_testing_backend_v2
+      2. Frontend testing with admin@test.com and staff@test.com
+      3. Proceed to Sprint 3A: Enhanced Recipe Editor
   
   - agent: "testing"
     message: |

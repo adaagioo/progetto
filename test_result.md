@@ -109,6 +109,21 @@ user_problem_statement: |
   allergen badges, RBAC (Admin/Manager edit, Staff read-only), full i18n (EN/IT).
 
 backend:
+  - task: "Enhanced Recipe Models and Endpoints"
+    implemented: true
+    working: true
+    file: "backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+      - working: true
+        agent: "main"
+        comment: |
+          Backend Recipe models already support type='ingredient' or 'preparation' in RecipeItem.
+          Endpoints compute allergens from all items (ingredients + preparations) via compute_recipe_allergens().
+          Ready for enhanced frontend implementation.
+
   - task: "Preparation Models and CRUD Endpoints"
     implemented: true
     working: true

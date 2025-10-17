@@ -221,7 +221,9 @@ class Inventory(BaseModel):
     createdAt: str
 
 class RecipeItem(BaseModel):
-    ingredientId: str
+    """Item in a recipe - can be ingredient or preparation"""
+    type: str  # 'ingredient' or 'preparation'
+    itemId: str  # ingredientId or preparationId
     qtyPerPortion: float
     unit: str
 
@@ -232,6 +234,17 @@ class RecipeCreate(BaseModel):
     targetFoodCostPct: float
     price: float
     items: List[RecipeItem]
+    shelfLife: Optional[ShelfLife] = None
+
+class RecipeUpdate(BaseModel):
+    """Update recipe request"""
+    name: Optional[str] = None
+    category: Optional[str] = None
+    portions: Optional[int] = None
+    targetFoodCostPct: Optional[float] = None
+    price: Optional[float] = None
+    items: Optional[List[RecipeItem]] = None
+    shelfLife: Optional[ShelfLife] = None
 
 class Recipe(BaseModel):
     model_config = ConfigDict(extra="ignore")
@@ -243,7 +256,10 @@ class Recipe(BaseModel):
     targetFoodCostPct: float
     price: float
     items: List[RecipeItem]
+    allergens: List[str] = []  # Computed from all items
+    shelfLife: Optional[ShelfLife] = None
     createdAt: str
+    updatedAt: Optional[str] = None
 
 class SaleLine(BaseModel):
     recipeId: str

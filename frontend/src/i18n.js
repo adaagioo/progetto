@@ -263,6 +263,10 @@ const resources = {
       'common.loading': 'Loading...',
       'common.noData': 'No data available',
       'common.actions': 'Actions',
+      'common.value': 'Value',
+      'common.days': 'Days',
+      'common.weeks': 'Weeks',
+      'common.months': 'Months',
       
       // Settings
       'settings.title': 'Settings',

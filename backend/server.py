@@ -1636,16 +1636,47 @@ async def delete_recipe(recipe_id: str, current_user: dict = Depends(get_current
 async def create_sales(sales_data: SalesCreate, current_user: dict = Depends(get_current_user)):
     await check_subscription(current_user)
     
+    # Validate all recipes exist
+    all_deductions = []
+    for line in sales_data.lines:
+        recipe = await db.recipes.find_one(
+            {"id": line.recipeId, "restaurantId": current_user["restaurantId"]}
+        )
+        if not recipe:
+            raise HTTPException(status_code=404, detail=f"Recipe {line.recipeId} not found")
+        
+        # Deduct stock for this recipe sale
+        deductions = await deduct_stock_for_recipe(
+            line.recipeId, line.qty, current_user["restaurantId"], db
+        )
+        all_deductions.extend(deductions)
+    
     sales_id = str(uuid.uuid4())
     sales = {
         "id": sales_id,
         "restaurantId": current_user["restaurantId"],
         "date": sales_data.date,
         "lines": [line.model_dump() for line in sales_data.lines],
-        "createdAt": datetime.now(timezone.utc).isoformat()
+        "revenue": sales_data.revenue,
+        "notes": sales_data.notes,
+        "stockDeductions": all_deductions,  # Audit trail
+        "createdAt": datetime.now(timezone.utc).isoformat(),
+        "updatedAt": None
     }
     
     await db.sales.insert_one(sales)
+    
+    # Log audit
+    await log_audit(
+        db,
+        current_user["restaurantId"],
+        "sales",
+        "create",
+        current_user["userId"],
+        {"salesId": sales_id, "date": sales_data.date, "linesCount": len(sales_data.lines)}
+    )
+    
+    sales.pop("_id", None)
     return Sales(**sales)
 
 @api_router.get("/sales", response_model=List[Sales])

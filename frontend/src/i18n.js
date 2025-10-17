@@ -720,6 +720,11 @@ const resources = {
       'common.days': 'Giorni',
       'common.weeks': 'Settimane',
       'common.months': 'Mesi',
+      'common.date': 'Data',
+      'common.qty': 'Quantità',
+      'common.notes': 'Note',
+      'common.total': 'Totale',
+      'common.unknown': 'Sconosciuto',
       
       // Settings
       'settings.title': 'Impostazioni',

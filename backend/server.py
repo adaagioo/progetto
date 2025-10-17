@@ -1275,6 +1275,27 @@ async def get_inventory_adjustments(current_user: dict = Depends(get_current_use
 async def create_recipe(recipe_data: RecipeCreate, current_user: dict = Depends(get_current_user)):
     await check_subscription(current_user)
     
+    # Validate non-empty items array
+    if not recipe_data.items or len(recipe_data.items) == 0:
+        raise HTTPException(status_code=422, detail="Recipe must have at least one item")
+    
+    # Validate all items exist
+    for item in recipe_data.items:
+        if item.type == 'ingredient':
+            ingredient = await db.ingredients.find_one(
+                {"id": item.itemId, "restaurantId": current_user["restaurantId"]}
+            )
+            if not ingredient:
+                raise HTTPException(status_code=404, detail=f"Ingredient {item.itemId} not found")
+        elif item.type == 'preparation':
+            preparation = await db.preparations.find_one(
+                {"id": item.itemId, "restaurantId": current_user["restaurantId"]}
+            )
+            if not preparation:
+                raise HTTPException(status_code=404, detail=f"Preparation {item.itemId} not found")
+        else:
+            raise HTTPException(status_code=422, detail=f"Invalid item type: {item.type}")
+    
     # Compute allergens from all items
     items_dict = [item.dict() for item in recipe_data.items]
     allergens = await compute_recipe_allergens(items_dict, db)

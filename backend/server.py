@@ -1002,6 +1002,235 @@ async def update_locale(request: UpdateLocaleRequest, current_user: dict = Depen
     
     return {"message": "Locale updated successfully", "locale": locale}
 
+# ============ USER MANAGEMENT ROUTES (ADMIN ONLY) ============
+
+@api_router.get("/users", response_model=List[User])
+async def get_users(current_user: dict = Depends(get_current_user)):
+    """Get all users in the admin's restaurant"""
+    await check_subscription(current_user)
+    
+    # Only admins can manage users
+    if current_user.get("roleKey") != "admin":
+        raise HTTPException(status_code=403, detail="Admin access required")
+    
+    # Get all users in the same restaurant
+    users = await db.users.find(
+        {"restaurantId": current_user["restaurantId"]},
+        {"_id": 0, "password": 0}  # Exclude password field
+    ).to_list(1000)
+    
+    return [User(**user) for user in users]
+
+@api_router.post("/users", response_model=UserWithTempPassword)
+async def create_user(user_data: UserCreateByAdmin, current_user: dict = Depends(get_current_user)):
+    """Create a new user in the admin's restaurant"""
+    await check_subscription(current_user)
+    
+    # Only admins can create users
+    if current_user.get("roleKey") != "admin":
+        raise HTTPException(status_code=403, detail="Admin access required")
+    
+    # Check if user already exists
+    existing = await db.users.find_one({"email": user_data.email})
+    if existing:
+        raise HTTPException(status_code=400, detail="User with this email already exists")
+    
+    # Validate roleKey
+    valid_roles = ["admin", "manager", "waiter"]
+    if user_data.roleKey not in valid_roles:
+        raise HTTPException(status_code=400, detail=f"Invalid role. Must be one of: {', '.join(valid_roles)}")
+    
+    user_id = str(uuid.uuid4())
+    temp_password = None
+    
+    if user_data.sendInvite:
+        # Generate invite token and send email
+        invite_token = secrets.token_urlsafe(32)
+        # TODO: Send invite email (stub for now)
+        # In production, send email with link: /reset-password?token={invite_token}
+        hashed_password = pwd_context.hash(secrets.token_urlsafe(16))  # Random password until they set it
+    else:
+        # Generate temporary password
+        temp_password = secrets.token_urlsafe(12)
+        hashed_password = pwd_context.hash(temp_password)
+    
+    user = {
+        "id": user_id,
+        "email": user_data.email,
+        "displayName": user_data.displayName,
+        "password": hashed_password,
+        "restaurantId": current_user["restaurantId"],
+        "role": user_data.roleKey,  # For backward compatibility
+        "roleKey": user_data.roleKey,
+        "locale": user_data.locale or "en-US",
+        "isDisabled": False,
+        "lastLoginAt": None,
+        "createdAt": datetime.now(timezone.utc).isoformat()
+    }
+    
+    await db.users.insert_one(user)
+    
+    # Log audit
+    await log_audit(
+        db,
+        current_user["restaurantId"],
+        "user",
+        "create",
+        current_user["id"],
+        {"userId": user_id, "email": user_data.email, "roleKey": user_data.roleKey}
+    )
+    
+    user.pop("_id", None)
+    user.pop("password", None)
+    
+    return UserWithTempPassword(user=User(**user), tempPassword=temp_password)
+
+@api_router.put("/users/{user_id}", response_model=User)
+async def update_user(user_id: str, user_data: UserUpdateByAdmin, current_user: dict = Depends(get_current_user)):
+    """Update a user (admin only)"""
+    await check_subscription(current_user)
+    
+    # Only admins can update users
+    if current_user.get("roleKey") != "admin":
+        raise HTTPException(status_code=403, detail="Admin access required")
+    
+    # Check if user exists and is in the same restaurant
+    existing = await db.users.find_one({
+        "id": user_id,
+        "restaurantId": current_user["restaurantId"]
+    })
+    
+    if not existing:
+        raise HTTPException(status_code=404, detail="User not found")
+    
+    # Cannot disable or modify self
+    if user_id == current_user["id"]:
+        if user_data.isDisabled:
+            raise HTTPException(status_code=400, detail="Cannot disable your own account")
+        if user_data.roleKey and user_data.roleKey != current_user.get("roleKey"):
+            raise HTTPException(status_code=400, detail="Cannot change your own role")
+    
+    # Build update data
+    update_data = {}
+    if user_data.displayName is not None:
+        update_data["displayName"] = user_data.displayName
+    if user_data.roleKey is not None:
+        # Validate roleKey
+        valid_roles = ["admin", "manager", "waiter"]
+        if user_data.roleKey not in valid_roles:
+            raise HTTPException(status_code=400, detail=f"Invalid role. Must be one of: {', '.join(valid_roles)}")
+        update_data["roleKey"] = user_data.roleKey
+        update_data["role"] = user_data.roleKey  # Backward compatibility
+    if user_data.locale is not None:
+        update_data["locale"] = user_data.locale
+    if user_data.isDisabled is not None:
+        update_data["isDisabled"] = user_data.isDisabled
+    
+    if update_data:
+        await db.users.update_one(
+            {"id": user_id},
+            {"$set": update_data}
+        )
+    
+    # Log audit
+    await log_audit(
+        db,
+        current_user["restaurantId"],
+        "user",
+        "update",
+        current_user["id"],
+        {"userId": user_id, "changes": update_data}
+    )
+    
+    # Get updated user
+    updated_user = await db.users.find_one({"id": user_id}, {"_id": 0, "password": 0})
+    return User(**updated_user)
+
+@api_router.post("/users/{user_id}/reset-password")
+async def admin_reset_password(user_id: str, current_user: dict = Depends(get_current_user)):
+    """Admin-initiated password reset"""
+    await check_subscription(current_user)
+    
+    # Only admins can reset passwords
+    if current_user.get("roleKey") != "admin":
+        raise HTTPException(status_code=403, detail="Admin access required")
+    
+    # Check if user exists and is in the same restaurant
+    user = await db.users.find_one({
+        "id": user_id,
+        "restaurantId": current_user["restaurantId"]
+    })
+    
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+    
+    # Generate reset token
+    reset_token = secrets.token_urlsafe(32)
+    expires_at = datetime.now(timezone.utc) + timedelta(hours=24)
+    
+    await db.password_resets.insert_one({
+        "token": reset_token,
+        "userId": user_id,
+        "expiresAt": expires_at.isoformat(),
+        "used": False,
+        "createdAt": datetime.now(timezone.utc).isoformat()
+    })
+    
+    # TODO: Send password reset email
+    # In production: send email with link: /reset-password?token={reset_token}
+    
+    # Log audit
+    await log_audit(
+        db,
+        current_user["restaurantId"],
+        "user",
+        "reset_password",
+        current_user["id"],
+        {"userId": user_id, "email": user["email"]}
+    )
+    
+    return {"message": "Password reset email sent", "token": reset_token}  # Remove token in production
+
+@api_router.delete("/users/{user_id}")
+async def delete_user(user_id: str, current_user: dict = Depends(get_current_user)):
+    """Delete/disable a user (soft delete preferred)"""
+    await check_subscription(current_user)
+    
+    # Only admins can delete users
+    if current_user.get("roleKey") != "admin":
+        raise HTTPException(status_code=403, detail="Admin access required")
+    
+    # Cannot delete self
+    if user_id == current_user["id"]:
+        raise HTTPException(status_code=400, detail="Cannot delete your own account")
+    
+    # Check if user exists and is in the same restaurant
+    user = await db.users.find_one({
+        "id": user_id,
+        "restaurantId": current_user["restaurantId"]
+    })
+    
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+    
+    # Soft delete: disable user instead of deleting
+    await db.users.update_one(
+        {"id": user_id},
+        {"$set": {"isDisabled": True}}
+    )
+    
+    # Log audit
+    await log_audit(
+        db,
+        current_user["restaurantId"],
+        "user",
+        "delete",
+        current_user["id"],
+        {"userId": user_id, "email": user["email"]}
+    )
+    
+    return {"message": "User disabled successfully"}
+
 # ============ INGREDIENTS ROUTES ============
 
 @api_router.post("/ingredients", response_model=Ingredient)

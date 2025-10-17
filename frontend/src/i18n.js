@@ -635,6 +635,7 @@ const resources = {
       
       // Common
       'common.save': 'Salva',
+      'common.saved': 'Salvato',
       'common.cancel': 'Annulla',
       'common.delete': 'Elimina',
       'common.edit': 'Modifica',
@@ -648,6 +649,8 @@ const resources = {
       'common.noData': 'Nessun dato disponibile',
       'common.actions': 'Azioni',
       'common.value': 'Valore',
+      'common.type': 'Tipo',
+      'common.unit': 'Unità',
       'common.days': 'Giorni',
       'common.weeks': 'Settimane',
       'common.months': 'Mesi',

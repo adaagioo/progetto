@@ -104,10 +104,9 @@
 
 user_problem_statement: |
   Phase 2: Enhanced Ingredients & Preparations
-  Sprint 3B: Preparations Frontend - Build CRUD UI for preparations (sub-recipes) that use raw ingredients only.
-  Features: cost computation (including waste%), allergen propagation, shelf life management.
-  RBAC: Admin/Manager can edit, Staff read-only.
-  Full i18n (EN/IT) and global currency/locale formatting.
+  Sprint 3A: Enhanced Recipe Editor - Build advanced recipe editor supporting both ingredients AND preparations.
+  Features: Fully editable items, keyboard UX (Tab/Enter/Ctrl+Enter/Esc), live cost breakdown (with waste%),
+  allergen badges, RBAC (Admin/Manager edit, Staff read-only), full i18n (EN/IT).
 
 backend:
   - task: "Preparation Models and CRUD Endpoints"

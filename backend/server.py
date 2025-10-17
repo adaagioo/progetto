@@ -1702,21 +1702,93 @@ async def delete_sales(sales_id: str, current_user: dict = Depends(get_current_u
 async def create_wastage(wastage_data: WastageCreate, current_user: dict = Depends(get_current_user)):
     await check_subscription(current_user)
     
+    # Get item details and deduct stock
+    deductions = []
+    item_name = ""
+    cost_impact = 0
+    
+    if wastage_data.type == "ingredient":
+        # Deduct ingredient stock
+        deduction = await deduct_ingredient_stock(
+            wastage_data.itemId, wastage_data.qty, current_user["restaurantId"], db
+        )
+        deductions.append(deduction)
+        item_name = deduction["itemName"]
+        
+        # Calculate cost impact
+        ingredient = await db.ingredients.find_one(
+            {"id": wastage_data.itemId, "restaurantId": current_user["restaurantId"]},
+            {"_id": 0}
+        )
+        if ingredient:
+            effective_cost = ingredient.get("effectiveUnitCost", ingredient.get("unitCost", 0))
+            cost_impact = int(effective_cost * wastage_data.qty)
+    
+    elif wastage_data.type == "preparation":
+        # Deduct preparation stock
+        prep_deductions = await deduct_preparation_stock(
+            wastage_data.itemId, wastage_data.qty, current_user["restaurantId"], db
+        )
+        deductions.extend(prep_deductions)
+        
+        # Get prep details for name and cost
+        prep = await db.preparations.find_one(
+            {"id": wastage_data.itemId, "restaurantId": current_user["restaurantId"]},
+            {"_id": 0}
+        )
+        if prep:
+            item_name = prep["name"]
+            cost_impact = int(prep.get("cost", 0) * wastage_data.qty)
+    
+    elif wastage_data.type == "recipe":
+        # Deduct recipe items (full dish waste)
+        recipe_deductions = await deduct_stock_for_recipe(
+            wastage_data.itemId, int(wastage_data.qty), current_user["restaurantId"], db
+        )
+        deductions.extend(recipe_deductions)
+        
+        # Get recipe details
+        recipe = await db.recipes.find_one(
+            {"id": wastage_data.itemId, "restaurantId": current_user["restaurantId"]},
+            {"_id": 0}
+        )
+        if recipe:
+            item_name = recipe["name"]
+            # Cost impact = sum of all ingredient/prep costs
+            # (simplified: we'll use the recipe cost if available)
+            cost_impact = 0  # TODO: Calculate from recipe items
+    
     wastage_id = str(uuid.uuid4())
     wastage = {
         "id": wastage_id,
         "restaurantId": current_user["restaurantId"],
         "date": wastage_data.date,
         "type": wastage_data.type,
-        "ingredientId": wastage_data.ingredientId,
-        "recipeId": wastage_data.recipeId,
+        "itemId": wastage_data.itemId,
+        "itemName": item_name,
         "qty": wastage_data.qty,
         "unit": wastage_data.unit,
         "reason": wastage_data.reason,
-        "createdAt": datetime.now(timezone.utc).isoformat()
+        "notes": wastage_data.notes,
+        "costImpact": cost_impact,
+        "stockDeductions": deductions,
+        "createdAt": datetime.now(timezone.utc).isoformat(),
+        "updatedAt": None
     }
     
     await db.wastage.insert_one(wastage)
+    
+    # Log audit
+    await log_audit(
+        db,
+        current_user["restaurantId"],
+        "wastage",
+        "create",
+        current_user["userId"],
+        {"wastageId": wastage_id, "type": wastage_data.type, "itemId": wastage_data.itemId, "qty": wastage_data.qty}
+    )
+    
+    wastage.pop("_id", None)
     return Wastage(**wastage)
 
 @api_router.get("/wastage", response_model=List[Wastage])

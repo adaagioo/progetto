@@ -198,6 +198,52 @@ backend:
         comment: "TESTED: Supplier file attachment system working perfectly. POST /api/suppliers/{id}/files uploads files to suppliers/{id} subfolder, adds file metadata to supplier's files array, returns 404 for non-existent supplier. DELETE /api/suppliers/{id}/files/{file_id} removes file from supplier's files array, deletes from storage, removes from files collection, returns 404 for non-existent file. All operations include audit logging. File validation and tenant isolation working correctly."
 
 frontend:
+  - task: "Preparations Page UI with RBAC"
+    implemented: true
+    working: false
+    file: "frontend/src/pages/Preparations.js"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: false
+        agent: "main"
+        comment: |
+          Enhanced Preparations.js with full RBAC enforcement:
+          - Added `canEdit` check based on user.roleKey (admin/manager can edit, waiter read-only)
+          - Conditionally rendered 'Add Preparation' button only for admin/manager
+          - Conditionally rendered Edit/Delete buttons on cards only for admin/manager
+          - CRUD UI complete with ingredient selection, yield, shelf life, notes
+          - Displays computed cost (with waste%), allergens, and shelf life
+          - Uses global currency formatting (formatMinor) and i18n translations (EN/IT already exist)
+          - Auto-sets unit from ingredient when selected
+          - Frontend successfully compiled after fixing syntax error in Recipes.js
+          - Pending: E2E testing to verify full flow including RBAC
+
+  - task: "Preparations i18n Translations"
+    implemented: true
+    working: true
+    file: "frontend/src/i18n.js"
+    stuck_count: 0
+    priority: "medium"
+    needs_retesting: false
+    status_history:
+      - working: true
+        agent: "main"
+        comment: "Complete EN/IT translations for preparations module already exist from previous work (titles, forms, messages, errors, confirmations)."
+
+  - task: "Recipes.js Syntax Fix"
+    implemented: true
+    working: true
+    file: "frontend/src/pages/Recipes.js"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+      - working: true
+        agent: "main"
+        comment: "Fixed syntax error on line 117 (extra closing braces from incomplete previous edit). Frontend now compiles successfully."
+
   - task: "Suppliers Page UI"
     implemented: true
     working: false

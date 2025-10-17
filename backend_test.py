@@ -15,8 +15,9 @@ from typing import Dict, Any, Optional
 # Configuration
 BACKEND_URL = "https://kitchen-finance.preview.emergentagent.com/api"
 TEST_CREDENTIALS = {
-    "admin": {"email": "testadmin@test.com", "password": "password123"},
-    "restaurant": {"email": "ristorante1", "password": "password123"}
+    "admin": {"email": "admin@test.com", "password": "admin123"},
+    "manager": {"email": "manager@test.com", "password": "manager123"},
+    "staff": {"email": "staff@test.com", "password": "staff123"}
 }
 
 class BackendTester:

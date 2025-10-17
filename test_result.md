@@ -110,6 +110,18 @@ user_problem_statement: |
   Full i18n (EN/IT) and global currency/locale formatting.
 
 backend:
+  - task: "Preparation Models and CRUD Endpoints"
+    implemented: true
+    working: true
+    file: "backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+      - working: true
+        agent: "main"
+        comment: "Backend preparation models (PreparationItem, PreparationCreate, PreparationUpdate, Preparation) and CRUD endpoints (POST/GET/PUT/DELETE /api/preparations) already exist from previous work. Endpoints include cost and allergen computation using compute_preparation_cost_and_allergens() helper function which accounts for ingredient waste percentage."
+
   - task: "Storage Service Infrastructure"
     implemented: true
     working: true

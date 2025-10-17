@@ -111,7 +111,7 @@ user_problem_statement: |
 backend:
   - task: "Enhanced Recipe Models and Endpoints"
     implemented: true
-    working: true
+    working: false
     file: "backend/server.py"
     stuck_count: 0
     priority: "high"
@@ -123,6 +123,53 @@ backend:
           Backend Recipe models already support type='ingredient' or 'preparation' in RecipeItem.
           Endpoints compute allergens from all items (ingredients + preparations) via compute_recipe_allergens().
           Ready for enhanced frontend implementation.
+      - working: false
+        agent: "testing"
+        comment: |
+          COMPREHENSIVE BACKEND TESTING COMPLETED - CRITICAL VALIDATION ISSUES FOUND ❌
+          
+          🧪 ENHANCED RECIPE EDITOR BACKEND TESTING (31 tests - 93.5% success rate):
+          
+          ✅ CORE FUNCTIONALITY WORKING:
+          - Recipe CRUD operations (POST/GET/PUT/DELETE /api/recipes) - ALL WORKING
+          - Mixed item types: Recipes support BOTH ingredients AND preparations ✅
+          - Allergen propagation: Correctly aggregates allergens from ingredients + preparations ✅
+          - Cost computation: Uses effectiveUnitCost (includes waste%) for ingredients ✅
+          - Price handling: Minor units (cents) working correctly ✅
+          - Shelf life support: Optional shelfLife field working ✅
+          - RBAC & Security: All roles (admin/manager/staff) have backend access ✅
+          - Tenant isolation: Restaurant-scoped data enforced ✅
+          
+          💰 COST COMPUTATION VERIFIED:
+          - Flour: €2.50 + 5% waste = €2.625 effectiveUnitCost ✅
+          - Tomatoes: €3.20 + 15% waste = €3.680 effectiveUnitCost ✅
+          - Pizza Dough preparation: €5.936 (flour + tomatoes + mozzarella with waste) ✅
+          
+          🚨 ALLERGEN PROPAGATION CHAIN VERIFIED:
+          - Ingredients → Preparations: Pizza Dough gets ['dairy', 'gluten'] from ingredients ✅
+          - Preparations → Recipes: Pizza Margherita inherits ['dairy', 'gluten'] from Pizza Dough ✅
+          - Mixed items: Recipe with ingredients + preparations correctly aggregates all allergens ✅
+          
+          ❌ CRITICAL VALIDATION FAILURES (2/31 tests failed):
+          1. **Empty Items Array**: Recipe creation accepts empty items[] array (should return 422)
+          2. **Invalid Item IDs**: Recipe creation accepts non-existent ingredientId/preparationId (should return 404)
+          
+          🔍 ROOT CAUSE ANALYSIS:
+          - create_recipe() function in server.py lacks validation for:
+            - Non-empty items array requirement
+            - Existence of referenced ingredient/preparation IDs
+          - compute_recipe_allergens() silently ignores missing items instead of raising 404
+          
+          ✅ SUCCESSFUL TEST SCENARIOS:
+          - Recipe with ingredients only (Simple Seasoned Oil) ✅
+          - Recipe with mixed items (Pizza Margherita: Pizza Dough prep + basil + olive oil) ✅
+          - Recipe updates with allergen recomputation ✅
+          - Recipe deletion and 404 handling ✅
+          - Authentication and tenant isolation ✅
+          - All RBAC roles can access recipe endpoints ✅
+          
+          🎯 BACKEND RECIPE FUNCTIONALITY: 93.5% WORKING
+          Core features work correctly but validation needs improvement for production readiness.
 
   - task: "Preparation Models and CRUD Endpoints"
     implemented: true

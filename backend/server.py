@@ -500,6 +500,200 @@ async def compute_recipe_allergens(items: List[dict], db) -> List[str]:
     # Normalize allergens to EU-14
     return normalize_allergen_list(list(all_allergens))
 
+async def deduct_stock_for_recipe(recipe_id: str, qty: int, restaurant_id: str, db) -> List[dict]:
+    """
+    Deduct stock for a recipe sale using WAC and prep-first priority.
+    
+    Priority:
+    1. If recipe uses preparations → deduct prep stock first
+    2. If prep stock insufficient or recipe uses raw ingredients → deduct raw ingredients
+    
+    Args:
+        recipe_id: Recipe ID
+        qty: Number of portions sold
+        restaurant_id: Restaurant ID for tenant isolation
+        db: Database connection
+        
+    Returns:
+        List of stock deductions made (for audit trail)
+    """
+    deductions = []
+    
+    # Get recipe
+    recipe = await db.recipes.find_one({"id": recipe_id, "restaurantId": restaurant_id}, {"_id": 0})
+    if not recipe:
+        raise HTTPException(status_code=404, detail=f"Recipe {recipe_id} not found")
+    
+    # Process each item in the recipe
+    for item in recipe.get("items", []):
+        item_qty_needed = item["qtyPerPortion"] * qty
+        
+        if item["type"] == "preparation":
+            # Try to deduct preparation stock first
+            prep_deduction = await deduct_preparation_stock(
+                item["itemId"], item_qty_needed, restaurant_id, db
+            )
+            deductions.extend(prep_deduction)
+            
+        elif item["type"] == "ingredient":
+            # Deduct raw ingredient stock
+            ingredient_deduction = await deduct_ingredient_stock(
+                item["itemId"], item_qty_needed, restaurant_id, db
+            )
+            deductions.append(ingredient_deduction)
+    
+    return deductions
+
+async def deduct_preparation_stock(prep_id: str, qty: float, restaurant_id: str, db) -> List[dict]:
+    """
+    Deduct preparation stock. If insufficient, deduct underlying ingredients.
+    
+    Args:
+        prep_id: Preparation ID
+        qty: Quantity to deduct
+        restaurant_id: Restaurant ID
+        db: Database connection
+        
+    Returns:
+        List of deductions made
+    """
+    deductions = []
+    
+    # Get preparation
+    prep = await db.preparations.find_one({"id": prep_id, "restaurantId": restaurant_id}, {"_id": 0})
+    if not prep:
+        raise HTTPException(status_code=404, detail=f"Preparation {prep_id} not found")
+    
+    # Check if we have preparation stock in inventory
+    prep_inventory = await db.inventory.find_one({
+        "preparationId": prep_id,
+        "restaurantId": restaurant_id
+    })
+    
+    if prep_inventory and prep_inventory.get("qtyOnHand", 0) >= qty:
+        # Deduct from preparation stock
+        new_qty = prep_inventory["qtyOnHand"] - qty
+        await db.inventory.update_one(
+            {"preparationId": prep_id, "restaurantId": restaurant_id},
+            {"$set": {"qtyOnHand": new_qty, "updatedAt": datetime.now(timezone.utc).isoformat()}}
+        )
+        
+        deductions.append({
+            "type": "preparation",
+            "itemId": prep_id,
+            "itemName": prep["name"],
+            "qtyDeducted": qty,
+            "unit": prep.get("unit", "portions"),
+            "remainingQty": new_qty
+        })
+    else:
+        # Insufficient prep stock → deduct underlying ingredients
+        # Calculate how much prep stock we can use (if any)
+        prep_qty_available = prep_inventory.get("qtyOnHand", 0) if prep_inventory else 0
+        prep_qty_from_stock = min(prep_qty_available, qty)
+        prep_qty_from_ingredients = qty - prep_qty_from_stock
+        
+        if prep_qty_from_stock > 0:
+            # Use available prep stock
+            await db.inventory.update_one(
+                {"preparationId": prep_id, "restaurantId": restaurant_id},
+                {"$set": {"qtyOnHand": 0, "updatedAt": datetime.now(timezone.utc).isoformat()}}
+            )
+            deductions.append({
+                "type": "preparation",
+                "itemId": prep_id,
+                "itemName": prep["name"],
+                "qtyDeducted": prep_qty_from_stock,
+                "unit": prep.get("unit", "portions"),
+                "remainingQty": 0
+            })
+        
+        if prep_qty_from_ingredients > 0:
+            # Deduct underlying ingredients for the shortfall
+            # Scale ingredient quantities by the prep yield
+            prep_yield = prep.get("yield", {}).get("value", 1)
+            scale_factor = (prep_qty_from_ingredients / prep_yield) if prep_yield > 0 else prep_qty_from_ingredients
+            
+            for prep_item in prep.get("items", []):
+                ingredient_qty_needed = prep_item["qty"] * scale_factor
+                ingredient_deduction = await deduct_ingredient_stock(
+                    prep_item["ingredientId"], ingredient_qty_needed, restaurant_id, db
+                )
+                deductions.append(ingredient_deduction)
+    
+    return deductions
+
+async def deduct_ingredient_stock(ingredient_id: str, qty: float, restaurant_id: str, db) -> dict:
+    """
+    Deduct ingredient stock using WAC (Weighted Average Cost).
+    
+    Args:
+        ingredient_id: Ingredient ID
+        qty: Quantity to deduct
+        restaurant_id: Restaurant ID
+        db: Database connection
+        
+    Returns:
+        Deduction record
+    """
+    # Get ingredient
+    ingredient = await db.ingredients.find_one({"id": ingredient_id, "restaurantId": restaurant_id}, {"_id": 0})
+    if not ingredient:
+        raise HTTPException(status_code=404, detail=f"Ingredient {ingredient_id} not found")
+    
+    # Get inventory record
+    inventory = await db.inventory.find_one({
+        "ingredientId": ingredient_id,
+        "restaurantId": restaurant_id
+    })
+    
+    if not inventory:
+        # No inventory record → log as shortage
+        return {
+            "type": "ingredient",
+            "itemId": ingredient_id,
+            "itemName": ingredient["name"],
+            "qtyDeducted": qty,
+            "unit": ingredient["unit"],
+            "remainingQty": 0,
+            "shortage": qty
+        }
+    
+    current_qty = inventory.get("qtyOnHand", 0)
+    
+    if current_qty < qty:
+        # Partial deduction → shortage
+        await db.inventory.update_one(
+            {"ingredientId": ingredient_id, "restaurantId": restaurant_id},
+            {"$set": {"qtyOnHand": 0, "updatedAt": datetime.now(timezone.utc).isoformat()}}
+        )
+        
+        return {
+            "type": "ingredient",
+            "itemId": ingredient_id,
+            "itemName": ingredient["name"],
+            "qtyDeducted": current_qty,
+            "unit": ingredient["unit"],
+            "remainingQty": 0,
+            "shortage": qty - current_qty
+        }
+    else:
+        # Full deduction
+        new_qty = current_qty - qty
+        await db.inventory.update_one(
+            {"ingredientId": ingredient_id, "restaurantId": restaurant_id},
+            {"$set": {"qtyOnHand": new_qty, "updatedAt": datetime.now(timezone.utc).isoformat()}}
+        )
+        
+        return {
+            "type": "ingredient",
+            "itemId": ingredient_id,
+            "itemName": ingredient["name"],
+            "qtyDeducted": qty,
+            "unit": ingredient["unit"],
+            "remainingQty": new_qty
+        }
+
 def create_access_token(data: dict):
     to_encode = data.copy()
     expire = datetime.now(timezone.utc) + timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)

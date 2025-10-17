@@ -362,14 +362,12 @@ agent_communication:
       ✅ Frontend compiled successfully
       
       PENDING:
-      ⏳ Backend testing (endpoints, cost computation, allergen propagation)
       ⏳ Frontend E2E testing (create prep, verify RBAC with admin/staff)
       ⏳ Integration with Recipe Editor (Sprint 3A)
       
       NEXT STEPS:
-      1. Backend testing via deep_testing_backend_v2
-      2. Frontend testing with admin@test.com and staff@test.com
-      3. Proceed to Sprint 3A: Enhanced Recipe Editor
+      1. Frontend testing with admin@test.com and staff@test.com
+      2. Proceed to Sprint 3A: Enhanced Recipe Editor
   
   - agent: "testing"
     message: |

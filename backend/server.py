@@ -109,7 +109,26 @@ class User(BaseModel):
     role: str
     roleKey: Optional[str] = "admin"
     locale: Optional[str] = None
+    isDisabled: Optional[bool] = False
+    lastLoginAt: Optional[str] = None
     createdAt: str
+
+class UserCreateByAdmin(BaseModel):
+    email: EmailStr
+    displayName: str
+    roleKey: str  # admin, manager, waiter
+    locale: Optional[str] = "en-US"
+    sendInvite: bool = True  # True: send invite email, False: generate temp password
+
+class UserUpdateByAdmin(BaseModel):
+    displayName: Optional[str] = None
+    roleKey: Optional[str] = None
+    locale: Optional[str] = None
+    isDisabled: Optional[bool] = None
+
+class UserWithTempPassword(BaseModel):
+    user: User
+    tempPassword: Optional[str] = None  # Only present if sendInvite=False
 
 class Restaurant(BaseModel):
     model_config = ConfigDict(extra="ignore")

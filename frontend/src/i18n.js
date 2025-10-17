@@ -298,6 +298,7 @@ const resources = {
       
       // Common
       'common.save': 'Save',
+      'common.saved': 'Saved',
       'common.cancel': 'Cancel',
       'common.delete': 'Delete',
       'common.edit': 'Edit',
@@ -311,6 +312,8 @@ const resources = {
       'common.noData': 'No data available',
       'common.actions': 'Actions',
       'common.value': 'Value',
+      'common.type': 'Type',
+      'common.unit': 'Unit',
       'common.days': 'Days',
       'common.weeks': 'Weeks',
       'common.months': 'Months',

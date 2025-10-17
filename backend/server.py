@@ -434,6 +434,7 @@ async def compute_preparation_cost_and_allergens(items: List[dict], db) -> tuple
     """
     Compute preparation cost and allergens from ingredient items.
     Cost includes waste percentage: effectiveUnitCost * qty
+    Allergens normalized to EU-14 standard.
     """
     total_cost = 0
     all_allergens = set()
@@ -457,7 +458,9 @@ async def compute_preparation_cost_and_allergens(items: List[dict], db) -> tuple
         if ingredient.get("allergen"):
             all_allergens.add(ingredient["allergen"])
     
-    return total_cost, sorted(list(all_allergens))
+    # Normalize allergens to EU-14
+    normalized_allergens = normalize_allergen_list(list(all_allergens))
+    return total_cost, normalized_allergens
 
 async def compute_recipe_allergens(items: List[dict], db) -> List[str]:
     """

@@ -758,3 +758,68 @@ agent_communication:
       🎯 BACKEND PREPARATIONS MODULE IS PRODUCTION-READY
       
       NEXT: Frontend UI testing and E2E flow verification needed.
+  
+  - agent: "testing"
+    message: |
+      ENHANCED RECIPE EDITOR BACKEND TESTING COMPLETE ✅❌
+      
+      🎯 SPRINT 3A BACKEND TESTING RESULTS (31/31 tests completed - 93.5% success rate):
+      
+      ✅ CRITICAL NEW FUNCTIONALITY WORKING:
+      
+      1. **Mixed Item Types** (MOST IMPORTANT):
+         - Recipes successfully support BOTH ingredients AND preparations ✅
+         - RecipeItem.type correctly handles 'ingredient' and 'preparation' ✅
+         - Mixed recipe created: Pizza Margherita (Pizza Dough prep + basil + olive oil) ✅
+      
+      2. **Allergen Propagation Chain**:
+         - Ingredients → Preparations: Pizza Dough inherits ['dairy', 'gluten'] ✅
+         - Preparations → Recipes: Pizza Margherita inherits allergens from Pizza Dough ✅
+         - Union of all allergens correctly computed and sorted alphabetically ✅
+      
+      3. **Cost Computation with Waste%**:
+         - effectiveUnitCost = unitCost × (1 + wastePct/100) ✅
+         - Flour: €2.50 + 5% waste = €2.625 ✅
+         - Tomatoes: €3.20 + 15% waste = €3.680 ✅
+         - Preparation cost: €5.936 (includes waste from all ingredients) ✅
+      
+      4. **Recipe CRUD Operations**:
+         - POST /api/recipes: Creates recipes with mixed items ✅
+         - GET /api/recipes: Lists with tenant isolation ✅
+         - GET /api/recipes/{id}: Retrieves specific recipe ✅
+         - PUT /api/recipes/{id}: Updates with allergen recomputation ✅
+         - DELETE /api/recipes/{id}: Deletes successfully ✅
+      
+      5. **Security & RBAC**:
+         - Authentication required for all endpoints ✅
+         - Admin, Manager, Staff all have backend access ✅
+         - Tenant isolation enforced ✅
+         - Price in minor units (cents) handled correctly ✅
+      
+      ❌ CRITICAL VALIDATION ISSUES FOUND (2 failures):
+      
+      1. **Empty Items Validation**: Recipe creation accepts empty items[] array
+         - Should return 422 validation error but returns 200
+         - Root cause: No validation in create_recipe() function
+      
+      2. **Invalid Item ID Validation**: Recipe creation accepts non-existent IDs
+         - Should return 404 for invalid ingredientId/preparationId but returns 200
+         - Root cause: compute_recipe_allergens() silently ignores missing items
+      
+      🔧 BACKEND ISSUES REQUIRING FIXES:
+      1. Add validation for non-empty items array in RecipeCreate model
+      2. Add existence validation for ingredient/preparation IDs in create_recipe()
+      3. Make compute_recipe_allergens() raise 404 for missing items
+      
+      📊 TESTING COVERAGE COMPLETE:
+      - ✅ Recipe with ingredients only - WORKING
+      - ✅ Recipe with mixed items (ingredients + preparations) - WORKING  
+      - ✅ Allergen propagation chain - WORKING
+      - ✅ Cost computation with waste% - WORKING
+      - ❌ Recipe validation rules - PARTIALLY WORKING (2/3 scenarios)
+      - ✅ Price in minor units - WORKING
+      - ✅ RBAC & Security - WORKING
+      - ✅ Shelf life support - WORKING
+      
+      🎯 BACKEND ENHANCED RECIPE EDITOR: 93.5% FUNCTIONAL
+      Core functionality works perfectly, validation needs improvement for production.

@@ -103,10 +103,10 @@
 #====================================================================================================
 
 user_problem_statement: |
-  Phase 2: Enhanced Ingredients & Preparations
-  Sprint 3A: Enhanced Recipe Editor - Build advanced recipe editor supporting both ingredients AND preparations.
-  Features: Fully editable items, keyboard UX (Tab/Enter/Ctrl+Enter/Esc), live cost breakdown (with waste%),
-  allergen badges, RBAC (Admin/Manager edit, Staff read-only), full i18n (EN/IT).
+  Phase 3: Sales & Wastage with Stock Deductions + Settings → Users & Access
+  - Sales: Record daily sales, deduct stock using WAC + prep-first priority, track revenue, audit trail
+  - Wastage: Record wastage for ingredients/preparations/recipes, calculate cost impact, deduct stock
+  - Users & Access: Admin-only user management with invite/temp password, role management, soft delete
 
 backend:
   - task: "Enhanced Recipe Models and Endpoints"

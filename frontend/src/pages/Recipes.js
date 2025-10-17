@@ -74,9 +74,12 @@ function Recipes() {
     }
   };
 
-  const addItemToRecipe = () => {
-    if (!currentItem.ingredientId || !currentItem.qtyPerPortion) {
-      toast.error('Please select ingredient and quantity');
+  const addItemToRecipe = (e) => {
+    // Prevent form submission
+    if (e) e.preventDefault();
+    
+    if (!currentItem.itemId || !currentItem.qtyPerPortion) {
+      toast.error(t('recipes.error.selectItem') || 'Please select item and quantity');
       return;
     }
 
@@ -85,13 +88,32 @@ function Recipes() {
       items: [...formData.items, currentItem]
     });
 
-    setCurrentItem({ ingredientId: '', qtyPerPortion: '', unit: 'g' });
+    setCurrentItem({ type: 'ingredient', itemId: '', qtyPerPortion: '', unit: 'g' });
   };
 
   const removeItem = (index) => {
     setFormData({
       ...formData,
       items: formData.items.filter((_, i) => i !== index)
+    });
+  };
+
+  const updateItem = (index, field, value) => {
+    const newItems = [...formData.items];
+    newItems[index][field] = value;
+    
+    // Auto-set unit when item changes
+    if (field === 'itemId') {
+      const item = currentItem.type === 'ingredient' 
+        ? ingredients.find(i => i.id === value)
+        : preparations.find(p => p.id === value);
+      if (item) {
+        newItems[index].unit = item.unit || 'g';
+      }
+    }
+    
+    setFormData({ ...formData, items: newItems });
+  };
     });
   };
 

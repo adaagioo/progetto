@@ -550,6 +550,10 @@ const resources = {
       'common.loading': 'Caricamento...',
       'common.noData': 'Nessun dato disponibile',
       'common.actions': 'Azioni',
+      'common.value': 'Valore',
+      'common.days': 'Giorni',
+      'common.weeks': 'Settimane',
+      'common.months': 'Mesi',
       
       // Settings
       'settings.title': 'Impostazioni',

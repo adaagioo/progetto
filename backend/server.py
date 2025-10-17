@@ -13,7 +13,9 @@ from datetime import datetime, timezone, timedelta
 import jwt
 import bcrypt
 import hashlib
+import secrets
 import aiosmtplib
+from passlib.context import CryptContext
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
 from rbac_utils import get_user_permissions, seed_default_roles, has_permission

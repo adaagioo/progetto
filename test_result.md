@@ -714,6 +714,89 @@ agent_communication:
   
   - agent: "testing"
     message: |
+      ENHANCED RECIPE EDITOR E2E TESTING COMPLETE ✅❌
+      
+      🎯 COMPREHENSIVE TESTING RESULTS (13 flows tested - 80% success rate):
+      
+      ✅ CRITICAL FEATURES WORKING (8/10 major features):
+      
+      1. **Mixed Items Support** (MOST IMPORTANT):
+         - ✅ Recipes display both ingredients AND preparations
+         - ✅ Type indicators: [P] for Pizza Dough preparation, [I] for Fresh Basil/Olive Oil ingredients
+         - ✅ Mixed recipe example: Pizza Margherita with 1 preparation + 2 ingredients
+      
+      2. **Allergen Propagation Chain**:
+         - ✅ Allergens correctly aggregated from all items (ingredients + preparations)
+         - ✅ Red allergen badges displayed: "dairy" and "gluten" from Pizza Dough
+         - ✅ Proper styling with bg-red-100 text-red-800
+      
+      3. **Currency & Formatting**:
+         - ✅ Euro currency symbol displayed: "12,00 €"
+         - ✅ formatMinor() working correctly for price display
+         - ✅ Consistent formatting across all recipe cards
+      
+      4. **i18n Translations**:
+         - ✅ Italian language working: "Ricette" (Recipes), "Aggiungi Ricetta" (Add Recipe)
+         - ✅ Navigation translated: "Ingredienti", "Preparazioni", "Fornitori"
+         - ✅ Language switching functional in Settings
+      
+      5. **Keyboard UX**:
+         - ✅ Enter key does NOT submit form (prevents accidental submission)
+         - ✅ Ctrl+Enter adds new item rows
+         - ✅ Ctrl+S triggers save with toast notification
+         - ✅ Escape key cancels operations
+      
+      6. **Live Cost Breakdown**:
+         - ✅ Cost breakdown section appears when items added
+         - ✅ Real-time updates as items change
+         - ✅ Total cost, per-portion cost, food cost % displayed
+      
+      7. **Staff RBAC** (CRITICAL SECURITY):
+         - ✅ Staff users CANNOT see "Add Recipe" button
+         - ✅ Staff users CANNOT see Edit/Delete buttons
+         - ✅ Staff users CAN view recipe details (read-only access)
+      
+      8. **Recipe Display**:
+         - ✅ Recipe cards show complete information
+         - ✅ Ingredients count, category, pricing visible
+         - ✅ Proper layout and responsive design
+      
+      ❌ CRITICAL ISSUES FOUND (2 major failures):
+      
+      1. **MANAGER RBAC BROKEN** (HIGH PRIORITY):
+         - ❌ Manager users CANNOT see "Add Recipe" button (should be visible like Admin)
+         - ❌ Manager users CANNOT see Edit/Delete buttons (should have full access)
+         - ❌ Manager currently has same restrictions as Staff (incorrect)
+         - 🔍 Root Cause: RBAC logic issue in canEdit calculation
+         - 📋 Requirement: "Admin/Manager can edit, Staff read-only"
+      
+      2. **Recipe Creation Flow Issues**:
+         - ❌ Dropdown selection not working in automated tests
+         - ❌ Type selector (ingredient/preparation) not responding to clicks
+         - ❌ Prevents full validation of recipe creation workflow
+         - ⚠️ May be Playwright-specific, but blocks comprehensive testing
+      
+      🔧 IMMEDIATE FIXES NEEDED:
+      1. **Fix Manager RBAC**: Update canEdit logic to include manager role properly
+      2. **Investigate dropdown issues**: May need different selector approach or timing
+      
+      📊 TESTING COVERAGE SUMMARY:
+      - ✅ Mixed items display - WORKING (core feature verified)
+      - ✅ Allergen propagation - WORKING
+      - ✅ Currency formatting - WORKING  
+      - ✅ i18n translations - WORKING
+      - ✅ Keyboard shortcuts - WORKING
+      - ✅ Live cost updates - WORKING
+      - ✅ Staff RBAC (read-only) - WORKING
+      - ❌ Manager RBAC (edit access) - BROKEN
+      - ❌ Recipe creation flow - BLOCKED
+      - ✅ Recipe display/viewing - WORKING
+      
+      🎯 ENHANCED RECIPE EDITOR STATUS: 80% FUNCTIONAL
+      Core features working but Manager RBAC needs immediate attention.
+  
+  - agent: "testing"
+    message: |
       PREPARATIONS MODULE E2E TESTING COMPLETE ✅❌
       
       🎯 COMPREHENSIVE TESTING RESULTS (8/8 flows tested):

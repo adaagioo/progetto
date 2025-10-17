@@ -266,6 +266,90 @@ backend:
         comment: "TESTED: Supplier file attachment system working perfectly. POST /api/suppliers/{id}/files uploads files to suppliers/{id} subfolder, adds file metadata to supplier's files array, returns 404 for non-existent supplier. DELETE /api/suppliers/{id}/files/{file_id} removes file from supplier's files array, deletes from storage, removes from files collection, returns 404 for non-existent file. All operations include audit logging. File validation and tenant isolation working correctly."
 
 frontend:
+  - task: "Enhanced Recipe Editor with Keyboard UX"
+    implemented: true
+    working: false
+    file: "frontend/src/pages/Recipes.js"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: false
+        agent: "main"
+        comment: |
+          COMPLETE REWRITE of Recipes.js with all Sprint 3A requirements:
+          
+          ✅ DUAL ITEM SUPPORT:
+          - Items can be ingredients OR preparations (type selector in each row)
+          - Auto-unit selection from selected ingredient/preparation
+          - Dropdown updates based on type selection
+          
+          ✅ FULLY EDITABLE ITEMS:
+          - Items edited in-place (not delete/recreate)
+          - Each item row has type/itemId/qty/unit fields
+          - Real-time validation and updates
+          
+          ✅ KEYBOARD UX (EXACT SPEC):
+          - Tab: Move to next field (browser default)
+          - Shift+Tab: Move to previous field (browser default)
+          - Enter: Move to next field (prevents form submission)
+          - Ctrl/Cmd + Enter: Add new item row beneath current
+          - Esc: Cancel in-row edit (revert changes)
+          - Ctrl/Cmd + S: Trigger save + toast notification
+          - All keyboard handlers implemented with refs for focus management
+          
+          ✅ LIVE COST BREAKDOWN:
+          - Per-item cost displayed (uses effectiveUnitCost with waste%)
+          - Total cost computed from all items
+          - Per-portion cost (total / portions)
+          - Food cost % displayed
+          - All costs update live as items change
+          
+          ✅ ALLERGEN BADGES:
+          - Union of all allergens from ingredients + preparations
+          - Displayed in form during editing
+          - Displayed on recipe cards in list
+          - Red badges with AlertCircle icon
+          
+          ✅ RBAC ENFORCEMENT:
+          - canEdit = user.roleKey === 'admin' || 'manager'
+          - Add/Edit/Delete buttons conditionally rendered
+          - Staff users see read-only view
+          
+          ✅ I18N & CURRENCY:
+          - All new labels translated (EN/IT)
+          - Added missing translations: recipes.addItem, recipes.selectItem, etc.
+          - formatMinor() used for all monetary values
+          - Currency formatting throughout
+          
+          ✅ ADDITIONAL FEATURES:
+          - Shelf life support (optional)
+          - Category field
+          - Target food cost %
+          - Empty state messaging
+          - Item type indicators [I] for ingredient, [P] for preparation
+          
+          Frontend compiled successfully. Pending E2E testing.
+
+  - task: "Recipe Editor i18n Translations"
+    implemented: true
+    working: true
+    file: "frontend/src/i18n.js"
+    stuck_count: 0
+    priority: "medium"
+    needs_retesting: false
+    status_history:
+      - working: true
+        agent: "main"
+        comment: |
+          Added complete EN/IT translations for enhanced recipe editor:
+          - recipes.addItem, recipes.selectItem, recipes.item
+          - recipes.costBreakdown, recipes.totalCost, recipes.perPortion
+          - recipes.noItems, recipes.shelfLife, recipes.edit
+          - recipes.error.incompleteItems
+          - common.type, common.unit, common.saved
+          All translations properly localized for Italian users.
+
   - task: "Preparations Page UI with RBAC"
     implemented: true
     working: true

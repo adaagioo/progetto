@@ -169,6 +169,9 @@ function Preparations() {
     return ing ? ing.name : 'Unknown';
   };
 
+  // RBAC: Check if user can edit (admin or manager)
+  const canEdit = user?.roleKey === 'admin' || user?.roleKey === 'manager';
+
   return (
     <div className="p-6">
       <div className="flex justify-between items-center mb-6">
@@ -178,13 +181,14 @@ function Preparations() {
             {t('preparations.subtitle') || 'Manage sub-recipes and prepared ingredients'}
           </p>
         </div>
-        <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-          <DialogTrigger asChild>
-            <Button onClick={resetForm}>
-              <Plus className="mr-2 h-4 w-4" />
-              {t('preparations.add') || 'Add Preparation'}
-            </Button>
-          </DialogTrigger>
+        {canEdit && (
+          <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+            <DialogTrigger asChild>
+              <Button onClick={resetForm}>
+                <Plus className="mr-2 h-4 w-4" />
+                {t('preparations.add') || 'Add Preparation'}
+              </Button>
+            </DialogTrigger>
           <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
             <DialogHeader>
               <DialogTitle>

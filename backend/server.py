@@ -465,7 +465,7 @@ async def compute_preparation_cost_and_allergens(items: List[dict], db) -> tuple
 async def compute_recipe_allergens(items: List[dict], db) -> List[str]:
     """
     Compute recipe allergens from all items (ingredients + preparations).
-    Returns union of all allergens.
+    Returns union of all allergens, normalized to EU-14 standard.
     """
     all_allergens = set()
     
@@ -487,7 +487,8 @@ async def compute_recipe_allergens(items: List[dict], db) -> List[str]:
                 if allergens:
                     all_allergens.update(allergens)
     
-    return sorted(list(all_allergens))
+    # Normalize allergens to EU-14
+    return normalize_allergen_list(list(all_allergens))
 
 def create_access_token(data: dict):
     to_encode = data.copy()

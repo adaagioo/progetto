@@ -1275,6 +1275,10 @@ async def get_inventory_adjustments(current_user: dict = Depends(get_current_use
 async def create_recipe(recipe_data: RecipeCreate, current_user: dict = Depends(get_current_user)):
     await check_subscription(current_user)
     
+    # Compute allergens from all items
+    items_dict = [item.dict() for item in recipe_data.items]
+    allergens = await compute_recipe_allergens(items_dict, db)
+    
     recipe_id = str(uuid.uuid4())
     recipe = {
         "id": recipe_id,
@@ -1284,11 +1288,15 @@ async def create_recipe(recipe_data: RecipeCreate, current_user: dict = Depends(
         "portions": recipe_data.portions,
         "targetFoodCostPct": recipe_data.targetFoodCostPct,
         "price": recipe_data.price,
-        "items": [item.model_dump() for item in recipe_data.items],
-        "createdAt": datetime.now(timezone.utc).isoformat()
+        "items": items_dict,
+        "allergens": allergens,
+        "shelfLife": recipe_data.shelfLife.dict() if recipe_data.shelfLife else None,
+        "createdAt": datetime.now(timezone.utc).isoformat(),
+        "updatedAt": None
     }
     
     await db.recipes.insert_one(recipe)
+    recipe.pop("_id", None)
     return Recipe(**recipe)
 
 @api_router.get("/recipes", response_model=List[Recipe])
@@ -1305,8 +1313,60 @@ async def get_recipe(recipe_id: str, current_user: dict = Depends(get_current_us
     return Recipe(**recipe)
 
 @api_router.put("/recipes/{recipe_id}", response_model=Recipe)
-async def update_recipe(recipe_id: str, recipe_data: RecipeCreate, current_user: dict = Depends(get_current_user)):
+async def update_recipe(recipe_id: str, recipe_data: RecipeUpdate, current_user: dict = Depends(get_current_user)):
     await check_subscription(current_user)
+    
+    # Check if recipe exists
+    existing = await db.recipes.find_one(
+        {"id": recipe_id, "restaurantId": current_user["restaurantId"]}
+    )
+    
+    if not existing:
+        raise HTTPException(status_code=404, detail="Recipe not found")
+    
+    # Build update data
+    update_data = {}
+    
+    if recipe_data.name is not None:
+        update_data["name"] = recipe_data.name
+    
+    if recipe_data.category is not None:
+        update_data["category"] = recipe_data.category
+    
+    if recipe_data.portions is not None:
+        update_data["portions"] = recipe_data.portions
+    
+    if recipe_data.targetFoodCostPct is not None:
+        update_data["targetFoodCostPct"] = recipe_data.targetFoodCostPct
+    
+    if recipe_data.price is not None:
+        update_data["price"] = recipe_data.price
+    
+    if recipe_data.items is not None:
+        items_dict = [item.dict() for item in recipe_data.items]
+        update_data["items"] = items_dict
+        # Recompute allergens when items change
+        allergens = await compute_recipe_allergens(items_dict, db)
+        update_data["allergens"] = allergens
+    
+    if recipe_data.shelfLife is not None:
+        update_data["shelfLife"] = recipe_data.shelfLife.dict()
+    
+    update_data["updatedAt"] = datetime.now(timezone.utc).isoformat()
+    
+    # Update in database
+    await db.recipes.update_one(
+        {"id": recipe_id},
+        {"$set": update_data}
+    )
+    
+    # Get updated recipe
+    updated_recipe = await db.recipes.find_one(
+        {"id": recipe_id},
+        {"_id": 0}
+    )
+    
+    return Recipe(**updated_recipe)
     
     existing = await db.recipes.find_one({"id": recipe_id, "restaurantId": current_user["restaurantId"]})
     if not existing:

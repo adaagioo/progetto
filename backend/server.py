@@ -635,7 +635,8 @@ async def deduct_preparation_stock(prep_id: str, qty: float, restaurant_id: str,
         if prep_qty_from_ingredients > 0:
             # Deduct underlying ingredients for the shortfall
             # Scale ingredient quantities by the prep yield
-            prep_yield = prep.get("yield", {}).get("value", 1)
+            prep_yield_obj = prep.get("yield") or {}
+            prep_yield = prep_yield_obj.get("value", 1)
             scale_factor = (prep_qty_from_ingredients / prep_yield) if prep_yield > 0 else prep_qty_from_ingredients
             
             for prep_item in prep.get("items", []):

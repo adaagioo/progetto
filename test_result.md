@@ -256,9 +256,9 @@ frontend:
     implemented: true
     working: false
     file: "frontend/src/pages/Preparations.js"
-    stuck_count: 0
+    stuck_count: 1
     priority: "high"
-    needs_retesting: true
+    needs_retesting: false
     status_history:
       - working: false
         agent: "main"
@@ -273,6 +273,50 @@ frontend:
           - Auto-sets unit from ingredient when selected
           - Frontend successfully compiled after fixing syntax error in Recipes.js
           - Pending: E2E testing to verify full flow including RBAC
+      - working: false
+        agent: "testing"
+        comment: |
+          COMPREHENSIVE E2E TESTING COMPLETED - CRITICAL RBAC ISSUE FOUND ❌
+          
+          🎯 PREPARATIONS MODULE FRONTEND TESTING RESULTS:
+          
+          ✅ SUCCESSFUL FUNCTIONALITY:
+          - Login system working (admin@test.com, manager@test.com, staff@test.com)
+          - Preparations page loads correctly with proper navigation
+          - Page displays existing preparations with cost formatting (€0.00)
+          - Ingredients count displayed correctly (0 ingredients for empty preparations)
+          - Currency formatting working (Euro symbol displayed)
+          - i18n translations working (Italian "Preparazioni" for staff, English "Preparations" for admin)
+          - Settings page accessible with Language & Currency tab
+          
+          ✅ RBAC SUCCESS - STAFF USER (CRITICAL):
+          - Staff user CANNOT see "Add Preparation" button ✅
+          - Staff user CANNOT see Edit buttons on preparation cards ✅  
+          - Staff user CANNOT see Delete buttons on preparation cards ✅
+          - Staff user CAN view preparation details (name, cost, ingredients) ✅
+          - Staff role displayed correctly as "waiter" ✅
+          
+          ❌ CRITICAL RBAC FAILURE - MANAGER USER:
+          - Manager user CANNOT see "Add Preparation" button (SHOULD BE VISIBLE) ❌
+          - This violates the requirement that Admin/Manager can edit, Staff read-only
+          - Manager should have same permissions as Admin but currently doesn't
+          
+          ❌ DIALOG OVERLAY ISSUE (BLOCKING FORM SUBMISSION):
+          - Add Preparation dialog opens successfully
+          - Form fields can be filled (name, ingredients, yield, shelf life, notes)
+          - Submit button is blocked by dialog overlay preventing form submission
+          - This prevents testing of create/edit/delete operations
+          - Error: "div[data-state='open'] intercepts pointer events"
+          
+          ❌ MISSING INGREDIENTS DEPENDENCY:
+          - No ingredients exist in the system (empty state)
+          - Cannot test ingredient selection in preparation form
+          - Ingredient creation also blocked by same dialog overlay issue
+          
+          🎯 CRITICAL ISSUES REQUIRING FIXES:
+          1. Manager RBAC: Manager should see Add/Edit/Delete buttons like Admin
+          2. Dialog Overlay: Submit buttons in dialogs are not clickable
+          3. Ingredient Dependency: Need ingredients to test full preparation workflow
 
   - task: "Preparations i18n Translations"
     implemented: true

@@ -1364,6 +1364,27 @@ async def update_recipe(recipe_id: str, recipe_data: RecipeUpdate, current_user:
         update_data["price"] = recipe_data.price
     
     if recipe_data.items is not None:
+        # Validate non-empty items array
+        if len(recipe_data.items) == 0:
+            raise HTTPException(status_code=422, detail="Recipe must have at least one item")
+        
+        # Validate all items exist
+        for item in recipe_data.items:
+            if item.type == 'ingredient':
+                ingredient = await db.ingredients.find_one(
+                    {"id": item.itemId, "restaurantId": current_user["restaurantId"]}
+                )
+                if not ingredient:
+                    raise HTTPException(status_code=404, detail=f"Ingredient {item.itemId} not found")
+            elif item.type == 'preparation':
+                preparation = await db.preparations.find_one(
+                    {"id": item.itemId, "restaurantId": current_user["restaurantId"]}
+                )
+                if not preparation:
+                    raise HTTPException(status_code=404, detail=f"Preparation {item.itemId} not found")
+            else:
+                raise HTTPException(status_code=422, detail=f"Invalid item type: {item.type}")
+        
         items_dict = [item.dict() for item in recipe_data.items]
         update_data["items"] = items_dict
         # Recompute allergens when items change
@@ -1388,16 +1409,6 @@ async def update_recipe(recipe_id: str, recipe_data: RecipeUpdate, current_user:
     )
     
     return Recipe(**updated_recipe)
-    
-    existing = await db.recipes.find_one({"id": recipe_id, "restaurantId": current_user["restaurantId"]})
-    if not existing:
-        raise HTTPException(status_code=404, detail="Recipe not found")
-    
-    update_data = {
-        "name": recipe_data.name,
-        "category": recipe_data.category,
-        "portions": recipe_data.portions,
-        "targetFoodCostPct": recipe_data.targetFoodCostPct,
         "price": recipe_data.price,
         "items": [item.model_dump() for item in recipe_data.items]
     }

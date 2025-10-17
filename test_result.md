@@ -121,6 +121,49 @@ backend:
       - working: true
         agent: "main"
         comment: "Backend preparation models (PreparationItem, PreparationCreate, PreparationUpdate, Preparation) and CRUD endpoints (POST/GET/PUT/DELETE /api/preparations) already exist from previous work. Endpoints include cost and allergen computation using compute_preparation_cost_and_allergens() helper function which accounts for ingredient waste percentage."
+      - working: true
+        agent: "testing"
+        comment: |
+          COMPREHENSIVE TESTING COMPLETED - ALL SYSTEMS WORKING ✅
+          
+          🧪 PREPARATIONS MODULE BACKEND TESTING (20/20 tests passed - 100% success rate):
+          
+          📝 CRUD OPERATIONS VERIFIED:
+          ✅ POST /api/preparations - Creates preparations with cost/allergen computation
+          ✅ GET /api/preparations - Lists all preparations with tenant isolation
+          ✅ GET /api/preparations/{id} - Retrieves specific preparation with all fields
+          ✅ PUT /api/preparations/{id} - Updates preparations with cost/allergen recomputation
+          ✅ DELETE /api/preparations/{id} - Deletes preparations successfully
+          ✅ Proper 404 handling for non-existent preparations
+          ✅ Validation enforcement (missing name, invalid ingredients rejected)
+          
+          💰 COST COMPUTATION WITH WASTE% VERIFIED:
+          ✅ Formula: effectiveUnitCost = unitCost * (1 + wastePct/100)
+          ✅ Total cost = sum(effectiveUnitCost * qty) for all ingredients
+          ✅ Cost automatically recomputed on preparation updates
+          ✅ Tested with realistic waste percentages (flour 5%, tomatoes 15%, mozzarella 8%, etc.)
+          
+          🚨 ALLERGEN PROPAGATION VERIFIED:
+          ✅ Allergens are union of all ingredient allergens
+          ✅ Allergens automatically sorted alphabetically
+          ✅ Allergens recomputed when ingredients change
+          ✅ Tested with EU-14 allergens (gluten, dairy, nuts)
+          
+          🔐 RBAC & SECURITY VERIFIED:
+          ✅ Authentication required for all endpoints (401/403 responses)
+          ✅ Tenant isolation enforced (restaurant-scoped data only)
+          ✅ Admin, Manager, and Staff roles all have access (RBAC is UI-only as specified)
+          ✅ Proper HTTP status codes (200, 201, 404, 422)
+          
+          🎯 TEST SCENARIOS COMPLETED:
+          ✅ Created test ingredients with waste% (flour 5%, tomatoes 15%, mozzarella 8%, olive oil 2%, pine nuts 10%)
+          ✅ Created preparations using multiple ingredients with different allergens
+          ✅ Verified cost includes waste: Pizza base cost 8.353 (flour 2.625 + tomatoes 1.84 + mozzarella 3.888)
+          ✅ Verified allergen propagation: ['dairy', 'gluten'] from ingredients
+          ✅ Updated preparation with different ingredients and verified recomputation
+          ✅ All validation scenarios tested (empty items, missing fields, invalid ingredients)
+          
+          BACKEND PREPARATIONS MODULE IS PRODUCTION-READY ✅
 
   - task: "Storage Service Infrastructure"
     implemented: true

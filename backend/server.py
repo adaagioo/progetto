@@ -309,22 +309,6 @@ class Wastage(BaseModel):
     stockDeductions: Optional[List[dict]] = None  # Audit trail
     createdAt: str
     updatedAt: Optional[str] = None
-    qty: float
-    unit: str
-    reason: Optional[str] = None
-
-class Wastage(BaseModel):
-    model_config = ConfigDict(extra="ignore")
-    id: str
-    restaurantId: str
-    date: str
-    type: str
-    ingredientId: Optional[str] = None
-    recipeId: Optional[str] = None
-    qty: float
-    unit: str
-    reason: Optional[str] = None
-    createdAt: str
 
 class PLCreate(BaseModel):
     month: str

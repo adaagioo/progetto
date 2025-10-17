@@ -317,9 +317,9 @@ frontend:
     implemented: true
     working: false
     file: "frontend/src/pages/Recipes.js"
-    stuck_count: 0
+    stuck_count: 1
     priority: "high"
-    needs_retesting: true
+    needs_retesting: false
     status_history:
       - working: false
         agent: "main"
@@ -377,6 +377,87 @@ frontend:
           - Item type indicators [I] for ingredient, [P] for preparation
           
           Frontend compiled successfully. Pending E2E testing.
+      - working: false
+        agent: "testing"
+        comment: |
+          COMPREHENSIVE E2E TESTING COMPLETED - CRITICAL RBAC ISSUE FOUND ❌
+          
+          🎯 ENHANCED RECIPE EDITOR FRONTEND TESTING RESULTS:
+          
+          ✅ SUCCESSFUL FUNCTIONALITY (8/10 flows working):
+          
+          1. **Mixed Items Display** (MOST IMPORTANT FEATURE):
+             - ✅ Pizza Margherita recipe shows mixed items: [P] Pizza Dough + [I] Fresh Basil + [I] Extra Virgin Olive Oil
+             - ✅ Type indicators working: [P] for preparations, [I] for ingredients
+             - ✅ Mixed items properly displayed in recipe cards
+          
+          2. **Allergen Aggregation**:
+             - ✅ Allergen badges displayed correctly: "dairy" and "gluten" from Pizza Dough preparation
+             - ✅ Red styling with proper contrast (bg-red-100 text-red-800)
+             - ✅ Allergens propagated from preparations to recipes
+          
+          3. **Currency Formatting**:
+             - ✅ Euro symbol displayed correctly: "12,00 €"
+             - ✅ formatMinor() working for price display
+             - ✅ Consistent currency formatting throughout
+          
+          4. **i18n Translations**:
+             - ✅ Italian translations working: "Ricette" page title, "Aggiungi Ricetta" button
+             - ✅ Navigation in Italian: "Ingredienti", "Preparazioni", "Fornitori"
+             - ✅ Language switching functional
+          
+          5. **Keyboard UX**:
+             - ✅ Enter key does NOT submit form (prevents accidental submission)
+             - ✅ Ctrl+Enter adds new item row
+             - ✅ Ctrl+S triggers save with toast notification
+             - ✅ Escape key cancels operations
+          
+          6. **Live Cost Breakdown**:
+             - ✅ Cost breakdown section appears when items are added
+             - ✅ Real-time updates as items change
+             - ✅ Total cost, per-portion cost, and food cost % displayed
+          
+          7. **Staff RBAC** (CRITICAL - WORKING):
+             - ✅ Staff users CANNOT see "Add Recipe" button
+             - ✅ Staff users CANNOT see Edit buttons on recipe cards
+             - ✅ Staff users CANNOT see Delete buttons on recipe cards
+             - ✅ Staff users CAN view recipe details and allergen information
+          
+          8. **Recipe Display**:
+             - ✅ Recipe cards show all required information
+             - ✅ Ingredients count displayed correctly
+             - ✅ Category and pricing information visible
+          
+          ❌ CRITICAL RBAC FAILURE (2/10 flows failing):
+          
+          1. **Manager RBAC BROKEN** (HIGH PRIORITY):
+             - ❌ Manager users CANNOT see "Add Recipe" button (should be visible)
+             - ❌ Manager users CANNOT see Edit buttons (should be visible)
+             - ❌ Manager users CANNOT see Delete buttons (should be visible)
+             - ❌ Manager has same restrictions as Staff (should have Admin permissions)
+             - 🔍 Root Cause: RBAC logic issue in canEdit calculation
+          
+          2. **Recipe Creation Flow**:
+             - ❌ Dropdown selection issues prevent full recipe creation testing
+             - ❌ Type selector (ingredient/preparation) not responding to clicks
+             - ⚠️ May be Playwright-specific issue, but prevents validation of creation flow
+          
+          🔧 CRITICAL FIXES NEEDED:
+          1. **Fix Manager RBAC**: Manager should have same permissions as Admin
+          2. **Investigate dropdown selection**: May need different selector approach
+          
+          📊 TESTING COVERAGE:
+          - ✅ Mixed items display and type indicators - WORKING
+          - ✅ Allergen propagation and badges - WORKING
+          - ✅ Currency formatting and i18n - WORKING
+          - ✅ Keyboard UX shortcuts - WORKING
+          - ✅ Staff RBAC (read-only) - WORKING
+          - ❌ Manager RBAC (edit access) - BROKEN
+          - ❌ Recipe creation flow - BLOCKED by dropdown issues
+          - ✅ Live cost breakdown - WORKING
+          
+          🎯 ENHANCED RECIPE EDITOR: 80% FUNCTIONAL
+          Core display features work perfectly, but Manager RBAC needs immediate fix.
 
   - task: "Recipe Editor i18n Translations"
     implemented: true

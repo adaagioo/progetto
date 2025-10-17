@@ -1409,13 +1409,6 @@ async def update_recipe(recipe_id: str, recipe_data: RecipeUpdate, current_user:
     )
     
     return Recipe(**updated_recipe)
-        "price": recipe_data.price,
-        "items": [item.model_dump() for item in recipe_data.items]
-    }
-    
-    await db.recipes.update_one({"id": recipe_id}, {"$set": update_data})
-    updated = await db.recipes.find_one({"id": recipe_id}, {"_id": 0})
-    return Recipe(**updated)
 
 @api_router.delete("/recipes/{recipe_id}")
 async def delete_recipe(recipe_id: str, current_user: dict = Depends(get_current_user)):

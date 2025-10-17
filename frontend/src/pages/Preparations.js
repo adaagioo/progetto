@@ -184,7 +184,7 @@ function Preparations() {
         {canEdit && (
           <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
             <DialogTrigger asChild>
-              <Button onClick={resetForm}>
+              <Button onClick={resetForm} data-testid="add-preparation-btn">
                 <Plus className="mr-2 h-4 w-4" />
                 {t('preparations.add') || 'Add Preparation'}
               </Button>

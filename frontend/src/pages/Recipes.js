@@ -9,7 +9,7 @@ import { Label } from '../components/ui/label';
 import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/card';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '../components/ui/dialog';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../components/ui/select';
-import { Plus, Trash2, Calculator, TrendingUp } from 'lucide-react';
+import { Plus, Trash2, Calculator, TrendingUp, AlertCircle, Edit, Package } from 'lucide-react';
 import { Slider } from '../components/ui/slider';
 import { toast } from 'sonner';
 
@@ -19,8 +19,10 @@ function Recipes() {
   const { format } = useCurrency();
   const [recipes, setRecipes] = useState([]);
   const [ingredients, setIngredients] = useState([]);
+  const [preparations, setPreparations] = useState([]);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [isCalcDialogOpen, setIsCalcDialogOpen] = useState(false);
+  const [editingId, setEditingId] = useState(null);
   const [selectedRecipe, setSelectedRecipe] = useState(null);
   const [whatIfPrice, setWhatIfPrice] = useState(0);
   const [formData, setFormData] = useState({
@@ -29,10 +31,12 @@ function Recipes() {
     portions: '1',
     targetFoodCostPct: '30',
     price: '',
-    items: []
+    items: [],
+    shelfLife: { value: '', unit: 'days' }
   });
   const [currentItem, setCurrentItem] = useState({
-    ingredientId: '',
+    type: 'ingredient',
+    itemId: '',
     qtyPerPortion: '',
     unit: 'g'
   });
@@ -40,6 +44,7 @@ function Recipes() {
   useEffect(() => {
     fetchRecipes();
     fetchIngredients();
+    fetchPreparations();
   }, []);
 
   const fetchRecipes = async () => {
@@ -47,7 +52,7 @@ function Recipes() {
       const response = await axios.get(`${API}/recipes`);
       setRecipes(response.data);
     } catch (error) {
-      toast.error('Failed to load recipes');
+      toast.error(t('recipes.error.load') || 'Failed to load recipes');
     }
   };
 
@@ -56,7 +61,16 @@ function Recipes() {
       const response = await axios.get(`${API}/ingredients`);
       setIngredients(response.data);
     } catch (error) {
-      toast.error('Failed to load ingredients');
+      toast.error(t('ingredients.error.load') || 'Failed to load ingredients');
+    }
+  };
+
+  const fetchPreparations = async () => {
+    try {
+      const response = await axios.get(`${API}/preparations`);
+      setPreparations(response.data);
+    } catch (error) {
+      console.error('Failed to load preparations:', error);
     }
   };
 

@@ -387,10 +387,10 @@ function Preparations() {
                 </div>
                 {canEdit && (
                   <div className="flex gap-2">
-                    <Button size="sm" variant="outline" onClick={() => handleEdit(prep)}>
+                    <Button size="sm" variant="outline" onClick={() => handleEdit(prep)} data-testid={`edit-preparation-${prep.id}`}>
                       <Edit className="h-4 w-4" />
                     </Button>
-                    <Button size="sm" variant="outline" onClick={() => handleDelete(prep.id)}>
+                    <Button size="sm" variant="outline" onClick={() => handleDelete(prep.id)} data-testid={`delete-preparation-${prep.id}`}>
                       <Trash2 className="h-4 w-4" />
                     </Button>
                   </div>

@@ -132,30 +132,64 @@ function Recipes() {
     e.preventDefault();
 
     if (formData.items.length === 0) {
-      toast.error('Please add at least one ingredient');
+      toast.error(t('recipes.error.noItems') || 'Please add at least one item');
       return;
     }
 
+    const payload = {
+      ...formData,
+      portions: parseInt(formData.portions),
+      targetFoodCostPct: parseFloat(formData.targetFoodCostPct),
+      price: parseFloat(formData.price),
+      shelfLife: formData.shelfLife.value ? {
+        value: parseInt(formData.shelfLife.value),
+        unit: formData.shelfLife.unit
+      } : null,
+      items: formData.items.map(item => ({
+        ...item,
+        qtyPerPortion: parseFloat(item.qtyPerPortion)
+      }))
+    };
+
     try {
-      await axios.post(`${API}/recipes`, formData);
-      toast.success('Recipe created successfully');
+      if (editingId) {
+        await axios.put(`${API}/recipes/${editingId}`, payload);
+        toast.success(t('recipes.success.updated') || 'Recipe updated successfully');
+      } else {
+        await axios.post(`${API}/recipes`, payload);
+        toast.success(t('recipes.success.created') || 'Recipe created successfully');
+      }
       fetchRecipes();
       resetForm();
       setIsDialogOpen(false);
     } catch (error) {
-      toast.error(error.response?.data?.detail || 'Failed to save recipe');
+      toast.error(error.response?.data?.detail || t('recipes.error.save') || 'Failed to save recipe');
     }
   };
 
+  const handleEdit = (recipe) => {
+    setEditingId(recipe.id);
+    setFormData({
+      name: recipe.name,
+      category: recipe.category,
+      portions: recipe.portions.toString(),
+      targetFoodCostPct: recipe.targetFoodCostPct.toString(),
+      price: recipe.price.toString(),
+      items: recipe.items || [],
+      shelfLife: recipe.shelfLife || { value: '', unit: 'days' }
+    });
+    setIsDialogOpen(true);
+  };
+
   const handleDelete = async (id) => {
-    if (!window.confirm('Are you sure you want to delete this recipe?')) return;
+    if (!window.confirm(t('recipes.confirm.delete') || 'Are you sure you want to delete this recipe?')) return;
 
     try {
       await axios.delete(`${API}/recipes/${id}`);
-      toast.success('Recipe deleted');
+      toast.success(t('recipes.success.deleted') || 'Recipe deleted');
       fetchRecipes();
     } catch (error) {
-      toast.error('Failed to delete recipe');
+      toast.error(t('recipes.error.delete') || 'Failed to delete recipe');
     }
   };
 
@@ -172,9 +206,21 @@ function Recipes() {
       portions: '1',
       targetFoodCostPct: '30',
       price: '',
-      items: []
+      items: [],
+      shelfLife: { value: '', unit: 'days' }
     });
-    setCurrentItem({ ingredientId: '', qtyPerPortion: '', unit: 'g' });
+    setCurrentItem({ type: 'ingredient', itemId: '', qtyPerPortion: '', unit: 'g' });
+    setEditingId(null);
+  };
+
+  const getItemName = (item) => {
+    if (item.type === 'preparation') {
+      const prep = preparations.find(p => p.id === item.itemId);
+      return prep ? prep.name : 'Unknown Preparation';
+    } else {
+      const ing = ingredients.find(i => i.id === item.itemId);
+      return ing ? ing.name : 'Unknown Ingredient';
+    }
   };
 
   const getIngredientName = (id) => {

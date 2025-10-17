@@ -10,6 +10,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '.
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '../components/ui/tabs';
 import { Settings as SettingsIcon, Globe, DollarSign, Check } from 'lucide-react';
 import { toast } from 'sonner';
+import UsersTab from './UsersTab';
 
 function Settings() {
   const { t, i18n } = useTranslation();

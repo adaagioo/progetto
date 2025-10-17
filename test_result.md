@@ -386,9 +386,11 @@ metadata:
 
 test_plan:
   current_focus:
-    - "Preparations: Frontend UI testing (create, edit, delete, RBAC enforcement)"
-    - "Preparations: E2E flow (login as admin/manager/staff, verify RBAC)"
-  stuck_tasks: []
+    - "Fix Manager RBAC permissions for Preparations module"
+    - "Resolve dialog overlay issue blocking form submissions"
+    - "Create test ingredients to enable full preparation testing"
+  stuck_tasks:
+    - "Preparations Page UI with RBAC"
   test_all: false
   test_priority: "high_first"
 

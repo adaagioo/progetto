@@ -341,7 +341,7 @@ function RecipesEnhanced() {
             if (!open) resetForm();
           }}>
             <DialogTrigger asChild>
-              <Button onClick={resetForm}>
+              <Button onClick={resetForm} data-testid="add-recipe-btn">
                 <Plus className="mr-2 h-4 w-4" />
                 {t('recipes.add') || 'Add Recipe'}
               </Button>

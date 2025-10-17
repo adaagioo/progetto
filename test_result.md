@@ -288,7 +288,9 @@ metadata:
 
 test_plan:
   current_focus:
-    - "Frontend: Suppliers page UI, navigation, file upload component"
+    - "Preparations: Backend endpoints testing (CRUD, cost computation, allergen propagation)"
+    - "Preparations: Frontend UI testing (create, edit, delete, RBAC enforcement)"
+    - "Preparations: E2E flow (login as admin/manager/staff, verify RBAC)"
   stuck_tasks: []
   test_all: false
   test_priority: "high_first"

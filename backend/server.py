@@ -458,6 +458,33 @@ async def compute_preparation_cost_and_allergens(items: List[dict], db) -> tuple
     
     return total_cost, sorted(list(all_allergens))
 
+async def compute_recipe_allergens(items: List[dict], db) -> List[str]:
+    """
+    Compute recipe allergens from all items (ingredients + preparations).
+    Returns union of all allergens.
+    """
+    all_allergens = set()
+    
+    for item in items:
+        if item["type"] == "ingredient":
+            ingredient = await db.ingredients.find_one({"id": item["itemId"]}, {"_id": 0})
+            if ingredient:
+                allergens = ingredient.get("allergens", [])
+                if allergens:
+                    all_allergens.update(allergens)
+                # Legacy support
+                if ingredient.get("allergen"):
+                    all_allergens.add(ingredient["allergen"])
+        
+        elif item["type"] == "preparation":
+            preparation = await db.preparations.find_one({"id": item["itemId"]}, {"_id": 0})
+            if preparation:
+                allergens = preparation.get("allergens", [])
+                if allergens:
+                    all_allergens.update(allergens)
+    
+    return sorted(list(all_allergens))
+
 def create_access_token(data: dict):
     to_encode = data.copy()
     expire = datetime.now(timezone.utc) + timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)

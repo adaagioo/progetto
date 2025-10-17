@@ -350,7 +350,8 @@ function Preparations() {
               </div>
             </form>
           </DialogContent>
-        </Dialog>
+          </Dialog>
+        )}
       </div>
 
       <div className="grid gap-4">

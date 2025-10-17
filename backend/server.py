@@ -38,6 +38,9 @@ SECRET_KEY = os.environ.get('JWT_SECRET_KEY', 'your-secret-key-change-in-product
 ALGORITHM = "HS256"
 ACCESS_TOKEN_EXPIRE_MINUTES = 10080  # 7 days
 
+# Password hashing
+pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
+
 # App Configuration
 DEFAULT_CURRENCY = os.environ.get('DEFAULT_CURRENCY', 'EUR')
 DEFAULT_LOCALE = os.environ.get('DEFAULT_LOCALE', 'it-IT')

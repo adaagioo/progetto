@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
-Backend Testing Suite for Suppliers Module
-Tests file upload/download, suppliers CRUD, and file attachments
+Backend Testing Suite for Enhanced Recipe Editor (Sprint 3A)
+Tests recipe CRUD with ingredients AND preparations, allergen propagation, cost computation
 """
 
 import asyncio

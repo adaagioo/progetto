@@ -53,8 +53,8 @@ class BackendTester:
         """Register test user if not exists"""
         try:
             register_data = {
-                "email": "testadmin@test.com",
-                "password": "password123",
+                "email": "admin@test.com",
+                "password": "admin123",
                 "displayName": "Test Admin",
                 "restaurantName": "Test Restaurant",
                 "locale": "en-US"

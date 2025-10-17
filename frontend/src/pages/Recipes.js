@@ -114,8 +114,6 @@ function Recipes() {
     
     setFormData({ ...formData, items: newItems });
   };
-    });
-  };
 
   const calculateRecipeCost = (recipe) => {
     let totalCost = 0;

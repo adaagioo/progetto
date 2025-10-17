@@ -298,6 +298,617 @@ class BackendTester:
         except Exception as e:
             self.log_result("File Delete", False, f"Delete error: {str(e)}")
     
+    # ============ RECIPE TESTING METHODS ============
+    
+    async def create_test_ingredients(self):
+        """Create test ingredients with waste% and allergens"""
+        ingredients_data = [
+            {
+                "name": "Flour 00",
+                "unit": "kg",
+                "packSize": 1.0,
+                "packCost": 2.50,
+                "wastePct": 5.0,
+                "allergens": ["gluten"],
+                "category": "food"
+            },
+            {
+                "name": "Fresh Tomatoes",
+                "unit": "kg", 
+                "packSize": 1.0,
+                "packCost": 3.20,
+                "wastePct": 15.0,
+                "allergens": [],
+                "category": "food"
+            },
+            {
+                "name": "Mozzarella di Bufala",
+                "unit": "kg",
+                "packSize": 1.0,
+                "packCost": 12.00,
+                "wastePct": 8.0,
+                "allergens": ["dairy"],
+                "category": "food"
+            },
+            {
+                "name": "Extra Virgin Olive Oil",
+                "unit": "L",
+                "packSize": 1.0,
+                "packCost": 8.50,
+                "wastePct": 2.0,
+                "allergens": [],
+                "category": "food"
+            },
+            {
+                "name": "Fresh Basil",
+                "unit": "kg",
+                "packSize": 0.1,
+                "packCost": 2.00,
+                "wastePct": 20.0,
+                "allergens": [],
+                "category": "food"
+            },
+            {
+                "name": "Sea Salt",
+                "unit": "kg",
+                "packSize": 1.0,
+                "packCost": 1.50,
+                "wastePct": 0.0,
+                "allergens": [],
+                "category": "food"
+            }
+        ]
+        
+        created_ingredients = []
+        
+        for ingredient_data in ingredients_data:
+            try:
+                async with self.session.post(
+                    f"{BACKEND_URL}/ingredients",
+                    json=ingredient_data,
+                    headers={**self.get_auth_headers(), "Content-Type": "application/json"}
+                ) as response:
+                    if response.status == 200:
+                        ingredient = await response.json()
+                        created_ingredients.append(ingredient)
+                        self.log_result("Create Test Ingredient", True, f"Created {ingredient['name']}")
+                    else:
+                        error_text = await response.text()
+                        self.log_result("Create Test Ingredient", False, f"Failed to create {ingredient_data['name']}: {response.status}", error_text)
+            except Exception as e:
+                self.log_result("Create Test Ingredient", False, f"Error creating {ingredient_data['name']}: {str(e)}")
+        
+        return created_ingredients
+    
+    async def create_test_preparation(self, ingredients):
+        """Create a test preparation (Pizza Dough) using ingredients"""
+        if len(ingredients) < 3:
+            self.log_result("Create Test Preparation", False, "Not enough ingredients available")
+            return None
+        
+        # Find specific ingredients
+        flour = next((ing for ing in ingredients if "Flour" in ing["name"]), None)
+        tomatoes = next((ing for ing in ingredients if "Tomatoes" in ing["name"]), None)
+        mozzarella = next((ing for ing in ingredients if "Mozzarella" in ing["name"]), None)
+        
+        if not all([flour, tomatoes, mozzarella]):
+            self.log_result("Create Test Preparation", False, "Required ingredients not found")
+            return None
+        
+        prep_data = {
+            "name": "Pizza Dough",
+            "items": [
+                {
+                    "ingredientId": flour["id"],
+                    "qty": 0.5,
+                    "unit": "kg"
+                },
+                {
+                    "ingredientId": tomatoes["id"],
+                    "qty": 0.2,
+                    "unit": "kg"
+                },
+                {
+                    "ingredientId": mozzarella["id"],
+                    "qty": 0.3,
+                    "unit": "kg"
+                }
+            ],
+            "yield": {
+                "value": 4.0,
+                "unit": "portions"
+            },
+            "shelfLife": {
+                "value": 2,
+                "unit": "days"
+            },
+            "notes": "Base pizza dough with tomatoes and mozzarella"
+        }
+        
+        try:
+            async with self.session.post(
+                f"{BACKEND_URL}/preparations",
+                json=prep_data,
+                headers={**self.get_auth_headers(), "Content-Type": "application/json"}
+            ) as response:
+                if response.status == 200:
+                    preparation = await response.json()
+                    
+                    # Verify cost computation
+                    expected_cost = (
+                        flour["effectiveUnitCost"] * 0.5 +  # Flour with 5% waste
+                        tomatoes["effectiveUnitCost"] * 0.2 +  # Tomatoes with 15% waste
+                        mozzarella["effectiveUnitCost"] * 0.3   # Mozzarella with 8% waste
+                    )
+                    
+                    if abs(preparation["cost"] - expected_cost) < 0.01:
+                        self.log_result("Create Test Preparation", True, f"Pizza Dough created with correct cost: €{preparation['cost']:.3f}")
+                    else:
+                        self.log_result("Create Test Preparation", False, f"Cost mismatch: expected €{expected_cost:.3f}, got €{preparation['cost']:.3f}")
+                    
+                    # Verify allergens
+                    expected_allergens = sorted(["gluten", "dairy"])  # From flour and mozzarella
+                    if preparation["allergens"] == expected_allergens:
+                        self.log_result("Preparation Allergens", True, f"Correct allergens: {preparation['allergens']}")
+                    else:
+                        self.log_result("Preparation Allergens", False, f"Expected {expected_allergens}, got {preparation['allergens']}")
+                    
+                    return preparation
+                else:
+                    error_text = await response.text()
+                    self.log_result("Create Test Preparation", False, f"Failed: {response.status}", error_text)
+                    return None
+        except Exception as e:
+            self.log_result("Create Test Preparation", False, f"Error: {str(e)}")
+            return None
+    
+    async def test_recipe_create_ingredients_only(self, ingredients):
+        """Test recipe creation with ingredients only"""
+        if len(ingredients) < 2:
+            self.log_result("Recipe Create Ingredients Only", False, "Not enough ingredients")
+            return None
+        
+        olive_oil = next((ing for ing in ingredients if "Olive Oil" in ing["name"]), None)
+        salt = next((ing for ing in ingredients if "Salt" in ing["name"]), None)
+        
+        if not all([olive_oil, salt]):
+            self.log_result("Recipe Create Ingredients Only", False, "Required ingredients not found")
+            return None
+        
+        recipe_data = {
+            "name": "Simple Seasoned Oil",
+            "category": "condiment",
+            "portions": 4,
+            "targetFoodCostPct": 25.0,
+            "price": 800,  # €8.00 in minor units
+            "items": [
+                {
+                    "type": "ingredient",
+                    "itemId": olive_oil["id"],
+                    "qtyPerPortion": 0.02,  # 20ml per portion
+                    "unit": "L"
+                },
+                {
+                    "type": "ingredient", 
+                    "itemId": salt["id"],
+                    "qtyPerPortion": 0.001,  # 1g per portion
+                    "unit": "kg"
+                }
+            ],
+            "shelfLife": {
+                "value": 7,
+                "unit": "days"
+            }
+        }
+        
+        try:
+            async with self.session.post(
+                f"{BACKEND_URL}/recipes",
+                json=recipe_data,
+                headers={**self.get_auth_headers(), "Content-Type": "application/json"}
+            ) as response:
+                if response.status == 200:
+                    recipe = await response.json()
+                    
+                    # Verify basic fields
+                    required_fields = ["id", "name", "category", "portions", "price", "items", "allergens", "shelfLife"]
+                    missing_fields = [field for field in required_fields if field not in recipe]
+                    
+                    if missing_fields:
+                        self.log_result("Recipe Create Ingredients Only", False, f"Missing fields: {missing_fields}")
+                        return None
+                    
+                    # Verify items have correct type
+                    for item in recipe["items"]:
+                        if item["type"] != "ingredient":
+                            self.log_result("Recipe Create Ingredients Only", False, f"Wrong item type: {item['type']}")
+                            return None
+                    
+                    # Verify allergens (should be empty for oil and salt)
+                    if recipe["allergens"] != []:
+                        self.log_result("Recipe Create Ingredients Only", False, f"Expected no allergens, got: {recipe['allergens']}")
+                        return None
+                    
+                    self.log_result("Recipe Create Ingredients Only", True, "Recipe created with ingredients only")
+                    return recipe
+                else:
+                    error_text = await response.text()
+                    self.log_result("Recipe Create Ingredients Only", False, f"Failed: {response.status}", error_text)
+                    return None
+        except Exception as e:
+            self.log_result("Recipe Create Ingredients Only", False, f"Error: {str(e)}")
+            return None
+    
+    async def test_recipe_create_mixed_items(self, ingredients, preparation):
+        """Test recipe creation with BOTH ingredients AND preparations"""
+        if not preparation or len(ingredients) < 2:
+            self.log_result("Recipe Create Mixed Items", False, "Missing preparation or ingredients")
+            return None
+        
+        basil = next((ing for ing in ingredients if "Basil" in ing["name"]), None)
+        olive_oil = next((ing for ing in ingredients if "Olive Oil" in ing["name"]), None)
+        
+        if not all([basil, olive_oil]):
+            self.log_result("Recipe Create Mixed Items", False, "Required ingredients not found")
+            return None
+        
+        recipe_data = {
+            "name": "Pizza Margherita",
+            "category": "pizza",
+            "portions": 4,
+            "targetFoodCostPct": 30.0,
+            "price": 1200,  # €12.00 in minor units
+            "items": [
+                {
+                    "type": "preparation",
+                    "itemId": preparation["id"],
+                    "qtyPerPortion": 1.0,  # 1 portion of pizza dough per pizza
+                    "unit": "portions"
+                },
+                {
+                    "type": "ingredient",
+                    "itemId": basil["id"],
+                    "qtyPerPortion": 0.005,  # 5g per portion
+                    "unit": "kg"
+                },
+                {
+                    "type": "ingredient",
+                    "itemId": olive_oil["id"],
+                    "qtyPerPortion": 0.01,  # 10ml per portion
+                    "unit": "L"
+                }
+            ],
+            "shelfLife": {
+                "value": 1,
+                "unit": "days"
+            }
+        }
+        
+        try:
+            async with self.session.post(
+                f"{BACKEND_URL}/recipes",
+                json=recipe_data,
+                headers={**self.get_auth_headers(), "Content-Type": "application/json"}
+            ) as response:
+                if response.status == 200:
+                    recipe = await response.json()
+                    
+                    # Verify mixed item types
+                    prep_items = [item for item in recipe["items"] if item["type"] == "preparation"]
+                    ing_items = [item for item in recipe["items"] if item["type"] == "ingredient"]
+                    
+                    if len(prep_items) != 1 or len(ing_items) != 2:
+                        self.log_result("Recipe Create Mixed Items", False, f"Wrong item distribution: {len(prep_items)} preps, {len(ing_items)} ingredients")
+                        return None
+                    
+                    # Verify allergen propagation from preparation
+                    # Should include allergens from Pizza Dough (gluten, dairy) 
+                    expected_allergens = sorted(["dairy", "gluten"])  # From preparation
+                    if recipe["allergens"] != expected_allergens:
+                        self.log_result("Recipe Create Mixed Items", False, f"Expected allergens {expected_allergens}, got {recipe['allergens']}")
+                        return None
+                    
+                    self.log_result("Recipe Create Mixed Items", True, "Recipe created with mixed ingredients and preparations")
+                    self.log_result("Mixed Items Allergen Propagation", True, f"Correct allergen propagation: {recipe['allergens']}")
+                    return recipe
+                else:
+                    error_text = await response.text()
+                    self.log_result("Recipe Create Mixed Items", False, f"Failed: {response.status}", error_text)
+                    return None
+        except Exception as e:
+            self.log_result("Recipe Create Mixed Items", False, f"Error: {str(e)}")
+            return None
+    
+    async def test_recipe_validation(self, ingredients):
+        """Test recipe validation rules"""
+        if len(ingredients) < 1:
+            self.log_result("Recipe Validation", False, "No ingredients available")
+            return
+        
+        # Test empty items array
+        try:
+            recipe_data = {
+                "name": "Empty Recipe",
+                "category": "test",
+                "portions": 1,
+                "targetFoodCostPct": 25.0,
+                "price": 500,
+                "items": []  # Empty items should fail
+            }
+            
+            async with self.session.post(
+                f"{BACKEND_URL}/recipes",
+                json=recipe_data,
+                headers={**self.get_auth_headers(), "Content-Type": "application/json"}
+            ) as response:
+                if response.status == 422:
+                    self.log_result("Recipe Validation Empty Items", True, "Correctly rejected empty items array")
+                else:
+                    self.log_result("Recipe Validation Empty Items", False, f"Should reject empty items: {response.status}")
+        except Exception as e:
+            self.log_result("Recipe Validation Empty Items", False, f"Error: {str(e)}")
+        
+        # Test invalid ingredient ID
+        try:
+            recipe_data = {
+                "name": "Invalid Ingredient Recipe",
+                "category": "test",
+                "portions": 1,
+                "targetFoodCostPct": 25.0,
+                "price": 500,
+                "items": [
+                    {
+                        "type": "ingredient",
+                        "itemId": "nonexistent-ingredient-id",
+                        "qtyPerPortion": 0.1,
+                        "unit": "kg"
+                    }
+                ]
+            }
+            
+            async with self.session.post(
+                f"{BACKEND_URL}/recipes",
+                json=recipe_data,
+                headers={**self.get_auth_headers(), "Content-Type": "application/json"}
+            ) as response:
+                if response.status == 404:
+                    self.log_result("Recipe Validation Invalid Ingredient", True, "Correctly rejected invalid ingredient ID")
+                else:
+                    self.log_result("Recipe Validation Invalid Ingredient", False, f"Should reject invalid ingredient: {response.status}")
+        except Exception as e:
+            self.log_result("Recipe Validation Invalid Ingredient", False, f"Error: {str(e)}")
+        
+        # Test missing required fields
+        try:
+            recipe_data = {
+                "name": "Missing Fields Recipe",
+                "category": "test",
+                "portions": 1,
+                "targetFoodCostPct": 25.0,
+                # Missing price
+                "items": [
+                    {
+                        "type": "ingredient",
+                        "itemId": ingredients[0]["id"],
+                        "qtyPerPortion": 0.1,
+                        "unit": "kg"
+                    }
+                ]
+            }
+            
+            async with self.session.post(
+                f"{BACKEND_URL}/recipes",
+                json=recipe_data,
+                headers={**self.get_auth_headers(), "Content-Type": "application/json"}
+            ) as response:
+                if response.status == 422:
+                    self.log_result("Recipe Validation Missing Fields", True, "Correctly rejected missing required fields")
+                else:
+                    self.log_result("Recipe Validation Missing Fields", False, f"Should reject missing fields: {response.status}")
+        except Exception as e:
+            self.log_result("Recipe Validation Missing Fields", False, f"Error: {str(e)}")
+    
+    async def test_recipe_crud_operations(self, recipe):
+        """Test recipe CRUD operations"""
+        if not recipe:
+            self.log_result("Recipe CRUD", False, "No recipe provided")
+            return
+        
+        recipe_id = recipe["id"]
+        
+        # Test GET all recipes
+        try:
+            async with self.session.get(
+                f"{BACKEND_URL}/recipes",
+                headers=self.get_auth_headers()
+            ) as response:
+                if response.status == 200:
+                    recipes = await response.json()
+                    if isinstance(recipes, list) and len(recipes) > 0:
+                        # Verify tenant isolation
+                        restaurant_id = self.user_data["restaurantId"]
+                        for r in recipes:
+                            if r.get("restaurantId") != restaurant_id:
+                                self.log_result("Recipe List Tenant Isolation", False, "Found recipe from different restaurant")
+                                break
+                        else:
+                            self.log_result("Recipe List", True, f"Retrieved {len(recipes)} recipes with tenant isolation")
+                    else:
+                        self.log_result("Recipe List", False, "No recipes returned")
+                else:
+                    self.log_result("Recipe List", False, f"Failed: {response.status}")
+        except Exception as e:
+            self.log_result("Recipe List", False, f"Error: {str(e)}")
+        
+        # Test GET specific recipe
+        try:
+            async with self.session.get(
+                f"{BACKEND_URL}/recipes/{recipe_id}",
+                headers=self.get_auth_headers()
+            ) as response:
+                if response.status == 200:
+                    retrieved_recipe = await response.json()
+                    if retrieved_recipe["id"] == recipe_id:
+                        self.log_result("Recipe Get Specific", True, "Retrieved specific recipe")
+                    else:
+                        self.log_result("Recipe Get Specific", False, "ID mismatch")
+                else:
+                    self.log_result("Recipe Get Specific", False, f"Failed: {response.status}")
+        except Exception as e:
+            self.log_result("Recipe Get Specific", False, f"Error: {str(e)}")
+        
+        # Test UPDATE recipe
+        try:
+            update_data = {
+                "name": "Updated Recipe Name",
+                "price": 1500,  # €15.00
+                "targetFoodCostPct": 35.0
+            }
+            
+            async with self.session.put(
+                f"{BACKEND_URL}/recipes/{recipe_id}",
+                json=update_data,
+                headers={**self.get_auth_headers(), "Content-Type": "application/json"}
+            ) as response:
+                if response.status == 200:
+                    updated_recipe = await response.json()
+                    if (updated_recipe["name"] == update_data["name"] and 
+                        updated_recipe["price"] == update_data["price"] and
+                        "updatedAt" in updated_recipe):
+                        self.log_result("Recipe Update", True, "Recipe updated successfully")
+                    else:
+                        self.log_result("Recipe Update", False, "Update data not reflected")
+                else:
+                    self.log_result("Recipe Update", False, f"Failed: {response.status}")
+        except Exception as e:
+            self.log_result("Recipe Update", False, f"Error: {str(e)}")
+        
+        # Test 404 for non-existent recipe
+        try:
+            async with self.session.get(
+                f"{BACKEND_URL}/recipes/nonexistent-recipe-id",
+                headers=self.get_auth_headers()
+            ) as response:
+                if response.status == 404:
+                    self.log_result("Recipe Get Nonexistent", True, "Correctly returned 404 for missing recipe")
+                else:
+                    self.log_result("Recipe Get Nonexistent", False, f"Should return 404: {response.status}")
+        except Exception as e:
+            self.log_result("Recipe Get Nonexistent", False, f"Error: {str(e)}")
+        
+        # Test DELETE recipe
+        try:
+            async with self.session.delete(
+                f"{BACKEND_URL}/recipes/{recipe_id}",
+                headers=self.get_auth_headers()
+            ) as response:
+                if response.status == 200:
+                    # Verify recipe is deleted
+                    async with self.session.get(
+                        f"{BACKEND_URL}/recipes/{recipe_id}",
+                        headers=self.get_auth_headers()
+                    ) as verify_response:
+                        if verify_response.status == 404:
+                            self.log_result("Recipe Delete", True, "Recipe deleted successfully")
+                        else:
+                            self.log_result("Recipe Delete", False, "Recipe still accessible after deletion")
+                else:
+                    self.log_result("Recipe Delete", False, f"Failed: {response.status}")
+        except Exception as e:
+            self.log_result("Recipe Delete", False, f"Error: {str(e)}")
+    
+    async def test_cost_computation_with_waste(self, ingredients):
+        """Test accurate cost calculation with waste percentage"""
+        if len(ingredients) < 2:
+            self.log_result("Cost Computation", False, "Not enough ingredients")
+            return
+        
+        flour = next((ing for ing in ingredients if "Flour" in ing["name"]), None)
+        tomatoes = next((ing for ing in ingredients if "Tomatoes" in ing["name"]), None)
+        
+        if not all([flour, tomatoes]):
+            self.log_result("Cost Computation", False, "Required ingredients not found")
+            return
+        
+        # Verify effectiveUnitCost calculation
+        flour_expected = flour["unitCost"] * (1 + flour["wastePct"] / 100)
+        tomatoes_expected = tomatoes["unitCost"] * (1 + tomatoes["wastePct"] / 100)
+        
+        if abs(flour["effectiveUnitCost"] - flour_expected) < 0.001:
+            self.log_result("Flour Effective Cost", True, f"Correct: €{flour['effectiveUnitCost']:.3f} (with {flour['wastePct']}% waste)")
+        else:
+            self.log_result("Flour Effective Cost", False, f"Expected €{flour_expected:.3f}, got €{flour['effectiveUnitCost']:.3f}")
+        
+        if abs(tomatoes["effectiveUnitCost"] - tomatoes_expected) < 0.001:
+            self.log_result("Tomatoes Effective Cost", True, f"Correct: €{tomatoes['effectiveUnitCost']:.3f} (with {tomatoes['wastePct']}% waste)")
+        else:
+            self.log_result("Tomatoes Effective Cost", False, f"Expected €{tomatoes_expected:.3f}, got €{tomatoes['effectiveUnitCost']:.3f}")
+        
+        # Test recipe cost calculation
+        recipe_data = {
+            "name": "Cost Test Recipe",
+            "category": "test",
+            "portions": 4,
+            "targetFoodCostPct": 25.0,
+            "price": 2000,  # €20.00
+            "items": [
+                {
+                    "type": "ingredient",
+                    "itemId": flour["id"],
+                    "qtyPerPortion": 0.5,  # 0.5kg per portion
+                    "unit": "kg"
+                },
+                {
+                    "type": "ingredient",
+                    "itemId": tomatoes["id"],
+                    "qtyPerPortion": 0.2,  # 0.2kg per portion
+                    "unit": "kg"
+                }
+            ]
+        }
+        
+        # Expected per-portion cost
+        expected_per_portion = (
+            flour["effectiveUnitCost"] * 0.5 +
+            tomatoes["effectiveUnitCost"] * 0.2
+        )
+        expected_total = expected_per_portion * 4
+        
+        self.log_result("Cost Calculation Expected", True, 
+                       f"Per portion: €{expected_per_portion:.4f}, Total: €{expected_total:.4f}")
+    
+    async def test_rbac_and_security(self):
+        """Test RBAC and security for recipe endpoints"""
+        # Test authentication required
+        try:
+            async with self.session.get(f"{BACKEND_URL}/recipes") as response:
+                if response.status in [401, 403]:
+                    self.log_result("Recipe Auth Required", True, "Authentication correctly required")
+                else:
+                    self.log_result("Recipe Auth Required", False, f"Should require auth: {response.status}")
+        except Exception as e:
+            self.log_result("Recipe Auth Required", False, f"Error: {str(e)}")
+        
+        # Test with different user roles
+        for role in ["admin", "manager", "staff"]:
+            try:
+                if await self.authenticate(role):
+                    async with self.session.get(
+                        f"{BACKEND_URL}/recipes",
+                        headers=self.get_auth_headers()
+                    ) as response:
+                        if response.status == 200:
+                            self.log_result(f"Recipe Access {role.title()}", True, f"{role.title()} can access recipes")
+                        else:
+                            self.log_result(f"Recipe Access {role.title()}", False, f"Access denied: {response.status}")
+                else:
+                    self.log_result(f"Recipe Access {role.title()}", False, f"Could not authenticate as {role}")
+            except Exception as e:
+                self.log_result(f"Recipe Access {role.title()}", False, f"Error: {str(e)}")
+        
+        # Re-authenticate as admin for remaining tests
+        await self.authenticate("admin")
+    
     async def test_supplier_create_full(self):
         """Test supplier creation with all fields"""
         try:

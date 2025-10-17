@@ -370,26 +370,59 @@ function Ingredients() {
             </CardHeader>
             <CardContent className="space-y-2 text-sm">
               <div className="flex justify-between">
-                <span className="text-gray-600">Unit Cost:</span>
+                <span className="text-gray-600">{t('ingredients.unitCost') || 'Unit Cost'}:</span>
                 <span className="font-semibold text-emerald-600">{format.number(ingredient.unitCost, 4)}/{ingredient.unit}</span>
               </div>
+              {ingredient.wastePct > 0 && (
+                <div className="flex justify-between">
+                  <span className="text-gray-600">{t('ingredients.effectiveCost') || 'Effective Cost'}:</span>
+                  <span className="font-semibold text-orange-600">
+                    {format.number(ingredient.effectiveUnitCost, 4)}/{ingredient.unit}
+                    <span className="text-xs ml-1">({ingredient.wastePct}% {t('ingredients.waste') || 'waste'})</span>
+                  </span>
+                </div>
+              )}
               <div className="flex justify-between">
-                <span className="text-gray-600">Pack:</span>
+                <span className="text-gray-600">{t('ingredients.pack') || 'Pack'}:</span>
                 <span className="font-medium">{ingredient.packSize} {ingredient.unit} @ {format.number(ingredient.packCost)}</span>
               </div>
               <div className="flex justify-between">
-                <span className="text-gray-600">Min Stock:</span>
+                <span className="text-gray-600">{t('ingredients.minStock') || 'Min Stock'}:</span>
                 <span className="font-medium">{ingredient.minStockQty} {ingredient.unit}</span>
               </div>
               {ingredient.supplier && (
                 <div className="flex justify-between">
-                  <span className="text-gray-600">Supplier:</span>
+                  <span className="text-gray-600">{t('ingredients.supplier') || 'Supplier'}:</span>
                   <span className="font-medium">{ingredient.supplier}</span>
                 </div>
               )}
-              {ingredient.allergen && (
+              {ingredient.category && (
+                <div className="flex justify-between">
+                  <span className="text-gray-600">{t('ingredients.category') || 'Category'}:</span>
+                  <span className="font-medium capitalize">{ingredient.category}</span>
+                </div>
+              )}
+              {ingredient.shelfLife && (
+                <div className="flex justify-between">
+                  <span className="text-gray-600">{t('ingredients.shelfLife') || 'Shelf Life'}:</span>
+                  <span className="font-medium">{ingredient.shelfLife.value} {ingredient.shelfLife.unit}</span>
+                </div>
+              )}
+              {ingredient.allergens && ingredient.allergens.length > 0 && (
                 <div className="pt-2 border-t">
-                  <span className="text-xs text-red-600 font-medium">⚠ {ingredient.allergen}</span>
+                  <div className="flex items-start gap-1">
+                    <AlertCircle className="h-4 w-4 text-red-600 mt-0.5" />
+                    <div className="flex-1">
+                      <span className="text-xs font-medium text-red-600">{t('ingredients.allergens') || 'Allergens'}:</span>
+                      <div className="flex flex-wrap gap-1 mt-1">
+                        {ingredient.allergens.map(allergen => (
+                          <span key={allergen} className="text-xs bg-red-100 text-red-800 px-2 py-0.5 rounded">
+                            {allergen}
+                          </span>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
                 </div>
               )}
             </CardContent>

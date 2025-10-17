@@ -384,14 +384,16 @@ function Preparations() {
                     )}
                   </div>
                 </div>
-                <div className="flex gap-2">
-                  <Button size="sm" variant="outline" onClick={() => handleEdit(prep)}>
-                    <Edit className="h-4 w-4" />
-                  </Button>
-                  <Button size="sm" variant="outline" onClick={() => handleDelete(prep.id)}>
-                    <Trash2 className="h-4 w-4" />
-                  </Button>
-                </div>
+                {canEdit && (
+                  <div className="flex gap-2">
+                    <Button size="sm" variant="outline" onClick={() => handleEdit(prep)}>
+                      <Edit className="h-4 w-4" />
+                    </Button>
+                    <Button size="sm" variant="outline" onClick={() => handleDelete(prep.id)}>
+                      <Trash2 className="h-4 w-4" />
+                    </Button>
+                  </div>
+                )}
               </div>
             </CardHeader>
             <CardContent>

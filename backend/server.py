@@ -1890,6 +1890,10 @@ async def delete_recipe(recipe_id: str, current_user: dict = Depends(get_current
 async def create_sales(sales_data: SalesCreate, current_user: dict = Depends(get_current_user)):
     await check_subscription(current_user)
     
+    # Validate non-empty lines array
+    if not sales_data.lines or len(sales_data.lines) == 0:
+        raise HTTPException(status_code=422, detail="Sales must have at least one line item")
+    
     # Validate all recipes exist
     all_deductions = []
     for line in sales_data.lines:

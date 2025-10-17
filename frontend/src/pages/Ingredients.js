@@ -12,11 +12,22 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '.
 import { Plus, Trash2, Edit, AlertCircle } from 'lucide-react';
 import { toast } from 'sonner';
 
-// EU-14 Allergens
+// EU-14 Official Allergens
 const ALLERGENS = [
-  'Gluten', 'Crustaceans', 'Molluscs', 'Eggs', 'Fish', 
-  'Nuts', 'Peanuts', 'Soy', 'Celery', 'Mustard', 
-  'Sesame', 'Sulphites', 'Lupin', 'Dairy', 'Other'
+  'Cereals containing gluten',
+  'Crustaceans',
+  'Eggs',
+  'Fish',
+  'Peanuts',
+  'Soybeans',
+  'Milk',
+  'Nuts',
+  'Celery',
+  'Mustard',
+  'Sesame seeds',
+  'Sulphur dioxide and sulphites',
+  'Lupin',
+  'Molluscs'
 ];
 
 function Ingredients() {

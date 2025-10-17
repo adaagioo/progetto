@@ -112,7 +112,7 @@ function Settings() {
       </div>
 
       <Tabs defaultValue="general" className="w-full">
-        <TabsList className="grid w-full grid-cols-2 lg:w-auto lg:inline-grid">
+        <TabsList className={`grid w-full ${user?.roleKey === 'admin' ? 'grid-cols-3' : 'grid-cols-2'} lg:w-auto lg:inline-grid`}>
           <TabsTrigger value="general" data-testid="general-tab">
             <SettingsIcon className="w-4 h-4 mr-2" />
             General
@@ -121,6 +121,14 @@ function Settings() {
             <Globe className="w-4 h-4 mr-2" />
             Language & Currency
           </TabsTrigger>
+          {user?.roleKey === 'admin' && (
+            <TabsTrigger value="users" data-testid="users-tab">
+              <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
+              </svg>
+              Users & Access
+            </TabsTrigger>
+          )}
         </TabsList>
 
         <TabsContent value="general" className="space-y-4">

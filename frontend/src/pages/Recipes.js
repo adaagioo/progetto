@@ -628,10 +628,10 @@ function RecipesEnhanced() {
                 </div>
                 {canEdit && (
                   <div className="flex gap-2">
-                    <Button size="sm" variant="outline" onClick={() => handleEdit(recipe)}>
+                    <Button size="sm" variant="outline" onClick={() => handleEdit(recipe)} data-testid={`edit-recipe-${recipe.id}`}>
                       <Edit className="h-4 w-4" />
                     </Button>
-                    <Button size="sm" variant="outline" onClick={() => handleDelete(recipe.id)}>
+                    <Button size="sm" variant="outline" onClick={() => handleDelete(recipe.id)} data-testid={`delete-recipe-${recipe.id}`}>
                       <Trash2 className="h-4 w-4" />
                     </Button>
                   </div>

@@ -264,11 +264,13 @@ class Recipe(BaseModel):
 
 class SaleLine(BaseModel):
     recipeId: str
-    qty: int
+    qty: int  # Number of portions sold
 
 class SalesCreate(BaseModel):
-    date: str
+    date: str  # ISO format YYYY-MM-DD
     lines: List[SaleLine]
+    revenue: Optional[int] = None  # Total revenue in minor units (cents)
+    notes: Optional[str] = None
 
 class Sales(BaseModel):
     model_config = ConfigDict(extra="ignore")
@@ -276,13 +278,37 @@ class Sales(BaseModel):
     restaurantId: str
     date: str
     lines: List[SaleLine]
+    revenue: Optional[int] = None
+    notes: Optional[str] = None
+    stockDeductions: Optional[List[dict]] = None  # Audit trail of stock deductions
     createdAt: str
+    updatedAt: Optional[str] = None
 
 class WastageCreate(BaseModel):
+    date: str  # ISO format YYYY-MM-DD
+    type: str  # 'ingredient', 'preparation', or 'recipe' (full dish)
+    itemId: str  # ID of ingredient, preparation, or recipe
+    qty: float  # Quantity wasted
+    unit: str  # Unit of measure
+    reason: str  # Required: reason for wastage (spoilage, damage, error, etc.)
+    notes: Optional[str] = None
+
+class Wastage(BaseModel):
+    model_config = ConfigDict(extra="ignore")
+    id: str
+    restaurantId: str
     date: str
-    type: str
-    ingredientId: Optional[str] = None
-    recipeId: Optional[str] = None
+    type: str  # 'ingredient', 'preparation', or 'recipe'
+    itemId: str
+    itemName: Optional[str] = None  # Denormalized for display
+    qty: float
+    unit: str
+    reason: str
+    notes: Optional[str] = None
+    costImpact: Optional[int] = None  # Cost in minor units at time of wastage
+    stockDeductions: Optional[List[dict]] = None  # Audit trail
+    createdAt: str
+    updatedAt: Optional[str] = None
     qty: float
     unit: str
     reason: Optional[str] = None

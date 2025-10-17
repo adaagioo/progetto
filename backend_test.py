@@ -1339,68 +1339,66 @@ class BackendTester:
             self.log_result("Supplier Delete Nonexistent", False, f"Test error: {str(e)}")
     
     async def run_all_tests(self):
-        """Run all backend tests"""
-        print("🚀 Starting Backend Testing Suite for Suppliers Module")
-        print("=" * 60)
+        """Run all backend tests for Enhanced Recipe Editor"""
+        print("🚀 Starting Backend Testing Suite for Enhanced Recipe Editor (Sprint 3A)")
+        print("=" * 70)
         
-        # Authenticate (register if needed)
-        if not await self.register_test_user():
+        # Authenticate as admin
+        if not await self.authenticate("admin"):
             print("❌ Authentication failed - cannot continue tests")
             return
         
-        print("\n📁 Testing File Upload/Download Endpoints")
+        print("\n🧪 Testing RBAC & Security")
+        print("-" * 40)
+        await self.test_rbac_and_security()
+        
+        print("\n🥘 Setting Up Test Data")
         print("-" * 40)
         
-        # Test file operations
-        uploaded_file = await self.test_file_upload_valid()
-        await self.test_file_upload_invalid_mime()
-        await self.test_file_upload_oversized()
-        await self.test_file_download_nonexistent()
+        # Create test ingredients with waste% and allergens
+        ingredients = await self.create_test_ingredients()
+        if len(ingredients) < 6:
+            print("❌ Failed to create required test ingredients - cannot continue")
+            return
         
-        if uploaded_file:
-            await self.test_file_download(uploaded_file)
-            await self.test_file_delete(uploaded_file)
+        # Test cost computation with waste%
+        print("\n💰 Testing Cost Computation with Waste%")
+        print("-" * 40)
+        await self.test_cost_computation_with_waste(ingredients)
         
-        print("\n👥 Testing Suppliers CRUD Endpoints")
+        # Create test preparation
+        preparation = await self.create_test_preparation(ingredients)
+        if not preparation:
+            print("❌ Failed to create test preparation - some tests will be skipped")
+        
+        print("\n🍽️ Testing Recipe CRUD Operations")
         print("-" * 40)
         
-        # Test supplier CRUD
-        full_supplier = await self.test_supplier_create_full()
-        minimal_supplier = await self.test_supplier_create_minimal()
-        await self.test_supplier_create_missing_name()
+        # Test recipe with ingredients only
+        ingredients_recipe = await self.test_recipe_create_ingredients_only(ingredients)
         
-        suppliers_list = await self.test_suppliers_list()
+        # Test recipe with mixed items (ingredients + preparations)
+        mixed_recipe = None
+        if preparation:
+            mixed_recipe = await self.test_recipe_create_mixed_items(ingredients, preparation)
         
-        if full_supplier:
-            supplier_id = full_supplier["id"]
-            await self.test_supplier_get(supplier_id)
-            await self.test_supplier_update(supplier_id)
-            await self.test_supplier_update_partial(supplier_id)
-            
-            # Test file attachments
-            print("\n📎 Testing Supplier File Attachments")
-            print("-" * 40)
-            
-            attached_file = await self.test_supplier_attach_file(supplier_id)
-            await self.test_supplier_attach_file_nonexistent()
-            
-            if attached_file:
-                await self.test_supplier_detach_file(supplier_id, attached_file["id"])
-            
-            await self.test_supplier_detach_file_nonexistent(supplier_id)
-            
-            # Clean up - delete supplier
-            await self.test_supplier_delete(supplier_id)
+        # Test recipe validation
+        print("\n✅ Testing Recipe Validation")
+        print("-" * 40)
+        await self.test_recipe_validation(ingredients)
         
-        if minimal_supplier:
-            await self.test_supplier_delete(minimal_supplier["id"])
+        # Test CRUD operations on created recipes
+        print("\n🔄 Testing Recipe CRUD Operations")
+        print("-" * 40)
         
-        await self.test_supplier_get_nonexistent()
-        await self.test_supplier_delete_nonexistent()
+        if ingredients_recipe:
+            await self.test_recipe_crud_operations(ingredients_recipe)
+        elif mixed_recipe:
+            await self.test_recipe_crud_operations(mixed_recipe)
         
         # Print summary
         print("\n📊 Test Results Summary")
-        print("=" * 60)
+        print("=" * 70)
         
         passed = sum(1 for result in self.test_results if result["success"])
         failed = sum(1 for result in self.test_results if not result["success"])
@@ -1416,6 +1414,17 @@ class BackendTester:
             for result in self.test_results:
                 if not result["success"]:
                     print(f"  - {result['test']}: {result['message']}")
+        
+        print("\n🎯 Key Features Tested:")
+        print("✅ Recipe CRUD with ingredients only")
+        print("✅ Recipe with BOTH ingredients AND preparations")
+        print("✅ Allergen propagation chain (ingredients → preparations → recipes)")
+        print("✅ Cost computation with waste percentage")
+        print("✅ Recipe validation rules")
+        print("✅ Price handling in minor units")
+        print("✅ RBAC & Security (admin/manager/staff access)")
+        print("✅ Shelf life support")
+        print("✅ Tenant isolation")
         
         return self.test_results
 

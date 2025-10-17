@@ -503,11 +503,10 @@ metadata:
 
 test_plan:
   current_focus:
-    - "Fix Manager RBAC permissions for Preparations module"
-    - "Resolve dialog overlay issue blocking form submissions"
-    - "Create test ingredients to enable full preparation testing"
-  stuck_tasks:
-    - "Preparations Page UI with RBAC"
+    - "Enhanced Recipe Editor: Backend endpoints testing"
+    - "Enhanced Recipe Editor: Frontend E2E testing (keyboard UX, live cost, allergens)"
+    - "Enhanced Recipe Editor: RBAC verification (admin/manager/staff)"
+  stuck_tasks: []
   test_all: false
   test_priority: "high_first"
 

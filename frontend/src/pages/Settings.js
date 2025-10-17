@@ -244,6 +244,12 @@ function Settings() {
             </CardContent>
           </Card>
         </TabsContent>
+
+        {user?.roleKey === 'admin' && (
+          <TabsContent value="users">
+            <UsersTab />
+          </TabsContent>
+        )}
       </Tabs>
     </div>
   );

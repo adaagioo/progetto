@@ -124,6 +124,17 @@ backend:
       - working: true
         agent: "testing"
         comment: |
+          TESTED (20/20 tests - 100% success): All backend preparations endpoints working correctly.
+          - CRUD operations: POST/GET/PUT/DELETE working with proper status codes (200, 201, 404, 422)
+          - Cost computation: Correctly uses effectiveUnitCost (unitCost × (1 + wastePct/100))
+          - Example: Pizza base with flour (5% waste), tomatoes (15%), mozzarella (8%) = 8.353 EUR
+          - Allergen propagation: Union of all ingredient allergens, sorted alphabetically
+          - Security: Authentication required, tenant isolation enforced
+          - Validation: Missing fields rejected, invalid ingredientIds return 404
+          - All user roles (admin, manager, staff) have backend access as expected
+      - working: true
+        agent: "testing"
+        comment: |
           COMPREHENSIVE TESTING COMPLETED - ALL SYSTEMS WORKING ✅
           
           🧪 PREPARATIONS MODULE BACKEND TESTING (20/20 tests passed - 100% success rate):

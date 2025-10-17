@@ -75,7 +75,7 @@ async def seed_ingredients():
             "unitCost": 1200,
             "wastePct": 8.0,
             "effectiveUnitCost": 1296,  # 12.00 * 1.08 = 12.96 EUR
-            "allergens": ["dairy"],
+            "allergens": ["Milk"],
             "category": "food",
             "minStockQty": 5,
             "shelfLife": {"value": 7, "unit": "days"},

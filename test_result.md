@@ -631,10 +631,10 @@ metadata:
 
 test_plan:
   current_focus:
-    - "Enhanced Recipe Editor: Backend endpoints testing"
-    - "Enhanced Recipe Editor: Frontend E2E testing (keyboard UX, live cost, allergens)"
-    - "Enhanced Recipe Editor: RBAC verification (admin/manager/staff)"
-  stuck_tasks: []
+    - "Enhanced Recipe Editor: Manager RBAC fix (critical)"
+    - "Enhanced Recipe Editor: Dropdown selection issues"
+  stuck_tasks:
+    - "Enhanced Recipe Editor with Keyboard UX"
   test_all: false
   test_priority: "high_first"
 

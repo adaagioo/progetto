@@ -3074,6 +3074,10 @@ async def attach_file_to_supplier(
     """Attach a file to a supplier"""
     await check_subscription(current_user)
     
+    # RBAC: Only admin and manager can upload files
+    if current_user["roleKey"] not in ["admin", "manager"]:
+        raise HTTPException(status_code=403, detail="Only administrators and managers can upload files")
+    
     # Check if supplier exists
     supplier = await db.suppliers.find_one(
         {"id": supplier_id, "restaurantId": current_user["restaurantId"]}

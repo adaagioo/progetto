@@ -18,6 +18,9 @@ function Suppliers() {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingId, setEditingId] = useState(null);
   const [uploadingFor, setUploadingFor] = useState(null);
+  const [showOCRPriceList, setShowOCRPriceList] = useState(false);
+  const [ocrSupplierId, setOCRSupplierId] = useState(null);
+  const [ocrParsedItems, setOCRParsedItems] = useState([]);
   const [formData, setFormData] = useState({
     name: '',
     contactName: '',

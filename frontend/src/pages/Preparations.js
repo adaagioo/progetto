@@ -25,6 +25,7 @@ function Preparations() {
     items: [{ ingredientId: '', qty: '', unit: 'g' }],
     yield: { value: '', unit: 'portions' },
     shelfLife: { value: '', unit: 'days' },
+    instructions: '',
     notes: ''
   });
 

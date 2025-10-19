@@ -1150,8 +1150,8 @@ class Phase45BackendTester:
         print("🚀 Starting Phase 4 & 5 Backend Testing Suite")
         print("=" * 70)
         
-        # Authenticate as admin
-        if not await self.authenticate("admin"):
+        # Register/Authenticate as admin
+        if not await self.register_test_user("admin"):
             print("❌ Authentication failed - cannot continue tests")
             return
         

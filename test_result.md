@@ -956,12 +956,14 @@ frontend:
 metadata:
   created_by: "main_agent"
   version: "1.0"
-  test_sequence: 4
-  run_ui: false
+  test_sequence: 5
+  run_ui: true
 
 test_plan:
   current_focus:
-    - "Phase 4 & 5 Backend Testing Complete - All endpoints working"
+    - "Phase 4: Prep List Frontend - E2E testing (generate, override, save, RBAC)"
+    - "Phase 4: Order List Frontend - E2E testing (generate, drivers, save, RBAC)"
+    - "Phase 4: i18n verification (EN/IT language switching)"
   stuck_tasks:
     - "Enhanced Recipe Editor with Keyboard UX"
   test_all: false

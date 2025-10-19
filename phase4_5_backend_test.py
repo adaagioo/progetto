@@ -620,13 +620,21 @@ class Phase45BackendTester:
                 headers=self.get_auth_headers()
             ) as response:
                 if response.status == 200:
-                    forecast = await response.json()
+                    forecast_response = await response.json()
                     
-                    if isinstance(forecast, list):
+                    # Handle both list and object response formats
+                    if isinstance(forecast_response, dict) and "items" in forecast_response:
+                        forecast = forecast_response["items"]
                         self.log_result("Order List Forecast", True, f"Retrieved order forecast for {tomorrow} - {len(forecast)} items")
+                    elif isinstance(forecast_response, list):
+                        forecast = forecast_response
+                        self.log_result("Order List Forecast", True, f"Retrieved order forecast for {tomorrow} - {len(forecast)} items")
+                    else:
+                        self.log_result("Order List Forecast", False, "Invalid response format", forecast_response)
+                        return None
                         
-                        # Verify forecast structure and drivers
-                        if len(forecast) > 0:
+                    # Verify forecast structure and drivers
+                    if len(forecast) > 0:
                             item = forecast[0]
                             required_fields = ["ingredientId", "ingredientName", "currentQty", "minStockQty", "suggestedQty", "unit", "drivers"]
                             missing_fields = [field for field in required_fields if field not in item]

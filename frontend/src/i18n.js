@@ -560,6 +560,7 @@ const resources = {
       'receiving.noHistory': 'No price history available',
       'receiving.error.priceHistory': 'Failed to load price history',
       'receiving.priceLists': 'Price Lists',
+      'receiving.ocrImported': 'OCR Import',
       'receiving.category.food': 'Food',
       'receiving.category.beverage': 'Beverage',
       'receiving.category.nofood': 'Non-Food',

@@ -2194,7 +2194,7 @@ async def create_recipe(recipe_data: RecipeCreate, current_user: dict = Depends(
     
     # Compute allergens from all items
     items_dict = [item.dict() for item in recipe_data.items]
-    allergens = await compute_recipe_allergens(items_dict, db)
+    allergens, other_allergens = await compute_recipe_allergens(items_dict, db)
     
     recipe_id = str(uuid.uuid4())
     recipe = {
@@ -2207,7 +2207,9 @@ async def create_recipe(recipe_data: RecipeCreate, current_user: dict = Depends(
         "price": recipe_data.price,
         "items": items_dict,
         "allergens": allergens,
+        "otherAllergens": other_allergens,
         "shelfLife": recipe_data.shelfLife.dict() if recipe_data.shelfLife else None,
+        "instructions": recipe_data.instructions,
         "createdAt": datetime.now(timezone.utc).isoformat(),
         "updatedAt": None
     }

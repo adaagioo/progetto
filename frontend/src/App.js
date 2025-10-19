@@ -14,6 +14,7 @@ import Ingredients from './pages/Ingredients';
 import Settings from './pages/Settings';
 import Suppliers from './pages/Suppliers';
 import Receiving from './pages/Receiving';
+import DocumentImport from './pages/DocumentImport';
 import Preparations from './pages/Preparations';
 import PrepList from './pages/PrepList';
 import OrderList from './pages/OrderList';

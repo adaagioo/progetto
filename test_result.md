@@ -521,11 +521,11 @@ backend:
 
   - task: "Phase 5: P&L Snapshot Backend"
     implemented: true
-    working: "NA"
+    working: true
     file: "backend/server.py"
     stuck_count: 0
     priority: "high"
-    needs_retesting: true
+    needs_retesting: false
     status_history:
       - working: "NA"
         agent: "main"
@@ -540,6 +540,47 @@ backend:
           - All amounts in major units with 2 decimal rounding
           - Audit logging
           Needs comprehensive testing for RBAC, tenant isolation, and calculation accuracy.
+      - working: true
+        agent: "testing"
+        comment: |
+          COMPREHENSIVE PHASE 5 P&L SNAPSHOT TESTING COMPLETE - ALL SYSTEMS WORKING ✅
+          
+          🧪 P&L SNAPSHOT BACKEND TESTING (14/14 tests passed - 100% success rate):
+          
+          ✅ AUTOMATIC CALCULATIONS VERIFIED:
+          - cogs_total = cogs_food_beverage + cogs_raw_waste ✅
+          - opex_total = opex_non_food + opex_platforms ✅
+          - labour_total = labour_employees + labour_staff_meal ✅
+          - marketing_total = marketing_online_ads + marketing_free_items ✅
+          - rent_total = rent_base_effective + rent_garden ✅
+          - kpi_ebitda = sales_turnover - (all costs) ✅
+          - All calculations accurate to 2 decimal places ✅
+          
+          ✅ PERIOD & STRUCTURE VERIFIED:
+          - Weekly Mon-Sun period support working ✅
+          - Europe/Rome timezone correctly implemented ✅
+          - Period structure: start, end, timezone, granularity ✅
+          - All amounts properly rounded to 2 decimals ✅
+          
+          ✅ MULTI-CURRENCY & LOCALE VERIFIED:
+          - EUR currency with it-IT locale working ✅
+          - USD currency with en-US locale working ✅
+          - Currency and locale fields correctly stored ✅
+          
+          ✅ CRUD OPERATIONS VERIFIED:
+          - POST /api/pl/snapshot - Creates P&L snapshot with calculations ✅
+          - GET /api/pl/snapshot - Lists snapshots with tenant isolation ✅
+          - GET /api/pl/snapshot?start_date&end_date - Date range filtering ✅
+          - Sorting by period.start descending working ✅
+          
+          ✅ SECURITY & RBAC VERIFIED:
+          - Authentication required for all endpoints ✅
+          - Admin, Manager, Staff all have access ✅
+          - Tenant isolation enforced (restaurant-scoped data only) ✅
+          - Data validation working for invalid periods/currencies ✅
+          
+          🎯 P&L SNAPSHOT MODULE IS PRODUCTION-READY ✅
+          All calculations, multi-currency support, and CRUD operations working perfectly.
 
 frontend:
   - task: "Enhanced Recipe Editor with Keyboard UX"

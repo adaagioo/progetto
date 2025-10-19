@@ -140,15 +140,6 @@ function Ingredients() {
     setEditingId(null);
   };
 
-  const toggleAllergen = (allergen) => {
-    setFormData(prev => ({
-      ...prev,
-      allergens: prev.allergens.includes(allergen)
-        ? prev.allergens.filter(a => a !== allergen)
-        : [...prev.allergens, allergen]
-    }));
-  };
-
   return (
     <div className="space-y-6" data-testid="ingredients-page">
       <div className="flex justify-between items-center">

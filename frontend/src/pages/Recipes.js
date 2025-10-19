@@ -647,9 +647,40 @@ function RecipesEnhanced() {
         )}
       </div>
 
+      {/* Search and Filter Bar */}
+      <div className="flex flex-col sm:flex-row gap-4 mb-6">
+        <div className="flex-1">
+          <Input
+            type="text"
+            placeholder={t('common.search') || 'Search recipes...'}
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="w-full"
+          />
+        </div>
+        <div className="sm:w-64">
+          <Select
+            value={selectedAllergenFilter}
+            onValueChange={setSelectedAllergenFilter}
+          >
+            <SelectTrigger>
+              <SelectValue placeholder={t('recipes.filterByAllergen') || 'Filter by allergen'} />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">{t('common.all') || 'All Recipes'}</SelectItem>
+              {uniqueAllergens.map(allergen => (
+                <SelectItem key={allergen} value={allergen}>
+                  {t(`allergens.${allergen.toUpperCase()}`) || allergen}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+      </div>
+
       {/* Recipe Cards */}
       <div className="grid gap-4">
-        {recipes.map((recipe) => (
+        {filteredRecipes.map((recipe) => (
           <Card key={recipe.id}>
             <CardHeader>
               <div className="flex justify-between items-start">

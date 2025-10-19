@@ -1603,6 +1603,14 @@ async def create_ingredient(ingredient_data: IngredientCreate, current_user: dic
 async def get_ingredients(current_user: dict = Depends(get_current_user)):
     await check_subscription(current_user)
     ingredients = await db.ingredients.find({"restaurantId": current_user["restaurantId"]}, {"_id": 0}).to_list(1000)
+    
+    # Populate supplier name if preferredSupplierId exists
+    for ing in ingredients:
+        if ing.get("preferredSupplierId"):
+            supplier = await db.suppliers.find_one({"id": ing["preferredSupplierId"]}, {"_id": 0})
+            if supplier:
+                ing["preferredSupplierName"] = supplier.get("name")
+    
     return [Ingredient(**ing) for ing in ingredients]
 
 @api_router.put("/ingredients/{ingredient_id}", response_model=Ingredient)

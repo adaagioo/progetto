@@ -11,6 +11,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../components/ui/select';
 import { Plus, Trash2, Edit, AlertCircle } from 'lucide-react';
 import { toast } from 'sonner';
+import AllergenSelector from '../components/AllergenSelector';
 
 // EU-14 Official Allergens
 const ALLERGENS = [

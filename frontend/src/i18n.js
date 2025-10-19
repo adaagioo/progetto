@@ -162,6 +162,13 @@ const resources = {
       'ocr.complete': 'Processing complete!',
       'ocr.autoMappedItems': '{{count}} items auto-mapped from saved mappings',
       'ocr.itemsLoaded': 'items loaded from invoice',
+      'ocr.reviewPriceList': 'Review Price List',
+      'ocr.reviewInstructions': 'Review and map items from the price list to ingredients in your system.',
+      'ocr.description': 'Description',
+      'ocr.code': 'Code',
+      'ocr.qty': 'Qty',
+      'ocr.unit': 'Unit',
+      'ocr.price': 'Price',
 
       'preparations.form.name': 'Name',
       'preparations.form.namePlaceholder': 'e.g., Pizza Dough',

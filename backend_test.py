@@ -1,20 +1,22 @@
 #!/usr/bin/env python3
 """
-Backend Testing Suite for Enhanced Recipe Editor (Sprint 3A)
-Tests recipe CRUD with ingredients AND preparations, allergen propagation, cost computation
+Phase 8 OCR Document Ingestion Backend Testing
+Comprehensive testing for OCR processing and receiving integration
 """
 
-import asyncio
-import aiohttp
+import requests
 import json
-import os
+import io
+from PIL import Image, ImageDraw, ImageFont
 import tempfile
-from pathlib import Path
-from typing import Dict, Any, Optional
+import os
+from datetime import datetime, timedelta
 
-# Configuration
-BACKEND_URL = "https://food-analytics.preview.emergentagent.com/api"
-TEST_CREDENTIALS = {
+# Test Configuration
+BASE_URL = "https://food-analytics.preview.emergentagent.com/api"
+
+# Test Credentials
+TEST_USERS = {
     "admin": {"email": "admin@test.com", "password": "admin123"},
     "manager": {"email": "manager@test.com", "password": "manager123"},
     "staff": {"email": "staff@test.com", "password": "staff123"}

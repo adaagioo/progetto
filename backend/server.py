@@ -1722,6 +1722,7 @@ async def update_ingredient(ingredient_id: str, ingredient_data: IngredientCreat
         "preferredSupplierId": ingredient_data.preferredSupplierId,
         "allergen": ingredient_data.allergen,
         "allergens": ingredient_data.allergens or [],
+        "otherAllergens": ingredient_data.otherAllergens or [],
         "minStockQty": ingredient_data.minStockQty,
         "wastePct": waste_pct,
         "shelfLife": ingredient_data.shelfLife.dict() if ingredient_data.shelfLife else None

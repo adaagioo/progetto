@@ -893,6 +893,66 @@ frontend:
         agent: "main"
         comment: "Added Suppliers link to Layout.js navigation with Truck icon. Frontend restarted but link not yet visible in screenshot attempt."
 
+  - task: "Phase 4: Prep List Frontend"
+    implemented: true
+    working: true
+    file: "frontend/src/pages/PrepList.js"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: true
+        agent: "main"
+        comment: |
+          Phase 4 Prep List frontend fully implemented:
+          - Clean, responsive UI with sticky header table
+          - Target date selector (default: tomorrow)
+          - Generate forecast button using /api/prep-list/forecast
+          - Two views: Available/To Make (filter dropdown)
+          - Editable quantities for admin/manager (manual overrides)
+          - Actual quantity tracking field
+          - Notes field per preparation
+          - Source badges (Sales Trend, Manual Override, Shelf Life)
+          - Urgency highlighting (high/medium/low based on toMakeQty)
+          - Search functionality
+          - Save button to persist to /api/prep-list
+          - Summary stats (total preparations, items to make)
+          - RBAC: Admin/Manager can edit, Staff read-only
+          - Complete EN/IT translations
+          - FIXED: Authentication token reference (authToken -> token)
+          - VERIFIED: Generate and display working with success message
+
+  - task: "Phase 4: Order List Frontend"
+    implemented: true
+    working: true
+    file: "frontend/src/pages/OrderList.js"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: true
+        agent: "main"
+        comment: |
+          Phase 4 Order List frontend fully implemented:
+          - Clean, responsive UI with sticky header table
+          - Target date selector (default: tomorrow)
+          - Generate suggestions button using /api/order-list/forecast
+          - Driver badges (Low Stock, Prep Needs, Expiring Soon) with color coding
+          - Editable suggested quantities for admin/manager
+          - Actual order quantity tracking field
+          - Notes field per ingredient
+          - Supplier display (when mapped)
+          - Expiry date alerts
+          - Filter by: All, Low Stock, Expiring
+          - Search functionality
+          - Save button to persist to /api/order-list
+          - Summary stats (total items, low stock count, expiring count)
+          - RBAC: Admin/Manager can edit, Staff read-only
+          - Complete EN/IT translations
+          - Multi-driver highlighting: Orange background for urgent items
+          - FIXED: Authentication token reference (authToken -> token)
+          - VERIFIED: Generate and display working with success message
+
 metadata:
   created_by: "main_agent"
   version: "1.0"

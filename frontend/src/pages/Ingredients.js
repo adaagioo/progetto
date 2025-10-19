@@ -132,8 +132,10 @@ function Ingredients() {
       packSize: '',
       packCost: '',
       supplier: '',
+      preferredSupplierId: 'none',
       allergen: '',
       allergens: [],
+      otherAllergens: [],
       minStockQty: '',
       category: 'food',
       wastePct: '0',
@@ -141,6 +143,32 @@ function Ingredients() {
     });
     setEditingId(null);
   };
+
+  // Get unique allergens from all ingredients for filter
+  const uniqueAllergens = React.useMemo(() => {
+    const allergenSet = new Set();
+    ingredients.forEach(ing => {
+      if (ing.allergens && ing.allergens.length > 0) {
+        ing.allergens.forEach(a => allergenSet.add(a));
+      }
+    });
+    return Array.from(allergenSet).sort();
+  }, [ingredients]);
+
+  // Filter ingredients based on search and allergen filter
+  const filteredIngredients = React.useMemo(() => {
+    return ingredients.filter(ingredient => {
+      // Search filter
+      const matchesSearch = searchQuery === '' || 
+        ingredient.name.toLowerCase().includes(searchQuery.toLowerCase());
+      
+      // Allergen filter
+      const matchesAllergen = selectedAllergenFilter === 'all' ||
+        (ingredient.allergens && ingredient.allergens.includes(selectedAllergenFilter));
+      
+      return matchesSearch && matchesAllergen;
+    });
+  }, [ingredients, searchQuery, selectedAllergenFilter]);
 
   return (
     <div className="space-y-6" data-testid="ingredients-page">

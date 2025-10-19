@@ -119,6 +119,7 @@ function Ingredients() {
       preferredSupplierId: ingredient.preferredSupplierId || 'none',
       allergen: ingredient.allergen || '',
       allergens: ingredient.allergens || [],
+      otherAllergens: ingredient.otherAllergens || [],
       minStockQty: ingredient.minStockQty.toString(),
       category: ingredient.category || 'food',
       wastePct: (ingredient.wastePct || 0).toString(),

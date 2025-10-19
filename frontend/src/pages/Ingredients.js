@@ -319,22 +319,10 @@ function Ingredients() {
                 </p>
               </div>
 
-              <div className="space-y-2">
-                <Label>{t('ingredients.form.allergens') || 'Allergens'}</Label>
-                <div className="grid grid-cols-3 gap-2 max-h-40 overflow-y-auto border rounded p-2">
-                  {ALLERGENS.map(allergen => (
-                    <label key={allergen} className="flex items-center gap-2 text-sm cursor-pointer">
-                      <input
-                        type="checkbox"
-                        checked={formData.allergens.includes(allergen)}
-                        onChange={() => toggleAllergen(allergen)}
-                        className="rounded"
-                      />
-                      {allergen}
-                    </label>
-                  ))}
-                </div>
-              </div>
+              <AllergenSelector
+                selectedAllergens={formData.allergens}
+                onAllergensChange={(allergens) => setFormData({ ...formData, allergens })}
+              />
 
               <div className="space-y-2">
                 <Label>{t('ingredients.form.shelfLife') || 'Shelf Life'}</Label>

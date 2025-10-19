@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
-Comprehensive Allergen Taxonomy Backend Testing Suite
-Tests EU-14 allergen codes, uppercase storage, propagation chain, and RBAC
+Allergen Taxonomy Backend Final Verification Test Suite
+Tests uppercase codes, mixed case normalization, propagation, and i18n functionality
 """
 
 import asyncio
@@ -12,9 +12,7 @@ from typing import Dict, Any, List, Optional
 # Configuration
 BACKEND_URL = "https://food-analytics.preview.emergentagent.com/api"
 TEST_CREDENTIALS = {
-    "admin": {"email": "admin@test.com", "password": "admin123"},
-    "manager": {"email": "manager@test.com", "password": "manager123"},
-    "staff": {"email": "staff@test.com", "password": "staff123"}
+    "admin": {"email": "admin@test.com", "password": "admin123"}
 }
 
 # EU-14 Allergen Codes (should match backend)

@@ -369,8 +369,39 @@ function Ingredients() {
         </Dialog>
       </div>
 
+      {/* Search and Filter Bar */}
+      <div className="flex flex-col sm:flex-row gap-4 mb-6">
+        <div className="flex-1">
+          <Input
+            type="text"
+            placeholder={t('common.search') || 'Search ingredients...'}
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="w-full"
+          />
+        </div>
+        <div className="sm:w-64">
+          <Select
+            value={selectedAllergenFilter}
+            onValueChange={setSelectedAllergenFilter}
+          >
+            <SelectTrigger>
+              <SelectValue placeholder={t('ingredients.filterByAllergen') || 'Filter by allergen'} />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">{t('common.all') || 'All Ingredients'}</SelectItem>
+              {uniqueAllergens.map(allergen => (
+                <SelectItem key={allergen} value={allergen}>
+                  {t(`allergens.${allergen}`) || allergen}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+      </div>
+
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-        {ingredients.map((ingredient) => (
+        {filteredIngredients.map((ingredient) => (
           <Card key={ingredient.id} className="glass-morphism border-0 card-hover" data-testid="ingredient-card">
             <CardHeader>
               <CardTitle className="flex items-center justify-between">

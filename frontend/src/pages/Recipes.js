@@ -752,6 +752,23 @@ function RecipesEnhanced() {
           </Card>
         ))}
 
+        {filteredRecipes.length === 0 && recipes.length > 0 && (
+          <Card>
+            <CardContent className="flex flex-col items-center justify-center py-12">
+              <p className="text-gray-500 mb-4">{t('common.noResults') || 'No recipes match your filters'}</p>
+              <Button 
+                variant="outline"
+                onClick={() => {
+                  setSearchQuery('');
+                  setSelectedAllergenFilter('all');
+                }}
+              >
+                {t('common.clearFilters') || 'Clear Filters'}
+              </Button>
+            </CardContent>
+          </Card>
+        )}
+
         {recipes.length === 0 && (
           <div className="text-center py-12 text-muted-foreground">
             <Package className="h-12 w-12 mx-auto mb-4 opacity-50" />

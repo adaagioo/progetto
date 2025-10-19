@@ -1186,6 +1186,8 @@ const resources = {
       'suppliers.error.fileDelete': 'Impossibile eliminare il file',
       'suppliers.priceList': 'Listino Prezzi',
       'suppliers.uploadPriceList': 'Carica Listino Prezzi',
+      'suppliers.ocrPriceList': 'OCR Listino Prezzi',
+      'suppliers.priceListReviewed': 'Dati del listino prezzi rivisti',
       'suppliers.downloadPriceList': 'Scarica',
       'suppliers.noPriceList': 'Nessun listino prezzi caricato',
       'suppliers.priceListUploaded': 'Listino prezzi caricato con successo',

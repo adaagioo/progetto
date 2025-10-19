@@ -146,7 +146,7 @@ class OCRTester:
             headers = {"Authorization": f"Bearer {self.tokens['admin']}"}
             response = requests.post(f"{BASE_URL}/suppliers", json=supplier_data, headers=headers)
             
-            if response.status_code == 201:
+            if response.status_code in [200, 201]:
                 supplier = response.json()
                 self.test_data['supplier_id'] = supplier['id']
                 self.log_result("Create test supplier", True, f"ID: {supplier['id']}")

@@ -796,6 +796,7 @@ const resources = {
       'ocr.extractingText': 'Estrazione testo dal documento...',
       'ocr.complete': 'Elaborazione completata!',
       'ocr.autoMappedItems': '{{count}} articoli mappati automaticamente',
+      'ocr.itemsLoaded': 'articoli caricati dalla fattura',
 
       'preparations.form.name': 'Nome',
       'preparations.form.namePlaceholder': 'es. Impasto Pizza',

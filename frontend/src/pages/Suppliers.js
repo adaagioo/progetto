@@ -375,6 +375,83 @@ function Suppliers() {
           </Card>
         ))}
       </div>
+
+      {/* OCR Price List Review Dialog */}
+      <Dialog open={showOCRPriceList} onOpenChange={setShowOCRPriceList}>
+        <DialogContent className="max-w-4xl max-h-[80vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>{t('ocr.reviewPriceList') || 'Review Price List'}</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4">
+            <p className="text-sm text-muted-foreground">
+              {t('ocr.reviewInstructions') || 'Review and map items from the price list to ingredients in your system.'}
+            </p>
+            
+            {ocrParsedItems.length === 0 ? (
+              <div className="text-center py-8 text-muted-foreground">
+                {t('ocr.noItemsFound') || 'No line items found in document'}
+              </div>
+            ) : (
+              <div className="border rounded-lg overflow-hidden">
+                <table className="w-full">
+                  <thead className="bg-muted">
+                    <tr>
+                      <th className="px-4 py-2 text-left text-sm font-medium">{t('ocr.description') || 'Description'}</th>
+                      <th className="px-4 py-2 text-left text-sm font-medium">{t('ocr.code') || 'Code'}</th>
+                      <th className="px-4 py-2 text-right text-sm font-medium">{t('ocr.qty') || 'Qty'}</th>
+                      <th className="px-4 py-2 text-right text-sm font-medium">{t('ocr.unit') || 'Unit'}</th>
+                      <th className="px-4 py-2 text-right text-sm font-medium">{t('ocr.price') || 'Price'}</th>
+                      <th className="px-4 py-2 text-left text-sm font-medium">{t('ocr.confidence') || 'Confidence'}</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {ocrParsedItems.map((item, idx) => (
+                      <tr key={idx} className="border-t">
+                        <td className="px-4 py-2 text-sm">{item.description || '-'}</td>
+                        <td className="px-4 py-2 text-sm">{item.code || '-'}</td>
+                        <td className="px-4 py-2 text-sm text-right">{item.qty || '-'}</td>
+                        <td className="px-4 py-2 text-sm text-right">{item.unit || '-'}</td>
+                        <td className="px-4 py-2 text-sm text-right">{item.price || '-'}</td>
+                        <td className="px-4 py-2 text-sm">
+                          <span 
+                            className={`px-2 py-1 rounded text-xs ${
+                              (item.confidence || 0) >= 0.8 
+                                ? 'bg-green-100 text-green-800' 
+                                : (item.confidence || 0) >= 0.5 
+                                ? 'bg-yellow-100 text-yellow-800' 
+                                : 'bg-red-100 text-red-800'
+                            }`}
+                          >
+                            {item.confidence ? `${Math.round(item.confidence * 100)}%` : '-'}
+                          </span>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
+            
+            <div className="flex justify-end gap-2 pt-4">
+              <Button variant="outline" onClick={() => {
+                setShowOCRPriceList(false);
+                setOCRParsedItems([]);
+                setOCRSupplierId(null);
+              }}>
+                {t('common.close') || 'Close'}
+              </Button>
+              <Button onClick={() => {
+                toast.success(t('suppliers.priceListReviewed') || 'Price list data reviewed');
+                setShowOCRPriceList(false);
+                setOCRParsedItems([]);
+                setOCRSupplierId(null);
+              }}>
+                {t('common.done') || 'Done'}
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

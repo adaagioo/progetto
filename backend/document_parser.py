@@ -145,7 +145,6 @@ class DocumentParser:
         
         # Find the section with line items (after header/info)
         in_items_section = False
-        item_header_found = False
         
         for line in lines:
             line = line.strip()
@@ -153,17 +152,17 @@ class DocumentParser:
                 continue
             
             # Detect item section start - improved for Italian invoices
-            if re.search(r'\b(?:item|description|product|qty|quantity|price|prezzo|articolo|codice.*descrizione|gtà.*descrizione)\b', line, re.IGNORECASE):
-                item_header_found = True
-                in_items_section = True
-                continue
-            
-            # Also detect by looking for product code pattern (L0347, V1933, etc.)
+            # Look for product code pattern (L0347, V1933, etc.) to start section
             if not in_items_section and re.match(r'^[A-Z]\d{4}\s+\d+', line):
                 in_items_section = True
             
+            # Also detect by header keywords
+            if re.search(r'\b(?:codice.*descrizione|gtà.*descrizione)\b', line, re.IGNORECASE):
+                in_items_section = True
+                continue  # Skip header line
+            
             # Stop at total or footer
-            if re.search(r'\b(?:totale|subtotal|note|annotazioni|firma|assolve)\b', line, re.IGNORECASE):
+            if re.search(r'\b(?:totale.*imponibile|annotazioni|firma|assolve|imponibile)\b', line, re.IGNORECASE):
                 break
             
             if in_items_section:

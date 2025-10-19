@@ -275,14 +275,32 @@ function Suppliers() {
               <div className="border-t pt-4">
                 <div className="flex items-center justify-between mb-3">
                   <h3 className="font-medium">{t('suppliers.files') || 'Files'} ({supplier.files?.length || 0})</h3>
-                  <div>
+                  <div className="flex gap-2">
                     <input
                       type="file"
                       id={`file-upload-${supplier.id}`}
                       className="hidden"
-                      onChange={(e) => handleFileUpload(supplier.id, e)}
+                      onChange={(e) => handleFileUpload(supplier.id, e, 'general')}
                       disabled={uploadingFor === supplier.id}
                     />
+                    <input
+                      type="file"
+                      id={`price-list-upload-${supplier.id}`}
+                      className="hidden"
+                      accept=".pdf,.xlsx,.xls,.doc,.docx,.jpg,.jpeg,.png"
+                      onChange={(e) => handleFileUpload(supplier.id, e, 'price_list')}
+                      disabled={uploadingFor === supplier.id}
+                    />
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={() => document.getElementById(`price-list-upload-${supplier.id}`).click()}
+                      disabled={uploadingFor === supplier.id}
+                      data-testid="upload-price-list-button"
+                    >
+                      <Upload className="mr-2 h-4 w-4" />
+                      {t('suppliers.uploadPriceList') || 'Upload Price List'}
+                    </Button>
                     <Button
                       size="sm"
                       variant="outline"
@@ -302,6 +320,11 @@ function Suppliers() {
                         <div className="flex items-center gap-2 flex-1 min-w-0">
                           <FileText className="h-4 w-4 text-muted-foreground flex-shrink-0" />
                           <span className="text-sm truncate">{file.filename}</span>
+                          {file.fileType === 'price_list' && (
+                            <span className="px-2 py-0.5 text-xs bg-green-100 text-green-800 rounded flex-shrink-0">
+                              {t('suppliers.priceList') || 'Price List'}
+                            </span>
+                          )}
                           <span className="text-xs text-muted-foreground flex-shrink-0">
                             ({(file.size / 1024).toFixed(1)} KB)
                           </span>
@@ -311,6 +334,7 @@ function Suppliers() {
                             size="sm"
                             variant="ghost"
                             onClick={() => handleFileDownload(file.id, file.filename)}
+                            title={t('suppliers.downloadPriceList') || 'Download'}
                           >
                             <Download className="h-4 w-4" />
                           </Button>

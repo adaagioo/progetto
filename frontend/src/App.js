@@ -139,6 +139,14 @@ function App() {
             element={user ? <Layout><Preparations /></Layout> : <Navigate to="/login" />}
           />
           <Route
+            path="/prep-list"
+            element={user ? <Layout><PrepList /></Layout> : <Navigate to="/login" />}
+          />
+          <Route
+            path="/order-list"
+            element={user ? <Layout><OrderList /></Layout> : <Navigate to="/login" />}
+          />
+          <Route
             path="/settings"
             element={user ? <Layout><Settings /></Layout> : <Navigate to="/login" />}
           />

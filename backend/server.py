@@ -2888,12 +2888,21 @@ async def get_dashboard_kpis(current_user: dict = Depends(get_current_user)):
                 qty = line["qty"]
                 total_revenue += recipe["price"] * qty
                 
-                # Calculate recipe cost
+                # Calculate recipe cost (supports both ingredients and preparations)
                 recipe_cost = 0
                 for item in recipe.get("items", []):
-                    ingredient = ingredients_map.get(item["ingredientId"])
-                    if ingredient:
-                        recipe_cost += ingredient["unitCost"] * item["qtyPerPortion"]
+                    if item.get("type") == "ingredient" or "ingredientId" in item:
+                        # New format or legacy format
+                        item_id = item.get("itemId") or item.get("ingredientId")
+                        ingredient = ingredients_map.get(item_id)
+                        if ingredient:
+                            effective_cost = ingredient.get("effectiveUnitCost", ingredient["unitCost"])
+                            recipe_cost += effective_cost * item["qtyPerPortion"]
+                    elif item.get("type") == "preparation":
+                        # Preparation cost (already includes ingredient costs with waste)
+                        prep = await db.preparations.find_one({"id": item["itemId"]}, {"_id": 0})
+                        if prep:
+                            recipe_cost += prep.get("cost", 0) * item["qtyPerPortion"]
                 
                 total_cogs += recipe_cost * qty
     

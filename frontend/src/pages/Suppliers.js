@@ -9,6 +9,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/card'
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '../components/ui/dialog';
 import { Plus, Trash2, Edit, Upload, Download, FileText } from 'lucide-react';
 import { toast } from 'sonner';
+import OCRUploadButton from '../components/OCRUploadButton';
 
 function Suppliers() {
   const { t } = useTranslation();

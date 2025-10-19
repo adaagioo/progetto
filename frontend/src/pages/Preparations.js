@@ -440,7 +440,7 @@ function Preparations() {
                       <div className="flex flex-wrap gap-1 mt-1">
                         {prep.allergens.map(allergen => (
                           <span key={allergen} className="text-xs bg-red-100 text-red-800 px-2 py-0.5 rounded">
-                            {allergen}
+                            {t(`allergens.${allergen}`) || allergen}
                           </span>
                         ))}
                       </div>

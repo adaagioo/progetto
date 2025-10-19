@@ -657,6 +657,7 @@ const resources = {
       'ingredients.allergensFree': 'Senza allergeni',
       'ingredients.otherAllergens': 'Altri Allergeni',
       'ingredients.addOtherAllergen': 'Aggiungi altro allergene',
+      'ingredients.filterByAllergen': 'Filtra per allergene',
       
       // Standard allergen codes (EU-14)
       'allergens.GLUTEN': 'glutine',

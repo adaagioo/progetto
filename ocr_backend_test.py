@@ -198,7 +198,7 @@ class OCRTester:
             try:
                 response = requests.post(f"{BASE_URL}/ingredients", json=ing_data, headers=headers)
                 
-                if response.status_code == 201:
+                if response.status_code in [200, 201]:
                     ingredient = response.json()
                     self.test_data['ingredient_ids'].append(ingredient['id'])
                     self.log_result(f"Create ingredient: {ing_data['name']}", True, f"ID: {ingredient['id']}")

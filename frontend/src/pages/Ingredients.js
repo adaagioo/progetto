@@ -265,14 +265,14 @@ function Ingredients() {
               <div className="space-y-2">
                 <Label htmlFor="preferredSupplier">{t('ingredients.preferredSupplier') || 'Preferred Supplier'}</Label>
                 <Select
-                  value={formData.preferredSupplierId || ''}
-                  onValueChange={(value) => setFormData({ ...formData, preferredSupplierId: value })}
+                  value={formData.preferredSupplierId || 'none'}
+                  onValueChange={(value) => setFormData({ ...formData, preferredSupplierId: value === 'none' ? '' : value })}
                 >
                   <SelectTrigger data-testid="ingredient-supplier-select">
                     <SelectValue placeholder={t('ingredients.selectSupplier') || 'Select Supplier'} />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="">{t('ingredients.noSupplier') || 'No supplier'}</SelectItem>
+                    <SelectItem value="none">{t('ingredients.noSupplier') || 'No supplier'}</SelectItem>
                     {suppliers.map(supplier => (
                       <SelectItem key={supplier.id} value={supplier.id}>
                         {supplier.name}

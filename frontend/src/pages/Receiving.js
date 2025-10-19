@@ -613,6 +613,12 @@ function Receiving() {
                       <span className={`text-xs px-2 py-1 rounded ${getCategoryBadgeColor(receiving.category)}`}>
                         {t(`receiving.category.${receiving.category}`) || receiving.category}
                       </span>
+                      {receiving.importedFromOCR && (
+                        <span className="text-xs px-2 py-1 rounded bg-purple-100 text-purple-800 flex items-center gap-1">
+                          <FileText className="h-3 w-3" />
+                          {t('receiving.ocrImported') || 'OCR Import'}
+                        </span>
+                      )}
                     </CardTitle>
                     <div className="text-sm text-muted-foreground mt-1">
                       {t('receiving.arrivedAt') || 'Arrived'}: {new Date(receiving.arrivedAt).toLocaleDateString()}

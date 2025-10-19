@@ -476,6 +476,8 @@ const resources = {
       'receiving.total': 'Total',
       'receiving.files': 'Files',
       'receiving.upload': 'Upload',
+      'receiving.supplierAutofilled': 'Supplier auto-filled from ingredient preferred supplier',
+      'receiving.priceAutofilled': 'Price auto-filled from ingredient last purchase price',
       'receiving.uploading': 'Uploading...',
       'receiving.unknownSupplier': 'Unknown Supplier',
       'receiving.noData': 'No receiving records yet',

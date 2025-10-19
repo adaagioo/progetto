@@ -161,6 +161,7 @@ const resources = {
       'ocr.extractingText': 'Extracting text from document...',
       'ocr.complete': 'Processing complete!',
       'ocr.autoMappedItems': '{{count}} items auto-mapped from saved mappings',
+      'ocr.itemsLoaded': 'items loaded from invoice',
 
       'preparations.form.name': 'Name',
       'preparations.form.namePlaceholder': 'e.g., Pizza Dough',

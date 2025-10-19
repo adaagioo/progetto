@@ -2978,6 +2978,7 @@ async def delete_supplier(supplier_id: str, current_user: dict = Depends(get_cur
 async def attach_file_to_supplier(
     supplier_id: str,
     file: UploadFile = File(...),
+    fileType: str = Form(None),  # Optional: 'price_list', 'contract', 'general'
     current_user: dict = Depends(get_current_user)
 ):
     """Attach a file to a supplier"""
@@ -3006,6 +3007,7 @@ async def attach_file_to_supplier(
             "size": file_metadata["size"],
             "mimeType": file_metadata["mime_type"],
             "hash": file_metadata["hash"],
+            "fileType": fileType or "general",  # price_list, contract, general
             "uploadedBy": current_user["id"],
             "uploadedAt": datetime.now(timezone.utc).isoformat()
         }
@@ -3027,7 +3029,7 @@ async def attach_file_to_supplier(
             "attach_file",
             "supplier",
             supplier_id,
-            {"filename": file.filename}
+            {"filename": file.filename, "fileType": fileType}
         )
         
         return file_record

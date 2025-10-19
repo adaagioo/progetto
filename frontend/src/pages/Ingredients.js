@@ -47,6 +47,7 @@ function Ingredients() {
     preferredSupplierId: 'none',
     allergen: '',
     allergens: [],
+    otherAllergens: [],
     minStockQty: '',
     category: 'food',
     wastePct: '0',

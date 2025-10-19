@@ -468,7 +468,62 @@ function Receiving() {
                           />
                         </div>
                         <div className="col-span-2">
-                          <Label className="text-xs">{t('receiving.form.unitPrice') || 'Price'} *</Label>
+                          <Label className="text-xs flex items-center gap-1">
+                            {t('receiving.form.unitPrice') || 'Price'} *
+                            {line.ingredientId && (
+                              <Popover>
+                                <PopoverTrigger asChild>
+                                  <button
+                                    type="button"
+                                    className="text-blue-600 hover:text-blue-800"
+                                    onClick={() => fetchPriceHistory(line.ingredientId)}
+                                  >
+                                    <History className="h-3 w-3" />
+                                  </button>
+                                </PopoverTrigger>
+                                <PopoverContent className="w-80">
+                                  <div className="space-y-2">
+                                    <h4 className="font-medium text-sm flex items-center gap-2">
+                                      <TrendingUp className="h-4 w-4" />
+                                      {t('receiving.priceHistory') || 'Price History'}
+                                    </h4>
+                                    {priceHistory[line.ingredientId]?.loading && (
+                                      <p className="text-xs text-gray-500">{t('common.loading') || 'Loading...'}</p>
+                                    )}
+                                    {priceHistory[line.ingredientId]?.error && (
+                                      <p className="text-xs text-red-600">{t('receiving.error.priceHistory') || 'Failed to load history'}</p>
+                                    )}
+                                    {priceHistory[line.ingredientId]?.data?.history?.length === 0 && (
+                                      <p className="text-xs text-gray-500">{t('receiving.noHistory') || 'No price history available'}</p>
+                                    )}
+                                    {priceHistory[line.ingredientId]?.data?.history?.length > 0 && (
+                                      <div className="space-y-2 max-h-60 overflow-y-auto">
+                                        {priceHistory[line.ingredientId].data.history.map((item, idx) => (
+                                          <div key={idx} className="border-b pb-2 last:border-0">
+                                            <div className="flex justify-between items-start">
+                                              <div className="text-xs">
+                                                <div className="font-medium">{formatMinor(Math.round(item.unitPrice * 100))}</div>
+                                                <div className="text-gray-500">{new Date(item.date).toLocaleDateString()}</div>
+                                                {item.supplierName && (
+                                                  <div className="text-gray-500">{item.supplierName}</div>
+                                                )}
+                                              </div>
+                                              <div className="text-xs text-right text-gray-600">
+                                                <div>{item.qty} {item.unit}</div>
+                                                {item.packFormat && (
+                                                  <div className="text-gray-400">{item.packFormat}</div>
+                                                )}
+                                              </div>
+                                            </div>
+                                          </div>
+                                        ))}
+                                      </div>
+                                    )}
+                                  </div>
+                                </PopoverContent>
+                              </Popover>
+                            )}
+                          </Label>
                           <Input
                             className="h-9"
                             type="number"

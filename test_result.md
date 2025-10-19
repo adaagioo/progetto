@@ -421,6 +421,69 @@ backend:
         agent: "testing"
         comment: "TESTED: Supplier file attachment system working perfectly. POST /api/suppliers/{id}/files uploads files to suppliers/{id} subfolder, adds file metadata to supplier's files array, returns 404 for non-existent supplier. DELETE /api/suppliers/{id}/files/{file_id} removes file from supplier's files array, deletes from storage, removes from files collection, returns 404 for non-existent file. All operations include audit logging. File validation and tenant isolation working correctly."
 
+  - task: "Phase 4: Prep List Backend"
+    implemented: true
+    working: "NA"
+    file: "backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: |
+          Phase 4 Prep List backend implemented with:
+          - Models: PrepListItem, PrepListCreate, PrepList
+          - Endpoints: GET /api/prep-list/forecast, GET /api/prep-list, POST /api/prep-list
+          - Helper: forecast_prep_needs() - Uses 4-week same-weekday moving average
+          - Forecast logic: Calculates demand for preparations based on recipe sales history
+          - Shelf-life aware (planned, basic structure in place)
+          - Available vs To Make calculation
+          - Audit logging for prep list creation/updates
+          Needs comprehensive testing for RBAC, tenant isolation, and forecast accuracy.
+
+  - task: "Phase 4: Order List Backend"
+    implemented: true
+    working: "NA"
+    file: "backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: |
+          Phase 4 Order List backend implemented with:
+          - Models: OrderListItem, OrderListCreate, OrderList
+          - Endpoints: GET /api/order-list/forecast, GET /api/order-list, POST /api/order-list
+          - Helper: forecast_order_needs() - Multiple drivers (low_stock, prep_needs, expiring_soon)
+          - Drivers logic: low stock, prep requirements, expiry alerts
+          - Supplier mapping (basic implementation)
+          - Audit logging for order list creation/updates
+          Needs comprehensive testing for RBAC, tenant isolation, and suggestion accuracy.
+
+  - task: "Phase 5: P&L Snapshot Backend"
+    implemented: true
+    working: "NA"
+    file: "backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: |
+          Phase 5 P&L Snapshot backend implemented with:
+          - Models: PLPeriod, PLSnapshot, PLSnapshotCreate
+          - Endpoints: POST /api/pl/snapshot, GET /api/pl/snapshot (with date range filter)
+          - Weekly Mon-Sun period support (Europe/Rome timezone in model)
+          - Multi-currency support (EUR/USD)
+          - Multi-locale support (it-IT/en-US)
+          - Automatic calculations: cogs_total, opex_total, labour_total, marketing_total, rent_total, kpi_ebitda
+          - All amounts in major units with 2 decimal rounding
+          - Audit logging
+          Needs comprehensive testing for RBAC, tenant isolation, and calculation accuracy.
+
 frontend:
   - task: "Enhanced Recipe Editor with Keyboard UX"
     implemented: true

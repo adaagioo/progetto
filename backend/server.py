@@ -156,7 +156,8 @@ class IngredientCreate(BaseModel):
     unit: str
     packSize: float
     packCost: float
-    supplier: Optional[str] = None
+    supplier: Optional[str] = None  # Deprecated, use preferredSupplierId
+    preferredSupplierId: Optional[str] = None  # Supplier UUID reference
     allergen: Optional[str] = None  # Deprecated, use allergens array
     allergens: Optional[List[str]] = []  # EU-14 + Other
     minStockQty: float = 0
@@ -174,7 +175,10 @@ class Ingredient(BaseModel):
     packCost: float
     unitCost: float
     effectiveUnitCost: float  # unitCost * (1 + wastePct/100)
-    supplier: Optional[str] = None
+    supplier: Optional[str] = None  # Deprecated
+    preferredSupplierId: Optional[str] = None  # Supplier UUID reference
+    preferredSupplierName: Optional[str] = None  # Populated from lookup
+    lastPrice: Optional[float] = None  # Last purchase price (packCost from most recent receiving)
     allergen: Optional[str] = None  # Deprecated
     allergens: List[str] = []
     minStockQty: float

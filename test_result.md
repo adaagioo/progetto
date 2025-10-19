@@ -657,6 +657,63 @@ backend:
           🎯 PHASE 6 STATUS: 90.7% FUNCTIONAL
           Core supplier mapping and allergen features working, but RBAC and file type management need fixes.
 
+  - task: "Allergen Taxonomy Backend (Codes + Migration)"
+    implemented: true
+    working: "NA"
+    file: "backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: |
+          Allergen taxonomy backend implementation completed:
+          - Allergen codes (GLUTEN, DAIRY, CRUSTACEANS, MOLLUSCS, EGGS, FISH, TREE_NUTS, SOY, SESAME, CELERY, MUSTARD, SULPHITES)
+          - create_ingredient and update_ingredient: Uppercase allergen codes before storage
+          - Legacy migration: Old allergen field → codes (if match) or otherAllergens (if not)
+          - Propagation: compute_preparation_cost_and_allergens() and compute_recipe_allergens()
+          - Union logic for otherAllergens across Ingredient → Preparation → Recipe
+          Needs comprehensive backend testing for CRUD, propagation, and migration.
+
+  - task: "Allergen Taxonomy Frontend (Selector + Filters + i18n)"
+    implemented: true
+    working: "NA"
+    file: "frontend/src/pages/Ingredients.js, Preparations.js, Recipes.js, components/AllergenSelector.js"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: |
+          Allergen taxonomy frontend implementation completed:
+          
+          COMPONENTS:
+          - AllergenSelector: Fixed checklist (12 EU-14 allergens) + free-text "Other/Altro" input
+          - Props: value (allergens array), otherValue (otherAllergens array), onChange, onOtherChange
+          - Validation: Max 5 custom allergens, 30 char limit, duplicate prevention
+          
+          INGREDIENTS.JS:
+          - Integrated AllergenSelector with full state management
+          - Search bar + allergen filter dropdown
+          - Badges: Red for standard allergens, Orange for Other/Altro
+          - i18n: t(\`allergens.${code.toUpperCase()}\`) for localized labels
+          
+          PREPARATIONS.JS:
+          - Badge display with i18n (allergens auto-propagated from ingredients)
+          
+          RECIPES.JS:
+          - Search bar + allergen filter dropdown (same as Ingredients)
+          - Badge display with i18n (allergens aggregated from items)
+          
+          I18N TRANSLATIONS:
+          - EN: gluten, crustaceans, molluscs, eggs, fish, tree nuts, soy, dairy, sesame, celery, mustard, sulphites
+          - IT: glutine, crostacei, molluschi, uova, pesce, frutta a guscio, soia, latticini, sesamo, sedano, senape, solfiti
+          - Added: common.all, common.noResults, ingredients.filterByAllergen, recipes.filterByAllergen
+          
+          Needs comprehensive E2E testing for selector, filters, badges, i18n switch, and propagation.
+
 frontend:
   - task: "Enhanced Recipe Editor with Keyboard UX"
     implemented: true

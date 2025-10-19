@@ -331,13 +331,25 @@ function Preparations() {
               </div>
 
               <div>
+                <Label htmlFor="instructions">{t('preparations.form.instructions') || 'Preparation Steps'}</Label>
+                <textarea
+                  id="instructions"
+                  className="flex min-h-[80px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                  value={formData.instructions}
+                  onChange={(e) => setFormData({ ...formData, instructions: e.target.value })}
+                  placeholder={t('preparations.form.instructionsPlaceholder') || 'Step-by-step preparation instructions...'}
+                  rows={4}
+                />
+              </div>
+
+              <div>
                 <Label htmlFor="notes">{t('preparations.form.notes') || 'Notes'}</Label>
                 <textarea
                   id="notes"
                   className="flex min-h-[60px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
                   value={formData.notes}
                   onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
-                  placeholder={t('preparations.form.notesPlaceholder') || 'Preparation instructions...'}
+                  placeholder={t('preparations.form.notesPlaceholder') || 'Additional notes...'}
                 />
               </div>
 

@@ -632,34 +632,31 @@ class Phase45BackendTester:
                         
                     # Verify forecast structure and drivers
                     if len(forecast) > 0:
-                            item = forecast[0]
-                            required_fields = ["ingredientId", "ingredientName", "currentQty", "minStockQty", "suggestedQty", "unit", "drivers"]
-                            missing_fields = [field for field in required_fields if field not in item]
-                            
-                            if missing_fields:
-                                self.log_result("Order List Forecast Structure", False, f"Missing fields: {missing_fields}", item)
-                            else:
-                                self.log_result("Order List Forecast Structure", True, "Order forecast structure correct")
-                                
-                                # Verify drivers logic
-                                valid_drivers = ["low_stock", "prep_needs", "expiring_soon"]
-                                if all(driver in valid_drivers for driver in item["drivers"]):
-                                    self.log_result("Order List Drivers", True, f"Valid drivers: {item['drivers']}")
-                                else:
-                                    self.log_result("Order List Drivers", False, f"Invalid drivers: {item['drivers']}")
-                                
-                                # Check low_stock driver logic
-                                if item["currentQty"] < item["minStockQty"] and "low_stock" in item["drivers"]:
-                                    self.log_result("Order List Low Stock Logic", True, "Low stock driver correctly triggered")
-                                elif item["currentQty"] >= item["minStockQty"] and "low_stock" not in item["drivers"]:
-                                    self.log_result("Order List Low Stock Logic", True, "Low stock driver correctly not triggered")
-                                else:
-                                    self.log_result("Order List Low Stock Logic", False, f"Low stock logic error: currentQty={item['currentQty']}, minStock={item['minStockQty']}, drivers={item['drivers']}")
+                        item = forecast[0]
+                        required_fields = ["ingredientId", "ingredientName", "currentQty", "minStockQty", "suggestedQty", "unit", "drivers"]
+                        missing_fields = [field for field in required_fields if field not in item]
                         
-                        return forecast
-                    else:
-                        self.log_result("Order List Forecast", False, "Response is not a list", forecast)
-                        return None
+                        if missing_fields:
+                            self.log_result("Order List Forecast Structure", False, f"Missing fields: {missing_fields}", item)
+                        else:
+                            self.log_result("Order List Forecast Structure", True, "Order forecast structure correct")
+                            
+                            # Verify drivers logic
+                            valid_drivers = ["low_stock", "prep_needs", "expiring_soon"]
+                            if all(driver in valid_drivers for driver in item["drivers"]):
+                                self.log_result("Order List Drivers", True, f"Valid drivers: {item['drivers']}")
+                            else:
+                                self.log_result("Order List Drivers", False, f"Invalid drivers: {item['drivers']}")
+                            
+                            # Check low_stock driver logic
+                            if item["currentQty"] < item["minStockQty"] and "low_stock" in item["drivers"]:
+                                self.log_result("Order List Low Stock Logic", True, "Low stock driver correctly triggered")
+                            elif item["currentQty"] >= item["minStockQty"] and "low_stock" not in item["drivers"]:
+                                self.log_result("Order List Low Stock Logic", True, "Low stock driver correctly not triggered")
+                            else:
+                                self.log_result("Order List Low Stock Logic", False, f"Low stock logic error: currentQty={item['currentQty']}, minStock={item['minStockQty']}, drivers={item['drivers']}")
+                    
+                    return forecast
                 else:
                     error_text = await response.text()
                     self.log_result("Order List Forecast", False, f"Failed: {response.status}", error_text)

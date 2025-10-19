@@ -3437,6 +3437,66 @@ async def delete_receiving(receiving_id: str, current_user: dict = Depends(get_c
     )
     
     return {"message": "Receiving record deleted"}
+@api_router.get("/ingredients/{ingredient_id}/price-history")
+async def get_ingredient_price_history(
+    ingredient_id: str,
+    limit: int = 10,
+    current_user: dict = Depends(get_current_user)
+):
+    """Get price history for an ingredient from receiving records"""
+    await check_subscription(current_user)
+    
+    # Get ingredient to verify it exists
+    ingredient = await db.ingredients.find_one({
+        "id": ingredient_id,
+        "restaurantId": current_user["restaurantId"]
+    }, {"_id": 0})
+    
+    if not ingredient:
+        raise HTTPException(status_code=404, detail="Ingredient not found")
+    
+    # Query receiving records that contain this ingredient
+    receiving_records = await db.receiving.find({
+        "restaurantId": current_user["restaurantId"],
+        "lines.ingredientId": ingredient_id
+    }, {"_id": 0}).sort("arrivedAt", -1).limit(limit * 3).to_list(limit * 3)
+    
+    # Extract price history
+    price_history = []
+    for record in receiving_records:
+        for line in record.get("lines", []):
+            if line.get("ingredientId") == ingredient_id:
+                price_history.append({
+                    "date": record.get("arrivedAt"),
+                    "unitPrice": line.get("unitPrice"),
+                    "qty": line.get("qty"),
+                    "unit": line.get("unit"),
+                    "packFormat": line.get("packFormat"),
+                    "supplierId": record.get("supplierId"),
+                    "supplierName": None  # Will be populated below
+                })
+    
+    # Limit to requested number
+    price_history = price_history[:limit]
+    
+    # Populate supplier names
+    supplier_ids = list(set([ph["supplierId"] for ph in price_history if ph.get("supplierId")]))
+    if supplier_ids:
+        suppliers = await db.suppliers.find(
+            {"id": {"$in": supplier_ids}},
+            {"_id": 0, "id": 1, "name": 1}
+        ).to_list(len(supplier_ids))
+        supplier_map = {s["id"]: s["name"] for s in suppliers}
+        
+        for ph in price_history:
+            if ph.get("supplierId"):
+                ph["supplierName"] = supplier_map.get(ph["supplierId"])
+    
+    return {
+        "ingredientId": ingredient_id,
+        "ingredientName": ingredient["name"],
+        "history": price_history
+    }
 
 @api_router.post("/receiving/{receiving_id}/files")
 async def attach_file_to_receiving(

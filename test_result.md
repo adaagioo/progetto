@@ -1372,6 +1372,7 @@ metadata:
 
 test_plan:
   current_focus:
+    - "Phase 8: OCR Document Processing - COMPLETED ✅"
     - "Allergen Taxonomy Backend - CRUD, uppercase storage, propagation, migration"
     - "Allergen Taxonomy Frontend - Selector, filters, badges, i18n (EN/IT)"
     - "Phase 4: Prep List Frontend - E2E testing (generate, override, save, RBAC)"

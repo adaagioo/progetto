@@ -397,7 +397,7 @@ function Suppliers() {
 
       {/* OCR Price List Review Dialog */}
       <Dialog open={showOCRPriceList} onOpenChange={setShowOCRPriceList}>
-        <DialogContent className="max-w-4xl max-h-[80vh] overflow-y-auto">
+        <DialogContent className="max-w-6xl max-h-[80vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>{t('ocr.reviewPriceList') || 'Review Price List'}</DialogTitle>
           </DialogHeader>
@@ -421,6 +421,7 @@ function Suppliers() {
                       <th className="px-4 py-2 text-right text-sm font-medium">{t('ocr.unit') || 'Unit'}</th>
                       <th className="px-4 py-2 text-right text-sm font-medium">{t('ocr.price') || 'Price'}</th>
                       <th className="px-4 py-2 text-left text-sm font-medium">{t('ocr.confidence') || 'Confidence'}</th>
+                      <th className="px-4 py-2 text-left text-sm font-medium">{t('ocr.mapToIngredient') || 'Map to Ingredient'}</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -444,6 +445,25 @@ function Suppliers() {
                             {item.confidence ? `${Math.round(item.confidence * 100)}%` : '-'}
                           </span>
                         </td>
+                        <td className="px-4 py-2">
+                          <Select
+                            value={itemMappings[idx] || ''}
+                            onValueChange={(value) => {
+                              setItemMappings(prev => ({ ...prev, [idx]: value }));
+                            }}
+                          >
+                            <SelectTrigger className="w-full">
+                              <SelectValue placeholder={t('ocr.selectIngredient') || 'Select...'} />
+                            </SelectTrigger>
+                            <SelectContent>
+                              {ingredients.map((ing) => (
+                                <SelectItem key={ing.id} value={ing.id}>
+                                  {ing.name}
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                        </td>
                       </tr>
                     ))}
                   </tbody>
@@ -451,22 +471,59 @@ function Suppliers() {
               </div>
             )}
             
-            <div className="flex justify-end gap-2 pt-4">
-              <Button variant="outline" onClick={() => {
-                setShowOCRPriceList(false);
-                setOCRParsedItems([]);
-                setOCRSupplierId(null);
-              }}>
-                {t('common.close') || 'Close'}
-              </Button>
-              <Button onClick={() => {
-                toast.success(t('suppliers.priceListReviewed') || 'Price list data reviewed');
-                setShowOCRPriceList(false);
-                setOCRParsedItems([]);
-                setOCRSupplierId(null);
-              }}>
-                {t('common.done') || 'Done'}
-              </Button>
+            <div className="flex justify-between items-center pt-4">
+              <div className="text-sm text-muted-foreground">
+                {Object.values(itemMappings).filter(v => v).length} / {ocrParsedItems.length} {t('ocr.mapped') || 'mapped'}
+              </div>
+              <div className="flex gap-2">
+                <Button variant="outline" onClick={() => {
+                  setShowOCRPriceList(false);
+                  setOCRParsedItems([]);
+                  setOCRSupplierId(null);
+                  setItemMappings({});
+                }}>
+                  {t('common.cancel') || 'Cancel'}
+                </Button>
+                <Button 
+                  onClick={async () => {
+                    const mappedCount = Object.values(itemMappings).filter(v => v).length;
+                    if (mappedCount === 0) {
+                      toast.error(t('ocr.error.noMappedItems') || 'Please map at least one item to an ingredient');
+                      return;
+                    }
+                    
+                    try {
+                      // Update ingredient prices based on mappings
+                      let updatedCount = 0;
+                      for (const [idx, ingredientId] of Object.entries(itemMappings)) {
+                        if (!ingredientId) continue;
+                        
+                        const item = ocrParsedItems[parseInt(idx)];
+                        if (item.price && item.qty) {
+                          // Update ingredient with new pack price and size
+                          await axios.put(`${API}/ingredients/${ingredientId}`, {
+                            packCost: Math.round(parseFloat(item.price) * 100), // Convert to cents
+                            packSize: parseFloat(item.qty) || 1,
+                            preferredSupplierId: ocrSupplierId
+                          });
+                          updatedCount++;
+                        }
+                      }
+                      
+                      toast.success(t('suppliers.pricesUpdated', { count: updatedCount }) || `${updatedCount} ingredient prices updated`);
+                      setShowOCRPriceList(false);
+                      setOCRParsedItems([]);
+                      setOCRSupplierId(null);
+                      setItemMappings({});
+                    } catch (error) {
+                      toast.error(error.response?.data?.detail || t('suppliers.error.updatePrices') || 'Failed to update prices');
+                    }
+                  }}
+                  disabled={Object.values(itemMappings).filter(v => v).length === 0}
+                >
+                  {t('suppliers.applyPrices') || 'Apply Prices'}
+                </Button>
+              </div>
             </div>
           </div>
         </DialogContent>

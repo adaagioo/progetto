@@ -293,8 +293,10 @@ function Ingredients() {
               </div>
 
               <AllergenSelector
-                selectedAllergens={formData.allergens}
-                onAllergensChange={(allergens) => setFormData({ ...formData, allergens })}
+                value={formData.allergens}
+                otherValue={formData.otherAllergens}
+                onChange={(allergens) => setFormData({ ...formData, allergens })}
+                onOtherChange={(otherAllergens) => setFormData({ ...formData, otherAllergens })}
               />
 
               <div className="space-y-2">

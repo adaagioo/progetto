@@ -1667,6 +1667,7 @@ async def create_ingredient(ingredient_data: IngredientCreate, current_user: dic
         "preferredSupplierId": ingredient_data.preferredSupplierId,
         "allergen": ingredient_data.allergen,
         "allergens": ingredient_data.allergens or [],
+        "otherAllergens": ingredient_data.otherAllergens or [],
         "minStockQty": ingredient_data.minStockQty,
         "category": ingredient_data.category or "food",
         "wastePct": waste_pct,

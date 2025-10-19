@@ -72,6 +72,32 @@ function RecipesEnhanced() {
   // RBAC: Check if user can edit
   const canEdit = user?.roleKey === 'admin' || user?.roleKey === 'manager';
 
+  // Get unique allergens from all recipes for filter
+  const uniqueAllergens = React.useMemo(() => {
+    const allergenSet = new Set();
+    recipes.forEach(recipe => {
+      if (recipe.allergens && recipe.allergens.length > 0) {
+        recipe.allergens.forEach(a => allergenSet.add(a));
+      }
+    });
+    return Array.from(allergenSet).sort();
+  }, [recipes]);
+
+  // Filter recipes based on search and allergen filter
+  const filteredRecipes = React.useMemo(() => {
+    return recipes.filter(recipe => {
+      // Search filter
+      const matchesSearch = searchQuery === '' || 
+        recipe.name.toLowerCase().includes(searchQuery.toLowerCase());
+      
+      // Allergen filter
+      const matchesAllergen = selectedAllergenFilter === 'all' ||
+        (recipe.allergens && recipe.allergens.includes(selectedAllergenFilter));
+      
+      return matchesSearch && matchesAllergen;
+    });
+  }, [recipes, searchQuery, selectedAllergenFilter]);
+
   // Keyboard event handler
   const handleKeyDown = (e, index, field) => {
     // Ctrl/Cmd + Enter: Add new row

@@ -3226,6 +3226,10 @@ async def create_receiving(receiving: ReceivingCreate, current_user: dict = Depe
     """Create a new receiving record and update inventory"""
     await check_subscription(current_user)
     
+    # RBAC: Only admin and manager can create receiving records
+    if current_user["roleKey"] not in ["admin", "manager"]:
+        raise HTTPException(status_code=403, detail="Only administrators and managers can create receiving records")
+    
     # Validate supplier exists
     supplier = await db.suppliers.find_one(
         {"id": receiving.supplierId, "restaurantId": current_user["restaurantId"]}

@@ -2908,21 +2908,13 @@ async def get_dashboard_kpis(current_user: dict = Depends(get_current_user)):
     
     food_cost_pct = (total_cogs / total_revenue * 100) if total_revenue > 0 else 0
     
-    # Low stock items
-    inventory_agg = {}
-    for inv in inventory:
-        ingredient_id = inv["ingredientId"]
-        if ingredient_id not in inventory_agg:
-            inventory_agg[ingredient_id] = 0
-        
-        if inv["countType"] == "opening" or inv["countType"] == "adjustment":
-            inventory_agg[ingredient_id] += inv["qty"]
-        elif inv["countType"] == "closing":
-            inventory_agg[ingredient_id] = inv["qty"]
-    
+    # Low stock items - use qtyOnHand from Phase 1 inventory structure
     low_stock_count = 0
     for ing in ingredients:
-        current_qty = inventory_agg.get(ing["id"], 0)
+        # Find current inventory for this ingredient
+        inv_record = next((inv for inv in inventory if inv.get("ingredientId") == ing["id"]), None)
+        current_qty = inv_record.get("qtyOnHand", 0) if inv_record else 0
+        
         if current_qty < ing.get("minStockQty", 0):
             low_stock_count += 1
     

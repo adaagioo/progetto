@@ -3716,6 +3716,105 @@ async def process_document_ocr(
         raise HTTPException(status_code=500, detail=f"Document processing failed: {str(e)}")
 
 
+@api_router.post("/ocr/save-mappings")
+async def save_ocr_mappings(
+    mapping_data: Dict[str, Any],
+    current_user: dict = Depends(get_current_user)
+):
+    """
+    Save OCR ingredient mappings for future use
+    Maps description patterns to ingredient IDs
+    """
+    await check_subscription(current_user)
+    
+    try:
+        supplier_id = mapping_data.get('supplierId')
+        mappings = mapping_data.get('mappings', [])  # [{ description, ingredientId, code }]
+        
+        # Upsert mappings for this supplier
+        for mapping in mappings:
+            description = mapping.get('description', '').lower().strip()
+            ingredient_id = mapping.get('ingredientId')
+            code = mapping.get('code', '')
+            
+            if not description or not ingredient_id:
+                continue
+            
+            # Check if mapping exists
+            existing = await db.ocr_mappings.find_one({
+                "restaurantId": current_user["restaurantId"],
+                "supplierId": supplier_id,
+                "description": description
+            })
+            
+            if existing:
+                # Update existing
+                await db.ocr_mappings.update_one(
+                    {"_id": existing["_id"]},
+                    {
+                        "$set": {
+                            "ingredientId": ingredient_id,
+                            "code": code,
+                            "updatedAt": datetime.now(timezone.utc).isoformat(),
+                            "updatedBy": current_user["email"]
+                        }
+                    }
+                )
+            else:
+                # Create new
+                await db.ocr_mappings.insert_one({
+                    "id": str(uuid.uuid4()),
+                    "restaurantId": current_user["restaurantId"],
+                    "supplierId": supplier_id,
+                    "description": description,
+                    "ingredientId": ingredient_id,
+                    "code": code,
+                    "createdAt": datetime.now(timezone.utc).isoformat(),
+                    "createdBy": current_user["email"],
+                    "useCount": 0
+                })
+        
+        return {"message": "Mappings saved", "count": len(mappings)}
+        
+    except Exception as e:
+        logger.error(f"Error saving OCR mappings: {str(e)}")
+        raise HTTPException(status_code=500, detail="Failed to save mappings")
+
+
+@api_router.get("/ocr/mappings/{supplier_id}")
+async def get_ocr_mappings(
+    supplier_id: str,
+    current_user: dict = Depends(get_current_user)
+):
+    """
+    Get saved OCR mappings for a supplier
+    Returns: { description -> ingredientId } map
+    """
+    await check_subscription(current_user)
+    
+    try:
+        mappings = await db.ocr_mappings.find({
+            "restaurantId": current_user["restaurantId"],
+            "supplierId": supplier_id
+        }, {"_id": 0}).to_list(1000)
+        
+        # Increment use count
+        for mapping in mappings:
+            await db.ocr_mappings.update_one(
+                {"id": mapping["id"]},
+                {"$inc": {"useCount": 1}}
+            )
+        
+        return {
+            "mappings": mappings,
+            "count": len(mappings)
+        }
+        
+    except Exception as e:
+        logger.error(f"Error fetching OCR mappings: {str(e)}")
+        return {"mappings": [], "count": 0}
+
+
 @api_router.post("/ocr/create-receiving")
 async def create_receiving_from_ocr(
     document_data: Dict[str, Any],

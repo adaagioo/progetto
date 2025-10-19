@@ -477,25 +477,22 @@ class Phase45BackendTester:
                         
                     # Verify forecast structure
                     if len(forecast) > 0:
-                            item = forecast[0]
-                            required_fields = ["preparationId", "preparationName", "forecastQty", "availableQty", "toMakeQty", "unit", "forecastSource"]
-                            missing_fields = [field for field in required_fields if field not in item]
-                            
-                            if missing_fields:
-                                self.log_result("Prep List Forecast Structure", False, f"Missing fields: {missing_fields}", item)
-                            else:
-                                self.log_result("Prep List Forecast Structure", True, "Forecast structure correct")
-                                
-                                # Verify calculation logic
-                                if item["toMakeQty"] == max(0, item["forecastQty"] - item["availableQty"]):
-                                    self.log_result("Prep List Calculation", True, "toMakeQty calculation correct")
-                                else:
-                                    self.log_result("Prep List Calculation", False, f"toMakeQty should be max(0, {item['forecastQty']} - {item['availableQty']}) = {max(0, item['forecastQty'] - item['availableQty'])}, got {item['toMakeQty']}")
+                        item = forecast[0]
+                        required_fields = ["preparationId", "preparationName", "forecastQty", "availableQty", "toMakeQty", "unit", "forecastSource"]
+                        missing_fields = [field for field in required_fields if field not in item]
                         
-                        return forecast
-                    else:
-                        self.log_result("Prep List Forecast", False, "Response is not a list", forecast)
-                        return None
+                        if missing_fields:
+                            self.log_result("Prep List Forecast Structure", False, f"Missing fields: {missing_fields}", item)
+                        else:
+                            self.log_result("Prep List Forecast Structure", True, "Forecast structure correct")
+                            
+                            # Verify calculation logic
+                            if item["toMakeQty"] == max(0, item["forecastQty"] - item["availableQty"]):
+                                self.log_result("Prep List Calculation", True, "toMakeQty calculation correct")
+                            else:
+                                self.log_result("Prep List Calculation", False, f"toMakeQty should be max(0, {item['forecastQty']} - {item['availableQty']}) = {max(0, item['forecastQty'] - item['availableQty'])}, got {item['toMakeQty']}")
+                    
+                    return forecast
                 else:
                     error_text = await response.text()
                     self.log_result("Prep List Forecast", False, f"Failed: {response.status}", error_text)

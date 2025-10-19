@@ -148,6 +148,10 @@ function App() {
             element={user ? <Layout><OrderList /></Layout> : <Navigate to="/login" />}
           />
           <Route
+            path="/profit-loss"
+            element={user ? <Layout><PLSnapshot /></Layout> : <Navigate to="/login" />}
+          />
+          <Route
             path="/settings"
             element={user ? <Layout><Settings /></Layout> : <Navigate to="/login" />}
           />

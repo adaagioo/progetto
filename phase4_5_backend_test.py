@@ -55,6 +55,40 @@ class Phase45BackendTester:
         if details and not success:
             print(f"   Details: {details}")
     
+    async def register_test_user(self, user_type: str = "admin") -> bool:
+        """Register test user if not exists"""
+        try:
+            credentials = TEST_CREDENTIALS[user_type]
+            register_data = {
+                "email": credentials["email"],
+                "password": credentials["password"],
+                "displayName": f"Test {user_type.title()}",
+                "restaurantName": f"Test Restaurant {user_type.title()}",
+                "locale": "en-US"
+            }
+            
+            async with self.session.post(
+                f"{BACKEND_URL}/auth/register",
+                json=register_data,
+                headers={"Content-Type": "application/json"}
+            ) as response:
+                if response.status == 200:
+                    data = await response.json()
+                    self.auth_token = data["access_token"]
+                    self.user_data = data["user"]
+                    self.log_result("User Registration", True, f"Test {user_type} registered successfully")
+                    return True
+                elif response.status == 400:
+                    # User already exists, try to login
+                    return await self.authenticate(user_type)
+                else:
+                    error_text = await response.text()
+                    self.log_result("User Registration", False, f"Registration failed: {response.status}", error_text)
+                    return False
+        except Exception as e:
+            self.log_result("User Registration", False, f"Registration error: {str(e)}")
+            return False
+
     async def authenticate(self, user_type: str = "admin") -> bool:
         """Authenticate with the backend"""
         try:

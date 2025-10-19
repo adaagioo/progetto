@@ -924,6 +924,32 @@ backend:
           Core OCR processing, receiving creation, and inventory integration working excellently.
           Minor parsing accuracy issues are expected with OCR technology and don't impact functionality.
 
+  - task: "Phase 8 M8.1: Suppliers OCR Integration (Price List)"
+    implemented: true
+    working: "NA"
+    file: "frontend/src/pages/Suppliers.js"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: |
+          Phase 8 M8.1 Suppliers OCR Integration completed:
+          - Integrated OCRUploadButton component into Suppliers page
+          - Added "OCR Price List" button next to existing upload buttons
+          - Created OCR price list review dialog with parsed items display
+          - Displays: description, code, qty, unit, price with confidence coloring
+          - Confidence coloring: green (>80%), yellow (50-80%), red (<50%)
+          - State management: ocrSupplierId, ocrParsedItems, showOCRPriceList
+          - Handler: handleOCRParsed to process OCR results
+          - i18n translations added (EN/IT):
+            - ocr.reviewPriceList, ocr.reviewInstructions
+            - ocr.description, ocr.code, ocr.qty, ocr.unit, ocr.price
+            - suppliers.ocrPriceList, suppliers.priceListReviewed
+          - Frontend compiles successfully without errors
+          - Pending: E2E testing to verify OCR upload, parsing, and review flow
+
 frontend:
   - task: "Enhanced Recipe Editor with Keyboard UX"
     implemented: true

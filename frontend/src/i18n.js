@@ -635,6 +635,7 @@ const resources = {
       'nav.preparations': 'Preparazioni',
       'nav.suppliers': 'Fornitori',
       'nav.receiving': 'Ricevute',
+      'nav.documentImport': 'Importa Documenti',
       'nav.inventory': 'Inventario',
       'nav.sales': 'Vendite',
       'nav.wastage': 'Scarti',

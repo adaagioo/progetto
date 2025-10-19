@@ -468,15 +468,20 @@ function Ingredients() {
                   <span className="font-medium">{ingredient.shelfLife.value} {ingredient.shelfLife.unit}</span>
                 </div>
               )}
-              {ingredient.allergens && ingredient.allergens.length > 0 && (
+              {(ingredient.allergens && ingredient.allergens.length > 0) || (ingredient.otherAllergens && ingredient.otherAllergens.length > 0) ? (
                 <div className="pt-2 border-t">
                   <div className="flex items-start gap-1">
                     <AlertCircle className="h-4 w-4 text-red-600 mt-0.5" />
                     <div className="flex-1">
                       <span className="text-xs font-medium text-red-600">{t('ingredients.allergens') || 'Allergens'}:</span>
                       <div className="flex flex-wrap gap-1 mt-1">
-                        {ingredient.allergens.map(allergen => (
+                        {ingredient.allergens && ingredient.allergens.map(allergen => (
                           <span key={allergen} className="text-xs bg-red-100 text-red-800 px-2 py-0.5 rounded">
+                            {t(`allergens.${allergen}`) || allergen}
+                          </span>
+                        ))}
+                        {ingredient.otherAllergens && ingredient.otherAllergens.map((allergen, idx) => (
+                          <span key={`other-${idx}`} className="text-xs bg-orange-100 text-orange-800 px-2 py-0.5 rounded">
                             {allergen}
                           </span>
                         ))}
@@ -484,7 +489,7 @@ function Ingredients() {
                     </div>
                   </div>
                 </div>
-              )}
+              ) : null}
             </CardContent>
           </Card>
         ))}

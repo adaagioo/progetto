@@ -42,6 +42,12 @@ function Suppliers() {
     }
   };
 
+  const handleOCRParsed = (data) => {
+    setOCRParsedItems(data.items || []);
+    setShowOCRPriceList(true);
+    toast.success(t('suppliers.ocrParsed') || 'Price list parsed successfully');
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
 

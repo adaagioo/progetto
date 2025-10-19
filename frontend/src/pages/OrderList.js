@@ -164,6 +164,27 @@ function OrderList() {
     });
   };
 
+  // Update supplier
+  const handleSupplierChange = (index, supplierId) => {
+    if (!canEdit) return;
+    
+    setOrderList(prev => {
+      const updated = { ...prev };
+      updated.items = [...prev.items];
+      updated.items[index] = {
+        ...updated.items[index],
+        supplierId: supplierId
+      };
+      return updated;
+    });
+  };
+
+  // Calculate pack-rounded quantity
+  const roundToPack = (qty, packSize) => {
+    if (!packSize || packSize <= 0) return qty;
+    return Math.ceil(qty / packSize) * packSize;
+  };
+
   // Update notes
   const handleNotes = (index, value) => {
     setOrderList(prev => {

@@ -1132,6 +1132,8 @@ const resources = {
       'common.delete': 'Elimina',
       'common.edit': 'Modifica',
       'common.clearFilters': 'Cancella Filtri',
+      'common.all': 'Tutto',
+      'common.noResults': 'Nessun risultato trovato',
       'common.add': 'Aggiungi',
       'common.create': 'Crea',
       'common.update': 'Aggiorna',

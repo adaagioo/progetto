@@ -680,6 +680,7 @@ async def compute_preparation_cost_and_allergens(items: List[dict], db) -> tuple
     """
     total_cost = 0
     all_allergens = set()
+    all_other_allergens = set()
     
     for item in items:
         ingredient = await db.ingredients.find_one({"id": item["ingredientId"]}, {"_id": 0})
@@ -691,25 +692,33 @@ async def compute_preparation_cost_and_allergens(items: List[dict], db) -> tuple
         item_cost = effective_cost * item["qty"]
         total_cost += item_cost
         
-        # Collect allergens
+        # Collect allergen codes
         allergens = ingredient.get("allergens", [])
         if allergens:
             all_allergens.update(allergens)
         
-        # Legacy support for single allergen field
+        # Collect other allergens
+        other_allergens = ingredient.get("otherAllergens", [])
+        if other_allergens:
+            all_other_allergens.update(other_allergens)
+        
+        # Legacy support for single allergen field (migrate to codes)
         if ingredient.get("allergen"):
-            all_allergens.add(ingredient["allergen"])
+            legacy_allergen = ingredient["allergen"].upper().replace(" ", "_")
+            if legacy_allergen in ALLERGEN_CODES:
+                all_allergens.add(legacy_allergen)
+            else:
+                all_other_allergens.add(ingredient["allergen"])
     
-    # Normalize allergens to EU-14
-    normalized_allergens = normalize_allergen_list(list(all_allergens))
-    return total_cost, normalized_allergens
+    return total_cost, list(all_allergens), list(all_other_allergens)
 
-async def compute_recipe_allergens(items: List[dict], db) -> List[str]:
+async def compute_recipe_allergens(items: List[dict], db) -> tuple[List[str], List[str]]:
     """
     Compute recipe allergens from all items (ingredients + preparations).
-    Returns union of all allergens, normalized to EU-14 standard.
+    Returns (allergen_codes, other_allergens) - union of all allergens.
     """
     all_allergens = set()
+    all_other_allergens = set()
     
     for item in items:
         if item["type"] == "ingredient":

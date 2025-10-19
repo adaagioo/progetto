@@ -152,14 +152,18 @@ class DocumentParser:
             if not line:
                 continue
             
-            # Detect item section start
-            if re.search(r'\b(?:item|description|product|qty|quantity|price|prezzo|articolo)\b', line, re.IGNORECASE):
+            # Detect item section start - improved for Italian invoices
+            if re.search(r'\b(?:item|description|product|qty|quantity|price|prezzo|articolo|codice.*descrizione|gtà.*descrizione)\b', line, re.IGNORECASE):
                 item_header_found = True
                 in_items_section = True
                 continue
             
+            # Also detect by looking for product code pattern (L0347, V1933, etc.)
+            if not in_items_section and re.match(r'^[A-Z]\d{4}\s+\d+', line):
+                in_items_section = True
+            
             # Stop at total or footer
-            if re.search(r'\b(?:total|totale|subtotal|note|terms)\b', line, re.IGNORECASE):
+            if re.search(r'\b(?:totale|subtotal|note|annotazioni|firma|assolve)\b', line, re.IGNORECASE):
                 break
             
             if in_items_section:

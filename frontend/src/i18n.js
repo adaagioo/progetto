@@ -557,6 +557,8 @@ const resources = {
       'recipes.perPortion': 'Per Porzione',
       'recipes.noItems': 'Nessun elemento ancora',
       'recipes.shelfLife': 'Durata',
+      'recipes.instructions': 'Istruzioni di Preparazione',
+      'recipes.instructionsPlaceholder': 'Istruzioni di cottura passo dopo passo...',
       'recipes.confirm.delete': 'Sei sicuro di voler eliminare questa ricetta?',
       'recipes.success.created': 'Ricetta creata con successo',
       'recipes.success.updated': 'Ricetta aggiornata con successo',

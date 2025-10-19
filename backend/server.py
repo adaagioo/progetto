@@ -3633,6 +3633,239 @@ async def detach_file_from_receiving(
         logger.error(f"File detach error: {str(e)}")
         raise HTTPException(status_code=500, detail="File detach failed")
 
+
+# ============================================================================
+# OCR / Document Ingestion Endpoints (Phase 8)
+# ============================================================================
+
+@api_router.post("/ocr/process")
+async def process_document_ocr(
+    file: UploadFile = File(...),
+    lang: str = 'eng',
+    current_user: dict = Depends(get_current_user)
+):
+    """
+    Process document with OCR and extract structured data
+    Supports images and PDFs
+    """
+    await check_subscription(current_user)
+    
+    # RBAC: Only admin and manager can process documents
+    if current_user["roleKey"] not in ["admin", "manager"]:
+        raise HTTPException(status_code=403, detail="Only administrators and managers can process documents")
+    
+    try:
+        from ocr_service import get_ocr_service
+        from document_parser import get_parser
+        
+        # Read file content
+        file_content = await file.read()
+        file_extension = file.filename.split('.')[-1].lower()
+        
+        # Validate file type
+        supported_types = ['jpg', 'jpeg', 'png', 'pdf', 'tiff', 'bmp']
+        if file_extension not in supported_types:
+            raise HTTPException(
+                status_code=400, 
+                detail=f"Unsupported file type. Supported: {', '.join(supported_types)}"
+            )
+        
+        # Save to temp file for processing
+        import tempfile
+        with tempfile.NamedTemporaryFile(delete=False, suffix=f'.{file_extension}') as temp_file:
+            temp_file.write(file_content)
+            temp_path = temp_file.name
+        
+        try:
+            # Run OCR
+            ocr_service = get_ocr_service(lang=lang)
+            ocr_result = ocr_service.extract_text(temp_path, file_extension, lang=lang)
+            
+            if not ocr_result.get('success'):
+                raise HTTPException(status_code=500, detail=f"OCR failed: {ocr_result.get('error')}")
+            
+            # Parse extracted text
+            parser = get_parser()
+            parsed_data = parser.auto_parse(ocr_result['text'])
+            
+            # Return combined results
+            return {
+                "success": True,
+                "filename": file.filename,
+                "ocr": {
+                    "text": ocr_result['text'],
+                    "confidence": ocr_result.get('confidence', 0),
+                    "language": ocr_result.get('language'),
+                    "page_count": ocr_result.get('page_count', 1)
+                },
+                "parsed": parsed_data
+            }
+            
+        finally:
+            # Clean up temp file
+            import os
+            if os.path.exists(temp_path):
+                os.remove(temp_path)
+    
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"OCR processing error: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Document processing failed: {str(e)}")
+
+
+@api_router.post("/ocr/create-receiving")
+async def create_receiving_from_ocr(
+    document_data: Dict[str, Any],
+    current_user: dict = Depends(get_current_user)
+):
+    """
+    Create receiving record from OCR-parsed document
+    User must review and confirm before this is called (NO SILENT IMPORTS)
+    """
+    await check_subscription(current_user)
+    
+    # RBAC: Only admin and manager can create receiving from OCR
+    if current_user["roleKey"] not in ["admin", "manager"]:
+        raise HTTPException(status_code=403, detail="Only administrators and managers can import documents")
+    
+    try:
+        # Extract data from parsed document
+        supplier_id = document_data.get('supplierId')
+        if not supplier_id:
+            raise HTTPException(status_code=400, detail="Supplier ID is required")
+        
+        # Verify supplier exists
+        supplier = await db.suppliers.find_one({
+            "id": supplier_id,
+            "restaurantId": current_user["restaurantId"]
+        })
+        if not supplier:
+            raise HTTPException(status_code=404, detail="Supplier not found")
+        
+        # Build receiving record
+        receiving_id = str(uuid.uuid4())
+        line_items = document_data.get('lineItems', [])
+        
+        # Validate and process line items
+        processed_lines = []
+        for item in line_items:
+            ingredient_id = item.get('ingredientId')
+            if not ingredient_id:
+                continue  # Skip unmapped items
+            
+            # Verify ingredient exists
+            ingredient = await db.ingredients.find_one({
+                "id": ingredient_id,
+                "restaurantId": current_user["restaurantId"]
+            })
+            if not ingredient:
+                continue
+            
+            processed_lines.append({
+                "ingredientId": ingredient_id,
+                "description": item.get('description', ingredient['name']),
+                "qty": float(item.get('qty', 0)),
+                "unit": item.get('unit', ingredient['unit']),
+                "unitPrice": float(item.get('unitPrice', 0)),
+                "packFormat": item.get('packFormat', ''),
+                "expiryDate": item.get('expiryDate', '')
+            })
+        
+        if not processed_lines:
+            raise HTTPException(status_code=400, detail="No valid line items to import")
+        
+        # Create receiving record
+        receiving_data = {
+            "id": receiving_id,
+            "restaurantId": current_user["restaurantId"],
+            "supplierId": supplier_id,
+            "category": document_data.get('category', 'food'),
+            "arrivedAt": document_data.get('date') or datetime.now(timezone.utc).strftime('%Y-%m-%d'),
+            "lines": processed_lines,
+            "notes": f"Imported from OCR - {document_data.get('documentType', 'invoice')}",
+            "invoiceNumber": document_data.get('invoiceNumber'),
+            "attachedFiles": [],
+            "createdAt": datetime.now(timezone.utc).isoformat(),
+            "createdBy": current_user["email"]
+        }
+        
+        await db.receiving.insert_one(receiving_data)
+        
+        # Update inventory for each line item
+        for line in processed_lines:
+            ingredient = await db.ingredients.find_one({"id": line["ingredientId"]})
+            if not ingredient:
+                continue
+            
+            # Calculate cost in minor units
+            qty_in_base_unit = line["qty"]
+            unit_cost_minor = int(line["unitPrice"] * 100)
+            total_cost_minor = int(qty_in_base_unit * unit_cost_minor)
+            
+            # Update or create inventory record
+            existing_inventory = await db.inventory.find_one({
+                "restaurantId": current_user["restaurantId"],
+                "ingredientId": line["ingredientId"]
+            })
+            
+            if existing_inventory:
+                # WAC calculation
+                old_qty = existing_inventory["qtyOnHand"]
+                old_value = existing_inventory["totalValue"]
+                new_qty = old_qty + qty_in_base_unit
+                new_value = old_value + total_cost_minor
+                new_unit_cost = int(new_value / new_qty) if new_qty > 0 else unit_cost_minor
+                
+                await db.inventory.update_one(
+                    {"_id": existing_inventory["_id"]},
+                    {
+                        "$set": {
+                            "qtyOnHand": new_qty,
+                            "unitCost": new_unit_cost,
+                            "totalValue": new_value,
+                            "lastUpdated": datetime.now(timezone.utc).isoformat()
+                        }
+                    }
+                )
+            else:
+                # Create new inventory record
+                await db.inventory.insert_one({
+                    "id": str(uuid.uuid4()),
+                    "restaurantId": current_user["restaurantId"],
+                    "ingredientId": line["ingredientId"],
+                    "qtyOnHand": qty_in_base_unit,
+                    "unit": line["unit"],
+                    "unitCost": unit_cost_minor,
+                    "totalValue": total_cost_minor,
+                    "lastUpdated": datetime.now(timezone.utc).isoformat()
+                })
+        
+        # Log audit trail
+        await log_audit(
+            db=db,
+            restaurant_id=current_user["restaurantId"],
+            user_email=current_user["email"],
+            action="create_receiving_from_ocr",
+            resource_type="receiving",
+            resource_id=receiving_id,
+            details={
+                "supplierId": supplier_id,
+                "lineCount": len(processed_lines),
+                "documentType": document_data.get('documentType'),
+                "invoiceNumber": document_data.get('invoiceNumber')
+            }
+        )
+        
+        receiving_data.pop("_id", None)
+        return Receiving(**receiving_data)
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error creating receiving from OCR: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Failed to create receiving: {str(e)}")
+
 # ============ DASHBOARD KPIs ============
 
 @api_router.get("/dashboard/kpis")

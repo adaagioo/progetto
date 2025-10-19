@@ -2804,7 +2804,7 @@ async def delete_pl(pl_id: str, current_user: dict = Depends(get_current_user)):
 
 # ============ FILE UPLOAD & DOWNLOAD ============
 
-from fastapi import File, UploadFile, Form
+from fastapi import Form
 from fastapi.responses import Response
 
 @api_router.post("/files/upload")

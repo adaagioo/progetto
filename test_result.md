@@ -103,10 +103,12 @@
 #====================================================================================================
 
 user_problem_statement: |
-  Phase 3: Sales & Wastage with Stock Deductions + Settings → Users & Access
-  - Sales: Record daily sales, deduct stock using WAC + prep-first priority, track revenue, audit trail
-  - Wastage: Record wastage for ingredients/preparations/recipes, calculate cost impact, deduct stock
-  - Users & Access: Admin-only user management with invite/temp password, role management, soft delete
+  Allergen Taxonomy Frontend Integration (P0 Priority)
+  - Complete allergen taxonomy with EU-14 codes (GLUTEN, DAIRY, CRUSTACEANS, etc.)
+  - Integrate AllergenSelector component in Ingredients, Preparations, Recipes
+  - Add allergen filters with i18n support (EN/IT)
+  - Verify allergen propagation: Ingredients → Preparations → Recipes
+  - Migration logic for legacy allergen strings → codes + otherAllergens
 
 backend:
   - task: "Enhanced Recipe Models and Endpoints"

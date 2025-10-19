@@ -1655,6 +1655,9 @@ async def create_ingredient(ingredient_data: IngredientCreate, current_user: dic
     waste_pct = ingredient_data.wastePct or 0
     effective_unit_cost = unit_cost * (1 + waste_pct / 100)
     
+    # Normalize allergen codes to uppercase for consistency
+    allergens = [a.upper() for a in (ingredient_data.allergens or [])]
+    
     ingredient = {
         "id": ingredient_id,
         "restaurantId": current_user["restaurantId"],
@@ -1667,7 +1670,7 @@ async def create_ingredient(ingredient_data: IngredientCreate, current_user: dic
         "supplier": ingredient_data.supplier,
         "preferredSupplierId": ingredient_data.preferredSupplierId,
         "allergen": ingredient_data.allergen,
-        "allergens": ingredient_data.allergens or [],
+        "allergens": allergens,
         "otherAllergens": ingredient_data.otherAllergens or [],
         "minStockQty": ingredient_data.minStockQty,
         "category": ingredient_data.category or "food",

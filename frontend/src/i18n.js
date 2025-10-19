@@ -524,6 +524,7 @@ const resources = {
       'receiving.priceHistory': 'Price History',
       'receiving.noHistory': 'No price history available',
       'receiving.error.priceHistory': 'Failed to load price history',
+      'receiving.priceLists': 'Price Lists',
       'receiving.category.food': 'Food',
       'receiving.category.beverage': 'Beverage',
       'receiving.category.nofood': 'Non-Food',

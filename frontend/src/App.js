@@ -128,6 +128,10 @@ function App() {
             element={user ? <Layout><Suppliers /></Layout> : <Navigate to="/login" />}
           />
           <Route
+            path="/document-import"
+            element={user ? <Layout><DocumentImport /></Layout> : <Navigate to="/login" />}
+          />
+          <Route
             path="/receiving"
             element={user ? <Layout><Receiving /></Layout> : <Navigate to="/login" />}
           />

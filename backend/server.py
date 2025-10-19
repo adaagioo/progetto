@@ -200,6 +200,7 @@ class PreparationCreate(BaseModel):
     items: List[PreparationItem]
     yield_: Optional[Yield] = None
     shelfLife: Optional[ShelfLife] = None
+    instructions: Optional[str] = None  # Preparation steps
     notes: Optional[str] = None
 
 class PreparationUpdate(BaseModel):
@@ -208,6 +209,7 @@ class PreparationUpdate(BaseModel):
     items: Optional[List[PreparationItem]] = None
     yield_: Optional[Yield] = None
     shelfLife: Optional[ShelfLife] = None
+    instructions: Optional[str] = None  # Preparation steps
     notes: Optional[str] = None
 
 class Preparation(BaseModel):

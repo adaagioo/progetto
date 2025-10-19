@@ -15,12 +15,14 @@ function Suppliers() {
   const { t } = useTranslation();
   const { user } = useContext(AuthContext);
   const [suppliers, setSuppliers] = useState([]);
+  const [ingredients, setIngredients] = useState([]);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingId, setEditingId] = useState(null);
   const [uploadingFor, setUploadingFor] = useState(null);
   const [showOCRPriceList, setShowOCRPriceList] = useState(false);
   const [ocrSupplierId, setOCRSupplierId] = useState(null);
   const [ocrParsedItems, setOCRParsedItems] = useState([]);
+  const [itemMappings, setItemMappings] = useState({});
   const [formData, setFormData] = useState({
     name: '',
     contactName: '',
@@ -31,6 +33,7 @@ function Suppliers() {
 
   useEffect(() => {
     fetchSuppliers();
+    fetchIngredients();
   }, []);
 
   const fetchSuppliers = async () => {

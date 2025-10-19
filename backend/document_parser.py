@@ -40,10 +40,53 @@ class DocumentParser:
             r'€?\s*([0-9,]+\.?\d{2})\s*(?:total|totale)'
         ]
     
+    def parse_invoice_number(self, text: str) -> Optional[str]:
+        """Extract invoice number"""
+        # Try Italian patterns first
+        italian_patterns = [
+            r'(?:Fattura|Invoice|Documento).*?(?:numero|n\.|#)\s*(\d+)',
+            r'(?:numero|n\.|#)\s*(\d+)',
+        ]
+        
+        for pattern in italian_patterns:
+            match = re.search(pattern, text, re.IGNORECASE)
+            if match:
+                return match.group(1).strip()
+        
+        # Try original patterns
+        for pattern in self.invoice_number_patterns:
+            match = re.search(pattern, text, re.IGNORECASE)
+            if match:
+                return match.group(1).strip()
+        return None
+    
     def parse_date(self, text: str) -> Optional[str]:
         """Extract and normalize date from text"""
         text_lower = text.lower()
         
+        # Add Italian date pattern: 26.09.2025
+        date_patterns = [
+            r'(\d{2}\.\d{2}\.\d{4})',  # DD.MM.YYYY (Italian)
+            r'(\d{2}/\d{2}/\d{4})',    # DD/MM/YYYY
+            r'(\d{4}-\d{2}-\d{2})',    # YYYY-MM-DD
+        ]
+        
+        for pattern in date_patterns:
+            match = re.search(pattern, text)
+            if match:
+                date_str = match.group(1)
+                try:
+                    # Try different date formats
+                    for fmt in ['%d.%m.%Y', '%d/%m/%Y', '%Y-%m-%d']:
+                        try:
+                            dt = datetime.strptime(date_str, fmt)
+                            return dt.strftime('%Y-%m-%d')
+                        except ValueError:
+                            continue
+                except:
+                    pass
+        
+        # Try original patterns
         for pattern in self.date_patterns:
             match = re.search(pattern, text_lower, re.IGNORECASE)
             if match:
@@ -58,14 +101,6 @@ class DocumentParser:
                             continue
                 except:
                     pass
-        return None
-    
-    def parse_invoice_number(self, text: str) -> Optional[str]:
-        """Extract invoice number"""
-        for pattern in self.invoice_number_patterns:
-            match = re.search(pattern, text, re.IGNORECASE)
-            if match:
-                return match.group(1).strip()
         return None
     
     def parse_vat_number(self, text: str) -> Optional[str]:

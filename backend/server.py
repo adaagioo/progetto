@@ -1719,6 +1719,9 @@ async def update_ingredient(ingredient_id: str, ingredient_data: IngredientCreat
     waste_pct = ingredient_data.wastePct or 0
     effective_unit_cost = unit_cost * (1 + waste_pct / 100)
     
+    # Normalize allergen codes to uppercase for consistency
+    allergens = [a.upper() for a in (ingredient_data.allergens or [])]
+    
     update_data = {
         "name": ingredient_data.name,
         "unit": ingredient_data.unit,
@@ -1729,7 +1732,7 @@ async def update_ingredient(ingredient_id: str, ingredient_data: IngredientCreat
         "supplier": ingredient_data.supplier,
         "preferredSupplierId": ingredient_data.preferredSupplierId,
         "allergen": ingredient_data.allergen,
-        "allergens": ingredient_data.allergens or [],
+        "allergens": allergens,
         "otherAllergens": ingredient_data.otherAllergens or [],
         "minStockQty": ingredient_data.minStockQty,
         "wastePct": waste_pct,

@@ -221,6 +221,7 @@ class Preparation(BaseModel):
     items: List[PreparationItem]
     yield_: Optional[Yield] = None
     shelfLife: Optional[ShelfLife] = None
+    instructions: Optional[str] = None  # Preparation steps
     notes: Optional[str] = None
     cost: float  # Computed from ingredients with waste
     allergens: List[str]  # Computed from ingredients

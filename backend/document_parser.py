@@ -140,8 +140,26 @@ class DocumentParser:
         Parse a single line item
         Expected formats:
         - Invoice: "Description Qty Unit Price"
+        - Italian format: "CODE QTY\DESCRIPTION UNIT %IVA | UM PRICE PRICE"
         - Price list: "Product Code Price Unit"
         """
+        # Italian invoice pattern: "L0347 1\AMARO DEL CAPO 1LT 22 | N 14,96 14,96"
+        italian_pattern = r'^([A-Z0-9]+)\s+(\d+)[\\|](.+?)\s+(\d+)\s+\|\s+\w+\s+([\d,]+)\s+([\d,]+)$'
+        match = re.match(italian_pattern, line)
+        if match:
+            code, qty, description, iva, unit_price, total = match.groups()
+            # Clean up description (remove size info at end if present)
+            desc_clean = re.sub(r'\s+(1LT|70CL|75CL|ML|LT|KG|G)$', '', description.strip())
+            
+            return {
+                "description": desc_clean.strip(),
+                "qty": float(qty),
+                "unit": self._extract_unit_from_description(description) or 'unit',
+                "price": float(unit_price.replace(',', '.')),
+                "code": code,
+                "line_text": line
+            }
+        
         # Generic pattern: capture description, numbers, and currency
         # Example: "San Marzano Tomatoes 10.0 kg €3.40"
         
@@ -168,7 +186,7 @@ class DocumentParser:
                 except:
                     pass
             # Check if it's a unit
-            elif part.lower() in ['kg', 'g', 'l', 'ml', 'pcs', 'pz', 'unit', 'units']:
+            elif part.lower() in ['kg', 'g', 'l', 'ml', 'pcs', 'pz', 'unit', 'units', 'lt', 'cl']:
                 unit = part.lower()
             # Otherwise it's part of description
             else:
@@ -192,6 +210,26 @@ class DocumentParser:
             "price": price,
             "line_text": line  # Keep original for review
         }
+    
+    def _extract_unit_from_description(self, description: str) -> Optional[str]:
+        """Extract unit from description text"""
+        # Common Italian units
+        units = {
+            '1LT': 'L',
+            'LT': 'L',
+            '70CL': 'cl',
+            '75CL': 'cl',
+            'CL': 'cl',
+            'ML': 'ml',
+            'KG': 'kg',
+            'G': 'g'
+        }
+        
+        for pattern, unit in units.items():
+            if pattern in description.upper():
+                return unit
+        
+        return None
     
     def parse_invoice(self, ocr_text: str) -> Dict[str, Any]:
         """

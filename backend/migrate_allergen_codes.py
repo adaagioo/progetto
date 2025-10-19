@@ -19,19 +19,16 @@ async def migrate_allergens():
     """Migrate all allergen data to uppercase codes"""
     # Use the same connection as the server
     mongo_url = os.getenv('MONGO_URL', 'mongodb://localhost:27017')
-    # The server.py uses get_database() which connects to the default database
-    # Let me check what database name is used
-    client = AsyncIOMotorClient(mongo_url)
+    db_name = os.getenv('DB_NAME', 'ristobrain_db')
     
-    # Try both possible database names
-    for db_name in ['food_analytics', 'test']:
-        db = client[db_name]
-        count = await db.ingredients.count_documents({})
-        if count > 0:
-            print(f"Found {count} ingredients in database: {db_name}")
-            break
-    else:
-        print("No ingredients found in any database")
+    client = AsyncIOMotorClient(mongo_url)
+    db = client[db_name]
+    
+    count = await db.ingredients.count_documents({})
+    print(f"Found {count} ingredients in database: {db_name}\n")
+    
+    if count == 0:
+        print("No ingredients to migrate")
         client.close()
         return
     

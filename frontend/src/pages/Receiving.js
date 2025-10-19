@@ -12,6 +12,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '.
 import { Popover, PopoverContent, PopoverTrigger } from '../components/ui/popover';
 import { Plus, Trash2, Edit, Upload, Download, FileText, X, History, TrendingUp } from 'lucide-react';
 import { toast } from 'sonner';
+import OCRUploadButton from '../components/OCRUploadButton';
 
 function Receiving() {
   const { t } = useTranslation();

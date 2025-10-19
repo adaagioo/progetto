@@ -16,7 +16,7 @@ function OrderList() {
 
   // Get user from auth
   useEffect(() => {
-    const token = localStorage.getItem('authToken');
+    const token = localStorage.getItem('token');
     if (token) {
       const payload = JSON.parse(atob(token.split('.')[1]));
       setUser(payload);

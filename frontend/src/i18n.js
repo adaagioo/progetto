@@ -500,6 +500,8 @@ const resources = {
       'nav.inventory': 'Inventario',
       'nav.sales': 'Vendite',
       'nav.wastage': 'Scarti',
+      'nav.prepList': 'Lista Prep',
+      'nav.orderList': 'Lista Ordini',
       'nav.pl': 'P&L',
       'nav.settings': 'Impostazioni',
       

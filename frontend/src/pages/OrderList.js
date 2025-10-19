@@ -449,9 +449,25 @@ function OrderList() {
                         {item.unit}
                       </td>
                       <td className="px-4 py-3">
-                        <span className="text-sm text-gray-900">
-                          {item.supplierName || '--'}
-                        </span>
+                        {canEdit && suppliers.length > 0 ? (
+                          <select
+                            value={item.supplierId || ''}
+                            onChange={(e) => handleSupplierChange(index, e.target.value)}
+                            className="w-full px-2 py-1 border border-gray-300 rounded text-sm"
+                            data-testid={`supplier-select-${index}`}
+                          >
+                            <option value="">-- Select --</option>
+                            {suppliers.map(supplier => (
+                              <option key={supplier.id} value={supplier.id}>
+                                {supplier.name}
+                              </option>
+                            ))}
+                          </select>
+                        ) : (
+                          <span className="text-sm text-gray-900">
+                            {item.supplierName || '--'}
+                          </span>
+                        )}
                       </td>
                       <td className="px-4 py-3">
                         <div className="flex flex-wrap gap-1">

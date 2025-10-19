@@ -157,6 +157,10 @@ const resources = {
       'ocr.error.noSupplier': 'Please select a supplier',
       'ocr.error.noMappedItems': 'Please map at least one item to an ingredient',
       'ocr.error.import': 'Failed to create receiving',
+      'ocr.uploadInvoice': 'Upload Invoice (OCR)',
+      'ocr.extractingText': 'Extracting text from document...',
+      'ocr.complete': 'Processing complete!',
+      'ocr.autoMappedItems': '{{count}} items auto-mapped from saved mappings',
 
       'preparations.form.name': 'Name',
       'preparations.form.namePlaceholder': 'e.g., Pizza Dough',

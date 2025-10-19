@@ -301,6 +301,16 @@ function Suppliers() {
                       onChange={(e) => handleFileUpload(supplier.id, e, 'price_list')}
                       disabled={uploadingFor === supplier.id}
                     />
+                    <OCRUploadButton
+                      onParsed={(data) => {
+                        setOCRSupplierId(supplier.id);
+                        handleOCRParsed(data);
+                      }}
+                      context="supplier"
+                      supplierId={supplier.id}
+                      buttonText={t('suppliers.ocrPriceList') || 'OCR Price List'}
+                      buttonVariant="default"
+                    />
                     <Button
                       size="sm"
                       variant="outline"

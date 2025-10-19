@@ -545,6 +545,8 @@ const resources = {
       'common.delete': 'Delete',
       'common.edit': 'Edit',
       'common.clearFilters': 'Clear Filters',
+      'common.all': 'All',
+      'common.noResults': 'No results found',
       'common.add': 'Add',
       'common.create': 'Create',
       'common.update': 'Update',

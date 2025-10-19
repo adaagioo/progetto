@@ -1,27 +1,19 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useContext } from 'react';
 import { useTranslation } from 'react-i18next';
 import { toast } from 'sonner';
 import { ShoppingCart, Calendar, Search, Filter, AlertCircle, Save, RefreshCw, Package } from 'lucide-react';
 import { useCurrency } from '../contexts/CurrencyContext';
+import { AuthContext } from '../App';
 
 function OrderList() {
   const { t } = useTranslation();
   const { formatMinor } = useCurrency();
+  const { user } = useContext(AuthContext);
   const [loading, setLoading] = useState(false);
   const [orderList, setOrderList] = useState(null);
   const [targetDate, setTargetDate] = useState('');
   const [searchTerm, setSearchTerm] = useState('');
   const [filterView, setFilterView] = useState('all'); // 'all', 'lowStock', 'expiring'
-  const [user, setUser] = useState(null);
-
-  // Get user from auth
-  useEffect(() => {
-    const token = localStorage.getItem('token');
-    if (token) {
-      const payload = JSON.parse(atob(token.split('.')[1]));
-      setUser(payload);
-    }
-  }, []);
 
   // Set default target date to tomorrow
   useEffect(() => {

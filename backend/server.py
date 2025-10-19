@@ -1703,6 +1703,27 @@ async def get_ingredients(current_user: dict = Depends(get_current_user)):
     
     return [Ingredient(**ing) for ing in ingredients]
 
+@api_router.get("/ingredients/{ingredient_id}", response_model=Ingredient)
+async def get_ingredient(ingredient_id: str, current_user: dict = Depends(get_current_user)):
+    """Get a single ingredient by ID"""
+    await check_subscription(current_user)
+    
+    ingredient = await db.ingredients.find_one({
+        "id": ingredient_id,
+        "restaurantId": current_user["restaurantId"]
+    }, {"_id": 0})
+    
+    if not ingredient:
+        raise HTTPException(status_code=404, detail="Ingredient not found")
+    
+    # Populate supplier name if preferredSupplierId exists
+    if ingredient.get("preferredSupplierId"):
+        supplier = await db.suppliers.find_one({"id": ingredient["preferredSupplierId"]}, {"_id": 0})
+        if supplier:
+            ingredient["preferredSupplierName"] = supplier.get("name")
+    
+    return Ingredient(**ingredient)
+
 @api_router.put("/ingredients/{ingredient_id}", response_model=Ingredient)
 async def update_ingredient(ingredient_id: str, ingredient_data: IngredientCreate, current_user: dict = Depends(get_current_user)):
     await check_subscription(current_user)

@@ -44,7 +44,7 @@ function Ingredients() {
     packSize: '',
     packCost: '',
     supplier: '',
-    preferredSupplierId: '',
+    preferredSupplierId: 'none',
     allergen: '',
     allergens: [],
     minStockQty: '',

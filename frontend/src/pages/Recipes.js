@@ -298,7 +298,8 @@ function RecipesEnhanced() {
       targetFoodCostPct: '30',
       price: '',
       items: [],
-      shelfLife: { value: '', unit: 'days' }
+      shelfLife: { value: '', unit: 'days' },
+      instructions: ''
     });
     setEditingId(null);
     setEditingItemIndex(null);

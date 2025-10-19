@@ -23,7 +23,6 @@ from email_templates import get_reset_email_template, get_password_changed_email
 from i18n_messages import get_message
 from storage_service import init_storage_service, get_storage_service
 from audit_utils import log_audit
-from allergen_utils import normalize_allergen_list
 
 ROOT_DIR = Path(__file__).parent
 load_dotenv(ROOT_DIR / '.env')

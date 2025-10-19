@@ -14,6 +14,7 @@ function OrderList() {
   const [targetDate, setTargetDate] = useState('');
   const [searchTerm, setSearchTerm] = useState('');
   const [filterView, setFilterView] = useState('all'); // 'all', 'lowStock', 'expiring'
+  const [suppliers, setSuppliers] = useState([]);
 
   // Set default target date to tomorrow
   useEffect(() => {

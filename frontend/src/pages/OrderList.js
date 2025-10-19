@@ -414,18 +414,25 @@ function OrderList() {
                         {item.minStockQty?.toFixed(2) || '0.00'}
                       </td>
                       <td className="px-4 py-3 text-center">
-                        {canEdit ? (
-                          <input
-                            type="number"
-                            step="0.01"
-                            value={item.suggestedQty || ''}
-                            onChange={(e) => handleSuggestedOverride(index, e.target.value)}
-                            className="w-20 px-2 py-1 border border-gray-300 rounded text-center"
-                            data-testid={`suggested-qty-${index}`}
-                          />
-                        ) : (
-                          <span className="text-gray-900">{item.suggestedQty?.toFixed(2) || '0.00'}</span>
-                        )}
+                        <div className="flex flex-col items-center gap-1">
+                          {canEdit ? (
+                            <input
+                              type="number"
+                              step="0.01"
+                              value={item.suggestedQty || ''}
+                              onChange={(e) => handleSuggestedOverride(index, e.target.value)}
+                              className="w-20 px-2 py-1 border border-gray-300 rounded text-center"
+                              data-testid={`suggested-qty-${index}`}
+                            />
+                          ) : (
+                            <span className="text-gray-900">{item.suggestedQty?.toFixed(2) || '0.00'}</span>
+                          )}
+                          {item.packSize && item.packSize > 0 && (
+                            <span className="text-xs text-gray-500" title={`Pack size: ${item.packSize} ${item.unit}. Rounded: ${roundToPack(item.suggestedQty || 0, item.packSize).toFixed(2)}`}>
+                              Pack: {item.packSize} → {roundToPack(item.suggestedQty || 0, item.packSize).toFixed(2)}
+                            </span>
+                          )}
+                        </div>
                       </td>
                       <td className="px-4 py-3 text-center">
                         <input

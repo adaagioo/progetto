@@ -2391,7 +2391,233 @@ async def delete_wastage(wastage_id: str, current_user: dict = Depends(get_curre
     
     return {"message": "Wastage deleted"}
 
-# ============ P&L ROUTES ============
+# ============ PHASE 4: PREP LIST ROUTES ============
+
+@api_router.get("/prep-list/forecast")
+async def get_prep_forecast(date: str, current_user: dict = Depends(get_current_user)):
+    """Get forecasted prep needs for a date"""
+    await check_subscription(current_user)
+    
+    forecast = await forecast_prep_needs(date, current_user["restaurantId"], db)
+    return {"date": date, "items": forecast}
+
+@api_router.get("/prep-list", response_model=List[PrepList])
+async def get_prep_lists(current_user: dict = Depends(get_current_user)):
+    """Get all prep lists"""
+    await check_subscription(current_user)
+    
+    prep_lists = await db.prep_lists.find(
+        {"restaurantId": current_user["restaurantId"]},
+        {"_id": 0}
+    ).to_list(1000)
+    
+    return [PrepList(**pl) for pl in prep_lists]
+
+@api_router.post("/prep-list", response_model=PrepList)
+async def create_prep_list(prep_data: PrepListCreate, current_user: dict = Depends(get_current_user)):
+    """Create or update prep list for a date"""
+    await check_subscription(current_user)
+    
+    # Check if prep list already exists for this date
+    existing = await db.prep_lists.find_one({
+        "restaurantId": current_user["restaurantId"],
+        "date": prep_data.date
+    })
+    
+    if existing:
+        # Update existing
+        await db.prep_lists.update_one(
+            {"id": existing["id"]},
+            {"$set": {
+                "items": [item.model_dump() for item in prep_data.items],
+                "updatedAt": datetime.now(timezone.utc).isoformat()
+            }}
+        )
+        prep_list_id = existing["id"]
+    else:
+        # Create new
+        prep_list_id = str(uuid.uuid4())
+        prep_list = {
+            "id": prep_list_id,
+            "restaurantId": current_user["restaurantId"],
+            "date": prep_data.date,
+            "items": [item.model_dump() for item in prep_data.items],
+            "createdAt": datetime.now(timezone.utc).isoformat(),
+            "updatedAt": None
+        }
+        await db.prep_lists.insert_one(prep_list)
+    
+    # Log audit
+    await log_audit(
+        db,
+        current_user["restaurantId"],
+        "prep_list",
+        "create" if not existing else "update",
+        current_user["id"],
+        {"date": prep_data.date, "itemsCount": len(prep_data.items)}
+    )
+    
+    # Get and return
+    result = await db.prep_lists.find_one({"id": prep_list_id}, {"_id": 0})
+    return PrepList(**result)
+
+# ============ PHASE 4: ORDER LIST ROUTES ============
+
+@api_router.get("/order-list/forecast")
+async def get_order_forecast(date: str, current_user: dict = Depends(get_current_user)):
+    """Get forecasted order needs for a date"""
+    await check_subscription(current_user)
+    
+    forecast = await forecast_order_needs(date, current_user["restaurantId"], db)
+    return {"date": date, "items": forecast}
+
+@api_router.get("/order-list", response_model=List[OrderList])
+async def get_order_lists(current_user: dict = Depends(get_current_user)):
+    """Get all order lists"""
+    await check_subscription(current_user)
+    
+    order_lists = await db.order_lists.find(
+        {"restaurantId": current_user["restaurantId"]},
+        {"_id": 0}
+    ).to_list(1000)
+    
+    return [OrderList(**ol) for ol in order_lists]
+
+@api_router.post("/order-list", response_model=OrderList)
+async def create_order_list(order_data: OrderListCreate, current_user: dict = Depends(get_current_user)):
+    """Create or update order list for a date"""
+    await check_subscription(current_user)
+    
+    # Check if order list already exists for this date
+    existing = await db.order_lists.find_one({
+        "restaurantId": current_user["restaurantId"],
+        "date": order_data.date
+    })
+    
+    if existing:
+        # Update existing
+        await db.order_lists.update_one(
+            {"id": existing["id"]},
+            {"$set": {
+                "items": [item.model_dump() for item in order_data.items],
+                "updatedAt": datetime.now(timezone.utc).isoformat()
+            }}
+        )
+        order_list_id = existing["id"]
+    else:
+        # Create new
+        order_list_id = str(uuid.uuid4())
+        order_list = {
+            "id": order_list_id,
+            "restaurantId": current_user["restaurantId"],
+            "date": order_data.date,
+            "items": [item.model_dump() for item in order_data.items],
+            "createdAt": datetime.now(timezone.utc).isoformat(),
+            "updatedAt": None
+        }
+        await db.order_lists.insert_one(order_list)
+    
+    # Log audit
+    await log_audit(
+        db,
+        current_user["restaurantId"],
+        "order_list",
+        "create" if not existing else "update",
+        current_user["id"],
+        {"date": order_data.date, "itemsCount": len(order_data.items)}
+    )
+    
+    # Get and return
+    result = await db.order_lists.find_one({"id": order_list_id}, {"_id": 0})
+    return OrderList(**result)
+
+# ============ PHASE 5: P&L ROUTES ============
+
+@api_router.post("/pl/snapshot", response_model=PLSnapshot)
+async def create_pl_snapshot(pl_data: PLSnapshotCreate, current_user: dict = Depends(get_current_user)):
+    """Create P&L snapshot for a period"""
+    await check_subscription(current_user)
+    
+    # Calculate totals
+    cogs_total = pl_data.cogs_food_beverage + pl_data.cogs_raw_waste
+    opex_total = pl_data.opex_non_food + pl_data.opex_platforms
+    labour_total = pl_data.labour_employees + pl_data.labour_staff_meal
+    marketing_total = pl_data.marketing_online_ads + pl_data.marketing_free_items
+    rent_total = pl_data.rent_base_effective + pl_data.rent_garden
+    
+    # Calculate EBITDA
+    ebitda = (pl_data.sales_turnover - cogs_total - opex_total - 
+              labour_total - marketing_total - rent_total - pl_data.other_total)
+    
+    pl_id = str(uuid.uuid4())
+    snapshot = {
+        "id": pl_id,
+        "restaurantId": current_user["restaurantId"],
+        "period": pl_data.period.model_dump(),
+        "currency": pl_data.currency,
+        "displayLocale": pl_data.displayLocale,
+        "sales_turnover": round(pl_data.sales_turnover, 2),
+        "sales_food_beverage": round(pl_data.sales_food_beverage, 2),
+        "sales_delivery": round(pl_data.sales_delivery, 2),
+        "cogs_food_beverage": round(pl_data.cogs_food_beverage, 2),
+        "cogs_raw_waste": round(pl_data.cogs_raw_waste, 2),
+        "cogs_total": round(cogs_total, 2),
+        "opex_non_food": round(pl_data.opex_non_food, 2),
+        "opex_platforms": round(pl_data.opex_platforms, 2),
+        "opex_total": round(opex_total, 2),
+        "labour_employees": round(pl_data.labour_employees, 2),
+        "labour_staff_meal": round(pl_data.labour_staff_meal, 2),
+        "labour_total": round(labour_total, 2),
+        "marketing_online_ads": round(pl_data.marketing_online_ads, 2),
+        "marketing_free_items": round(pl_data.marketing_free_items, 2),
+        "marketing_total": round(marketing_total, 2),
+        "rent_base_effective": round(pl_data.rent_base_effective, 2),
+        "rent_garden": round(pl_data.rent_garden, 2),
+        "rent_total": round(rent_total, 2),
+        "other_total": round(pl_data.other_total, 2),
+        "kpi_ebitda": round(ebitda, 2),
+        "notes": pl_data.notes,
+        "createdAt": datetime.now(timezone.utc).isoformat(),
+        "updatedAt": None
+    }
+    
+    await db.pl_snapshots.insert_one(snapshot)
+    
+    # Log audit
+    await log_audit(
+        db,
+        current_user["restaurantId"],
+        "pl_snapshot",
+        "create",
+        current_user["id"],
+        {"period": f"{pl_data.period.start} to {pl_data.period.end}", "ebitda": ebitda}
+    )
+    
+    snapshot.pop("_id", None)
+    return PLSnapshot(**snapshot)
+
+@api_router.get("/pl/snapshot", response_model=List[PLSnapshot])
+async def get_pl_snapshots(
+    start_date: Optional[str] = None,
+    end_date: Optional[str] = None,
+    current_user: dict = Depends(get_current_user)
+):
+    """Get P&L snapshots, optionally filtered by date range"""
+    await check_subscription(current_user)
+    
+    query = {"restaurantId": current_user["restaurantId"]}
+    
+    if start_date or end_date:
+        query["period.start"] = {}
+        if start_date:
+            query["period.start"]["$gte"] = start_date
+        if end_date:
+            query["period.start"]["$lte"] = end_date
+    
+    snapshots = await db.pl_snapshots.find(query, {"_id": 0}).sort("period.start", -1).to_list(1000)
+    return [PLSnapshot(**s) for s in snapshots]
+
+# ============ P&L ROUTES (LEGACY) ============
 
 @api_router.post("/pl", response_model=PL)
 async def create_pl(pl_data: PLCreate, current_user: dict = Depends(get_current_user)):

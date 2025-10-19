@@ -798,14 +798,14 @@ frontend:
 metadata:
   created_by: "main_agent"
   version: "1.0"
-  test_sequence: 3
+  test_sequence: 4
   run_ui: false
 
 test_plan:
   current_focus:
-    - "Phase 3 Backend Testing Complete - All systems working"
-    - "Enhanced Recipe Editor: Manager RBAC fix (critical)"
-    - "Enhanced Recipe Editor: Dropdown selection issues"
+    - "Phase 4: Prep List Backend - Testing endpoints and forecast logic"
+    - "Phase 4: Order List Backend - Testing endpoints and suggestion logic"
+    - "Phase 5: P&L Snapshot Backend - Testing endpoints and calculations"
   stuck_tasks:
     - "Enhanced Recipe Editor with Keyboard UX"
   test_all: false

@@ -11,7 +11,7 @@ import aiohttp
 import json
 from datetime import datetime, timedelta, timezone
 
-BACKEND_URL = "https://food-analytics.preview.emergentagent.com/api"
+BACKEND_URL = "https://allergen-taxonomy.preview.emergentagent.com/api"
 
 async def seed_phase4_uat_data():
     """Seed comprehensive test data for Phase 4 UAT"""

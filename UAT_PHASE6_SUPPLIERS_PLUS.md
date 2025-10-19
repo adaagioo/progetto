@@ -19,8 +19,8 @@
 ## 🌐 Staging Environment
 
 ### URLs
-- **Application**: https://food-analytics.preview.emergentagent.com
-- **API Base**: https://food-analytics.preview.emergentagent.com/api
+- **Application**: https://allergen-taxonomy.preview.emergentagent.com
+- **API Base**: https://allergen-taxonomy.preview.emergentagent.com/api
 
 ### Test Credentials
 

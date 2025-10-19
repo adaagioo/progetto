@@ -9,7 +9,7 @@
 
 ## 🌐 STAGING ENVIRONMENT
 
-**URL:** `https://food-analytics.preview.emergentagent.com`
+**URL:** `https://allergen-taxonomy.preview.emergentagent.com`
 
 **Tenant:** Test Restaurant (Multi-restaurant tenant)
 

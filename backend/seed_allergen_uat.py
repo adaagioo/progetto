@@ -9,7 +9,7 @@ import aiohttp
 import json
 from datetime import datetime, timedelta
 
-BACKEND_URL = "https://food-analytics.preview.emergentagent.com/api"
+BACKEND_URL = "https://allergen-taxonomy.preview.emergentagent.com/api"
 ADMIN_CREDENTIALS = {"email": "admin@test.com", "password": "admin123"}
 
 async def seed_allergen_uat_data():

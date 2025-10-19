@@ -1,80 +1,97 @@
 <analysis>
-The AI engineer has progressed RistoBrain from MVP through Phases 1-3, completing multi-currency, RBAC, password reset, and i18n. Phase 4 (Prep List & Order List) backend and frontend are largely implemented and stable, with minor gaps being addressed. Phase 5 (P&L Template) backend is complete, and its frontend UI has just been built and verified. An urgent request to update allergen taxonomy was received, and the backend changes for this are complete. The engineer is now actively integrating the new  component into the frontend, specifically in , and addressing UI issues related to its integration. Systematic testing (backend and frontend E2E) has been used to identify and fix issues like authentication tokens and RBAC. The project is following a prioritized roadmap, with Phase 6 (Suppliers+) next.
+The AI engineer's work focused on three main areas: Allergen Taxonomy implementation, Phase 6 (Suppliers+) Receiving UI enhancements, and Phase 8 (Document Ingestion / OCR). Initial efforts centered on allergen integration, involving backend updates for uppercase code storage, comprehensive i18n translations, and frontend component development (). The engineer successfully integrated the  into , , and , added filtering capabilities, and resolved critical i18n and data consistency issues where raw keys or legacy allergen names were displayed.
+
+Following this, Phase 6 saw the development of Receiving UI enhancements, specifically a price history popover and price list viewer, alongside a backend endpoint for historical prices. The final major thrust was Phase 8, where Tesseract OCR was installed, an OCR service wrapper and a sophisticated document parser were created. The parser was significantly refined to accurately extract line items, dates, and invoice numbers from complex Italian PDF invoices. At the end of the trajectory, the engineer initiated OCR integration into core modules, starting with the Receiving page, and was in the process of adding an OCR upload button to the Suppliers page. Throughout, iterative debugging, testing, and user feedback were crucial in addressing issues like CORS, missing backend dependencies, data inconsistencies, and parsing accuracy.
 </analysis>
 
 <product_requirements>
-RistoBrain is a multi-tenant PWA for restaurant cost control, built with React, FastAPI, and MongoDB. It features authentication, RBAC (admin/manager/waiter), multi-currency (EUR/USD, minor units), password reset, and EN/IT internationalization.
+RistoBrain is a multi-tenant PWA for restaurant cost control, built using React, FastAPI, and MongoDB, featuring authentication, RBAC (admin/manager/waiter), multi-currency (EUR/USD, minor units), password reset, and EN/IT internationalization.
 
 **Implemented Phases:**
 *   **Phase 1:** Suppliers (CRUD, attachments), Receiving (CRUD, inventory write-through), Inventory Valuation (WAC, audit), interactive Dashboard.
 *   **Phase 2:** Enhanced Ingredients (waste %, allergens, shelf life, category), Preparations (sub-recipes, computed cost/allergens, instructions), Enhanced Recipe Editor (mixed items, in-place editing, keyboard UX, live cost, allergen badges, instructions). Allergen taxonomy normalized to EU-14.
 *   **Phase 3:** Sales & Wastage with WAC stock deductions, and Admin-only Users & Access management.
 
-**Current & Future Work:**
+**Current & Future Work (as per user requests and previous work):**
 *   **Phase 4 (Implemented, closing gaps):** Prep List (available/to make, forecast, shelf-life, manual overrides, expiry alerts, UI/UX, i18n/currency) and Order List (suggested qty, drivers, pack rounding, supplier switch, expiry alerts, RBAC).
+*   **Allergen Integration (P0):** Integrate  (codes in DB, localized labels, fixed checklist + free-text Other input) across Ingredients, Preparations, Recipes (forms, badges, filters). Ensure propagation, handle legacy string migration.
 *   **Phase 5 (Backend Complete, Frontend Implemented):** Enhanced P&L template (weekly Mon–Sun, multi-currency/locale, detailed calculations, manual lines).
-*   **Phase 6 (Planned):** Suppliers+ (item mapping, price lists).
-*   **Phase 7 (Planned):** RBAC Matrix (customizable permissions).
-*   **Phase 8 (Planned):** Document Ingestion/OCR (parsing pipeline, review/mapping UI).
+*   **Phase 6 (Suppliers+):** Item mapping, price lists, Ingredients UI, Receiving UI enhancements (preferred supplier pre-fill, last price/pack auto-fill, price history popover, pack rounding tooltip, price-list viewer/download).
+*   **Phase 8 (Document Ingestion / OCR):** OCR integration (JPG/PNG/PDF) into Suppliers, Receiving, Sales, and P&L modules. Provider adapter (Tesseract MVP), parsing pipeline, mandatory Review & Mapping UI (no silent imports, confidence coloring, editable fields, mapping memory), Receiving/Sales integration, error handling, audit trail, RBAC/tenant checks, i18n.
+*   **Phase 7 (RBAC Matrix):** Customizable permission schema, APIs, admin-only matrix UI, enforcement, tests.
 </product_requirements>
 
 <key_technical_concepts>
--   **FastAPI**: Python web framework for the backend APIs.
--   **React**: JavaScript library for the progressive web application (PWA) frontend.
--   **MongoDB**: NoSQL database for data storage, utilizing UUIDs for IDs.
--   **JWT/RBAC**: JSON Web Tokens for authentication and Role-Based Access Control.
--   **i18n**: Internationalization using  for English and Italian.
--   **Minor Units**: Monetary value storage to prevent floating-point errors.
--   **Weighted Average Cost (WAC)**: Inventory valuation methodology.
+-   **FastAPI**: Python web framework for backend APIs.
+-   **React**: JavaScript library for frontend PWA.
+-   **MongoDB**: NoSQL database (UUIDs for IDs).
+-   **JWT/RBAC**: Authentication and Role-Based Access Control.
+-   **i18n**: Internationalization (, EN/IT).
+-   **Minor Units**: Monetary value storage.
+-   **Weighted Average Cost (WAC)**: Inventory valuation.
 -   **Playwright**: Frontend E2E testing framework.
 -   **EU-14 Allergens**: Standardized allergen taxonomy.
+-   **Tesseract OCR**: OCR engine for document ingestion.
+-   **Pytesseract**: Python wrapper for Tesseract.
+-   **Poppler-utils**: PDF to image conversion for OCR.
 </key_technical_concepts>
 
 <code_architecture>
 
--   : The core FastAPI application.
-    -   **Importance**: Defines all API routes, data models, and business logic.
-    -   **Changes**: Updated , ,  models for new fields (e.g., waste%, allergens, instructions, ). Implemented CRUD for Preparations, enhanced Sales/Wastage. Added models (, , ) and endpoints for Prep Lists, Order Lists, and P&L configuration. Recently updated for allergen code storage ( and ). RBAC checks added to ingredient/supplier file upload endpoints.
--   : Lists Python dependencies.
-    -   **Importance**: Ensures environment consistency.
-    -   **Changes**: Added , .
--   : Utility for allergen normalization.
-    -   **Importance**: Standardizes allergen names to EU-14.
-    -   **Changes**: Created to handle allergen mapping.
--   : Script to seed UAT data for Phase 4.
-    -   **Importance**: Facilitates testing of Prep List and Order List.
-    -   **Changes**: New script to create suppliers, ingredients, recipes, historical sales, and inventory.
--   : Internationalization configuration and translations.
-    -   **Importance**: Provides multi-language support (EN/IT).
-    -   **Changes**: Expanded with translations for Preparations, Enhanced Recipe Editor, Sales, Wastage, Users, Prep Lists, Order Lists, P&L, Suppliers+, and new comprehensive allergen translations.
--   : Main React application entry and routing.
-    -   **Importance**: Defines application routes and top-level context providers.
-    -   **Changes**: Added routes for , , and . Replaced old  route. Fixed duplicate imports.
--   : Global application layout and navigation sidebar.
-    -   **Importance**: Consistent UI structure and navigation.
-    -   **Changes**: Added navigation links for Prep Lists, Order Lists, and P&L Snapshot.
--   : Frontend UI for Prep Lists.
-    -   **Importance**: Allows users to view and manage preparation forecasts.
-    -   **Changes**: Created, implemented forecast display, manual overrides. Fixed authentication token usage ( to ) and RBAC user context ( instead of manual token decode).
--   : Frontend UI for Order Lists.
-    -   **Importance**: Provides ingredient order suggestions.
-    -   **Changes**: Created, implemented order suggestions, pack rounding, editable supplier. Fixed authentication token usage ( to ) and RBAC user context ( instead of manual token decode).
--   : Frontend UI for P&L Snapshots.
-    -   **Importance**: Displays weekly P&L reports.
-    -   **Changes**: Created, implemented week picker, display of various cost/revenue categories, percentages, and multi-currency/locale formatting.
+-   : Core FastAPI application.
+    -   **Importance**: Defines API routes and business logic.
+    -   **Changes**: Updated  CRUD to uppercase allergen codes. Added GET endpoint for individual ingredients. Added  endpoint for Receiving. Implemented OCR endpoints (, , ). Added mapping memory endpoints (). RBAC checks were added to receiving endpoints. Removed import from .
+-   : Python dependencies.
+    -   **Importance**: Environment consistency.
+    -   **Changes**: Added , , .
+-   : Renamed from .
+    -   **Importance**: Contained deprecated allergen normalization logic.
+    -   **Changes**: Renamed to prevent usage, dependency removed from .
+-   : New script.
+    -   **Importance**: Migrates legacy lowercase allergen codes in MongoDB to uppercase, ensuring consistency.
+    -   **Changes**: Created, and updated to correctly connect to .
+-   : New script.
+    -   **Importance**: Seeds UAT data with ingredients, preparations, and recipes including allergens.
+    -   **Changes**: Created, then fixed recipe item  field.
+-   : New script.
+    -   **Importance**: Provides a wrapper for Tesseract OCR functionality.
+    -   **Changes**: Created to handle image/PDF to text conversion.
+-   : New script.
+    -   **Importance**: Parses raw OCR text into structured data (invoice number, date, line items).
+    -   **Changes**: Significantly enhanced with Italian-specific regex patterns for line item, date, and invoice number detection to handle complex invoice layouts.
+-   : Internationalization configuration.
+    -   **Importance**: Multi-language support.
+    -   **Changes**: Expanded with comprehensive translations for allergen filters, badges, Other/Altro input, Receiving UI (price history, price lists), and new OCR features (DocumentImport page, upload buttons, common labels).
+-   : Main React entry and routing.
+    -   **Importance**: Defines application routes.
+    -   **Changes**: Added route for .
+-   : Global layout and navigation.
+    -   **Importance**: Consistent UI structure.
+    -   **Changes**: Added navigation link for , added  icon import.
+-   : Reusable component.
+    -   **Importance**: Standardizes allergen input.
+    -   **Changes**: No structural changes, but central to the allergen integration.
+-   : New reusable component.
+    -   **Importance**: Provides a standardized button for initiating OCR document uploads.
+    -   **Changes**: Created to encapsulate OCR upload logic.
 -   : Ingredients management page.
     -   **Importance**: CRUD for ingredients.
-    -   **Changes**: Updated to use the new  component, including  field and a supplier dropdown. Fixed  component empty value handling.
+    -   **Changes**: Updated allergen badge display to use i18n and uppercase codes. Added allergen filter UI.
+-   : Preparations page.
+    -   **Importance**: CRUD for preparations.
+    -   **Changes**: Updated allergen badge display to use i18n and uppercase codes.
+-   : Recipes page.
+    -   **Importance**: CRUD for recipes.
+    -   **Changes**: Updated allergen badge display to use i18n and uppercase codes. Added allergen filter UI.
 -   : Receiving records page.
     -   **Importance**: Manages incoming inventory.
-    -   **Changes**: Enhanced  to auto-fill preferred supplier and last price when an ingredient is selected.
+    -   **Changes**: Integrated price history popover, price list viewer, OCR upload button and handler for parsed data, and an indicator for OCR-imported records.
 -   : Suppliers management page.
-    -   **Importance**: CRUD for suppliers and file attachments.
-    -   **Changes**: Enhanced file upload to allow  metadata (e.g., priceList) and separate buttons for general files vs. price lists.
--   : Reusable component for allergen selection.
-    -   **Importance**: Standardizes allergen input across forms.
-    -   **Changes**: Created to provide a checkbox grid for fixed EU-14 allergens and a free-text input for Other allergens.
-
+    -   **Importance**: CRUD for suppliers.
+    -   **Changes**: Enhanced file upload for  (previously), now integrating OCR upload button.
+-   : New page.
+    -   **Importance**: Provides UI for document upload, OCR processing, review, and mapping.
+    -   **Changes**: Created with file upload, processing, and review steps.
 </code_architecture>
 
 <pending_tasks>
@@ -84,36 +101,36 @@ RistoBrain is a multi-tenant PWA for restaurant cost control, built with React, 
     -   Verify Staff RBAC limitations.
     -   Re-run comprehensive Playwright tests (with longer timeouts) to achieve 100% pass rate.
 -   **Phase 6 (Suppliers+):**
-    -   Receiving UI enhancement (preferred supplier pre-fill, last price/pack auto-fill, price history popover, pack rounding).
--   **Allergen Taxonomy Frontend:**
-    -   Integrate  into Preparations and Recipes pages.
-    -   Implement allergen badges in Recipe view/editor.
-    -   Add allergen filters.
-    -   Ensure i18n updates labels, badges, filters.
-    -   Validate propagation (Ingredient → Preparation → Recipe).
+    -   Receiving UI enhancement: Remaining Playwright smoke tests, RBAC checks, and UAT package.
+-   **Phase 8 (Document Ingestion / OCR):**
+    -   Integrate OCR into Suppliers, Sales, and P&L modules.
+    -   Implement mapping memory, review/mapping UI details (confidence coloring, editable fields).
+    -   Finalize RBAC/tenant checks and audit trail.
+    -   Complete full testing and UAT package.
 -   **Phase 7 (RBAC Matrix):** Full implementation.
--   **Phase 8 (Document Ingestion / OCR):** Full implementation.
 </pending_tasks>
 
 <current_work>
-Immediately prior to this summary, the AI engineer was focused on implementing the **Allergen Taxonomy Frontend Implementation**, as requested by the user.
+Immediately prior to this summary, the AI engineer was working on **Phase 8 (Document Ingestion / OCR)**, specifically integrating the OCR functionality into the core application modules as requested by the user.
 
-Specifically, the following actions were taken:
-1.  **Backend updates for Allergens**:  models (, , ) were updated to store allergens as codes and include an  field. Allergen computation logic was modified to handle these new fields. RBAC checks were also added to ingredient and supplier file upload endpoints.
-2.  **i18n Translations**: Comprehensive translations for new allergen fields, preferred supplier, and last price were added to  for both English and Italian.
-3.  **AllergenSelector Component**: A new reusable React component, , was created to manage allergen selection (fixed list checkboxes and free-text Other input).
-4.  **Ingredients Page Integration**: The engineer started integrating the  into . This involved:
-    *   Adding  to the  state.
-    *   Updating  to populate .
-    *   Replacing the previous allergen input with the new  component in the form.
-    *   Addressing a UI issue where the  component required a non-empty  prop, leading to updates in state initialization and handling.
-5.  **Suppliers+ Backend**:  was added to the  model, and supplier-related fields were handled in ingredient CRUD operations in . The  model was updated to include a  field, and RBAC was enforced on ingredient updates and supplier file uploads.
-6.  **Suppliers.js Frontend**: The file upload functionality was enhanced to include a  parameter, and separate buttons were added for general files and price lists. The  page was updated to include a supplier dropdown.
-7.  **Receiving.js Frontend**: The  function was enhanced to auto-fill supplier and price upon ingredient selection.
+The trajectory concludes with the engineer in the process of **integrating the OCR upload button into the Suppliers page ()**. This is part of Phase 2 of the OCR integration, focusing on Price List Management with OCR.
 
-The trajectory ends with the engineer in the process of correctly binding the props for the  component in , having identified that it was added with wrong props after fixing a previous error related to empty  component values. The frontend has successfully recompiled after these changes.
+Earlier in Phase 8, significant work was done to:
+1.  **Install OCR infrastructure**: , , ,  were installed. Python libraries , ,  were added to .
+2.  **Develop backend OCR services**:
+    *    was created to wrap Tesseract.
+    *    was developed and extensively refined to parse complex Italian invoice PDFs, successfully extracting invoice numbers, dates, and especially line items, resolving previous parsing failures.
+3.  **Create backend OCR API endpoints**: Endpoints for document upload, parsing, and creating receiving records from OCR data were added to . Mapping memory endpoints were also added.
+4.  **Develop frontend OCR UI**:
+    *   A new page, , was created for general document import and review.
+    *    was created as a reusable component for triggering OCR uploads.
+    *   i18n translations for OCR features were added to .
+    *   The  route was added to  and a navigation link in .
+5.  **Integrate OCR into Receiving**: The OCR upload button and handler for parsed data were added to , along with an indicator for OCR-imported records.
+
+The last message shows the engineer adding state and handler functions for OCR functionality in  and is about to add the OCR button to the supplier card.
 </current_work>
 
 <optional_next_step>
-Continue integrating the  component into  by correctly binding its props and verifying its functionality.
+Continue integrating the OCR upload button and its functionality into the  page.
 </optional_next_step>

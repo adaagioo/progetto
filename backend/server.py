@@ -1765,7 +1765,7 @@ async def create_preparation(prep: PreparationCreate, current_user: dict = Depen
     
     # Compute cost and allergens
     items_dict = [item.dict() for item in prep.items]
-    cost, allergens = await compute_preparation_cost_and_allergens(items_dict, db)
+    cost, allergens, other_allergens = await compute_preparation_cost_and_allergens(items_dict, db)
     
     preparation = {
         "id": str(uuid.uuid4()),
@@ -1774,9 +1774,11 @@ async def create_preparation(prep: PreparationCreate, current_user: dict = Depen
         "items": items_dict,
         "yield": prep.yield_.dict() if prep.yield_ else None,
         "shelfLife": prep.shelfLife.dict() if prep.shelfLife else None,
+        "instructions": prep.instructions,
         "notes": prep.notes,
         "cost": cost,
         "allergens": allergens,
+        "otherAllergens": other_allergens,
         "createdAt": datetime.now(timezone.utc).isoformat(),
         "updatedAt": None
     }

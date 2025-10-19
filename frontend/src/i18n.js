@@ -791,6 +791,10 @@ const resources = {
       'ocr.error.noSupplier': 'Seleziona un fornitore',
       'ocr.error.noMappedItems': 'Mappa almeno un articolo a un ingrediente',
       'ocr.error.import': 'Creazione ricevuta fallita',
+      'ocr.uploadInvoice': 'Carica Fattura (OCR)',
+      'ocr.extractingText': 'Estrazione testo dal documento...',
+      'ocr.complete': 'Elaborazione completata!',
+      'ocr.autoMappedItems': '{{count}} articoli mappati automaticamente',
 
       'preparations.form.name': 'Nome',
       'preparations.form.namePlaceholder': 'es. Impasto Pizza',

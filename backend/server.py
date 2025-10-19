@@ -3786,6 +3786,9 @@ async def create_receiving_from_ocr(
                 "fileType": "ocr_invoice"
             })
         
+        # Calculate total from line items (in minor units)
+        total_amount = sum(line["qty"] * line["unitPrice"] for line in processed_lines)
+        
         # Create receiving record
         receiving_data = {
             "id": receiving_id,
@@ -3794,6 +3797,7 @@ async def create_receiving_from_ocr(
             "category": document_data.get('category', 'food'),
             "arrivedAt": document_data.get('date') or datetime.now(timezone.utc).strftime('%Y-%m-%d'),
             "lines": processed_lines,
+            "total": total_amount,
             "notes": f"Imported from OCR - {document_data.get('documentType', 'invoice')} | Confidence: {document_data.get('confidence', 0)}%",
             "invoiceNumber": document_data.get('invoiceNumber'),
             "attachedFiles": attached_files,

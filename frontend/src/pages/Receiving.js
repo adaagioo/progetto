@@ -68,6 +68,30 @@ function Receiving() {
     }
   };
 
+  const fetchPriceHistory = async (ingredientId) => {
+    if (!ingredientId) return;
+    
+    // Set loading state
+    setPriceHistory(prev => ({
+      ...prev,
+      [ingredientId]: { loading: true, data: null }
+    }));
+    
+    try {
+      const response = await axios.get(`${API}/ingredients/${ingredientId}/price-history?limit=5`);
+      setPriceHistory(prev => ({
+        ...prev,
+        [ingredientId]: { loading: false, data: response.data }
+      }));
+    } catch (error) {
+      console.error('Failed to load price history:', error);
+      setPriceHistory(prev => ({
+        ...prev,
+        [ingredientId]: { loading: false, data: null, error: true }
+      }));
+    }
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
 

@@ -806,6 +806,13 @@ const resources = {
       'ocr.complete': 'Elaborazione completata!',
       'ocr.autoMappedItems': '{{count}} articoli mappati automaticamente',
       'ocr.itemsLoaded': 'articoli caricati dalla fattura',
+      'ocr.reviewPriceList': 'Rivedi Listino Prezzi',
+      'ocr.reviewInstructions': 'Rivedi e mappa gli articoli del listino prezzi agli ingredienti nel tuo sistema.',
+      'ocr.description': 'Descrizione',
+      'ocr.code': 'Codice',
+      'ocr.qty': 'Qtà',
+      'ocr.unit': 'Unità',
+      'ocr.price': 'Prezzo',
 
       'preparations.form.name': 'Nome',
       'preparations.form.namePlaceholder': 'es. Impasto Pizza',

@@ -1036,6 +1036,8 @@ const resources = {
       'receiving.total': 'Totale',
       'receiving.files': 'File',
       'receiving.upload': 'Carica',
+      'receiving.supplierAutofilled': 'Fornitore compilato automaticamente dalle preferenze dell\'ingrediente',
+      'receiving.priceAutofilled': 'Prezzo compilato automaticamente dall\'ultimo acquisto',
       'receiving.uploading': 'Caricamento...',
       'receiving.unknownSupplier': 'Fornitore Sconosciuto',
       'receiving.noData': 'Nessuna ricevuta ancora',

@@ -1,27 +1,19 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useContext } from 'react';
 import { useTranslation } from 'react-i18next';
 import { toast } from 'sonner';
 import { ClipboardList, Calendar, Search, Filter, AlertCircle, Save, RefreshCw } from 'lucide-react';
 import { useCurrency } from '../contexts/CurrencyContext';
+import { AuthContext } from '../App';
 
 function PrepList() {
   const { t } = useTranslation();
   const { formatMinor } = useCurrency();
+  const { user } = useContext(AuthContext);
   const [loading, setLoading] = useState(false);
   const [prepList, setPrepList] = useState(null);
   const [targetDate, setTargetDate] = useState('');
   const [searchTerm, setSearchTerm] = useState('');
   const [filterView, setFilterView] = useState('toMake'); // 'all', 'toMake', 'available'
-  const [user, setUser] = useState(null);
-
-  // Get user from auth
-  useEffect(() => {
-    const token = localStorage.getItem('token');
-    if (token) {
-      const payload = JSON.parse(atob(token.split('.')[1]));
-      setUser(payload);
-    }
-  }, []);
 
   // Set default target date to tomorrow
   useEffect(() => {

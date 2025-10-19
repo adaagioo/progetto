@@ -28,7 +28,8 @@ function RecipesEnhanced() {
     targetFoodCostPct: '30',
     price: '',
     items: [],
-    shelfLife: { value: '', unit: 'days' }
+    shelfLife: { value: '', unit: 'days' },
+    instructions: ''
   });
   const [editingItemIndex, setEditingItemIndex] = useState(null);
   const inputRefs = useRef({});

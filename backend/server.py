@@ -278,7 +278,8 @@ class Preparation(BaseModel):
     instructions: Optional[str] = None  # Preparation steps
     notes: Optional[str] = None
     cost: float  # Computed from ingredients with waste
-    allergens: List[str]  # Computed from ingredients
+    allergens: List[str]  # Computed allergen codes from ingredients
+    otherAllergens: List[str] = []  # Computed custom allergens from ingredients
     createdAt: str
     updatedAt: Optional[str] = None
 

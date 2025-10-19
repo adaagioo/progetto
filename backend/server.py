@@ -1704,6 +1704,10 @@ async def get_ingredients(current_user: dict = Depends(get_current_user)):
 async def update_ingredient(ingredient_id: str, ingredient_data: IngredientCreate, current_user: dict = Depends(get_current_user)):
     await check_subscription(current_user)
     
+    # RBAC: Only admin and manager can update ingredients
+    if current_user["roleKey"] not in ["admin", "manager"]:
+        raise HTTPException(status_code=403, detail="Only administrators and managers can update ingredients")
+    
     existing = await db.ingredients.find_one({"id": ingredient_id, "restaurantId": current_user["restaurantId"]})
     if not existing:
         raise HTTPException(status_code=404, detail="Ingredient not found")

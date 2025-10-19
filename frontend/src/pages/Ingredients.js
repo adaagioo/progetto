@@ -115,6 +115,7 @@ function Ingredients() {
       packSize: ingredient.packSize.toString(),
       packCost: ingredient.packCost.toString(),
       supplier: ingredient.supplier || '',
+      preferredSupplierId: ingredient.preferredSupplierId || '',
       allergen: ingredient.allergen || '',
       allergens: ingredient.allergens || [],
       minStockQty: ingredient.minStockQty.toString(),

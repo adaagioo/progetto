@@ -901,9 +901,7 @@ metadata:
 
 test_plan:
   current_focus:
-    - "Phase 4: Prep List Backend - Testing endpoints and forecast logic"
-    - "Phase 4: Order List Backend - Testing endpoints and suggestion logic"
-    - "Phase 5: P&L Snapshot Backend - Testing endpoints and calculations"
+    - "Phase 4 & 5 Backend Testing Complete - All endpoints working"
   stuck_tasks:
     - "Enhanced Recipe Editor with Keyboard UX"
   test_all: false

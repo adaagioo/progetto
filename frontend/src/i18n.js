@@ -909,17 +909,74 @@ const resources = {
       
       // P&L
       'pl.title': 'Profitti e Perdite',
-      'pl.subtitle': 'Snapshot P&L mensili',
-      'pl.add': 'Aggiungi Snapshot P&L',
-      'pl.new': 'Nuovo Snapshot P&L',
-      'pl.month': 'Mese',
-      'pl.revenue': 'Ricavi',
-      'pl.cogs': 'COGS',
-      'pl.grossMargin': 'Margine Lordo',
-      'pl.marginPct': 'Margine %',
+      'pl.subtitle': 'Snapshot P&L settimanali (Lun-Dom)',
+      'pl.weekPicker': 'Seleziona Settimana',
+      'pl.create': 'Crea Snapshot',
+      'pl.save': 'Salva Snapshot',
+      'pl.edit': 'Modifica Snapshot',
+      'pl.period': 'Periodo',
+      'pl.currency': 'Valuta',
+      'pl.locale': 'Località',
+      'pl.amount': 'Importo',
+      'pl.percent': '% del Fatturato',
+      
+      // Sales section
+      'pl.sales': 'VENDITE',
+      'pl.sales.turnover': 'Fatturato',
+      'pl.sales.foodBeverage': 'Cibo e Bevande',
+      'pl.sales.delivery': 'Consegna',
+      
+      // COGS section
+      'pl.cogs': 'COSTO DEL VENDUTO',
+      'pl.cogs.foodBeverage': 'Cibo e Bevande',
+      'pl.cogs.rawWaste': 'Scarti Grezzi',
+      'pl.cogs.total': 'Totale COGS',
+      
+      // OPEX section
+      'pl.opex': 'SPESE OPERATIVE',
+      'pl.opex.nonFood': 'Forniture Non Alimentari',
+      'pl.opex.platforms': 'Piattaforme di Consegna',
+      'pl.opex.total': 'Totale OPEX',
+      
+      // Labour section
+      'pl.labour': 'COSTI DEL PERSONALE',
+      'pl.labour.employees': 'Salari Dipendenti',
+      'pl.labour.staffMeal': 'Pasti del Personale',
+      'pl.labour.total': 'Totale Personale',
+      
+      // Marketing section
+      'pl.marketing': 'VENDITE E MARKETING',
+      'pl.marketing.onlineAds': 'Pubblicità Online',
+      'pl.marketing.freeItems': 'Articoli Gratuiti / Promo',
+      'pl.marketing.total': 'Totale Marketing',
+      
+      // Rent section
+      'pl.rent': 'AFFITTO E STRUTTURE',
+      'pl.rent.baseEffective': 'Affitto Base',
+      'pl.rent.garden': 'Giardino / Patio',
+      'pl.rent.total': 'Totale Affitto',
+      
+      // Other
+      'pl.other': 'ALTRI COSTI',
+      'pl.other.total': 'Totale Altri',
+      
+      // KPI
+      'pl.kpi': 'INDICATORI CHIAVE DI PRESTAZIONE',
+      'pl.kpi.ebitda': 'EBITDA',
+      'pl.kpi.ebitdaPercent': 'EBITDA %',
+      
       'pl.notes': 'Note',
-      'pl.noData': 'Nessun record P&L',
-      'pl.addFirst': 'Aggiungi il Primo Snapshot',
+      'pl.noData': 'Nessun snapshot P&L',
+      'pl.createFirst': 'Crea il tuo primo snapshot P&L',
+      'pl.addLine': 'Aggiungi Riga',
+      'pl.removeLine': 'Rimuovi',
+      'pl.manualLine': 'Riga Manuale',
+      'pl.success.created': 'Snapshot P&L creato con successo',
+      'pl.success.updated': 'Snapshot P&L aggiornato con successo',
+      'pl.success.deleted': 'Snapshot P&L eliminato con successo',
+      'pl.error.load': 'Impossibile caricare snapshot P&L',
+      'pl.error.save': 'Impossibile salvare snapshot P&L',
+      'pl.error.delete': 'Impossibile eliminare snapshot P&L',
       
       // Suppliers
       'suppliers.title': 'Fornitori',

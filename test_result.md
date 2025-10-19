@@ -1901,3 +1901,34 @@ agent_communication:
       
       🎯 PHASE 6 BACKEND STATUS: 90.7% FUNCTIONAL
       Core supplier mapping and new allergen taxonomy working perfectly, but RBAC enforcement and file type categorization need immediate fixes for production readiness.
+
+  - agent: "main"
+    message: |
+      ALLERGEN TAXONOMY INTEGRATION - PHASE 1 COMPLETE ✅
+      
+      📋 IMPLEMENTATION SUMMARY:
+      
+      **Backend Enhancements:**
+      - ✅ Allergen code normalization: Uppercase codes (GLUTEN, DAIRY, etc.) before storage
+      - ✅ Legacy migration: Old "allergen" field → codes or otherAllergens
+      - ✅ Propagation logic: Ingredients → Preparations → Recipes (union of codes + other)
+      - ✅ Fixed libmagic dependency for file upload support
+      
+      **Frontend Implementation:**
+      - ✅ AllergenSelector component: 12 EU-14 allergens + "Other/Altro" free-text
+      - ✅ Ingredients.js: Selector integrated, search + filter, badges (red + orange)
+      - ✅ Preparations.js: Badge display with i18n
+      - ✅ Recipes.js: Search + filter, badges with i18n
+      - ✅ i18n translations: Complete EN/IT for all allergen UI
+      
+      **Allergen Spec Compliance:**
+      - ✅ Codes in DB (uppercase)
+      - ✅ Localized labels everywhere (EN: gluten, dairy / IT: glutine, latticini)
+      - ✅ Fixed checklist + free-text Other/Altro
+      - ✅ Proper propagation chain
+      
+      **Testing Plan:**
+      1. Backend testing: CRUD, uppercase storage, propagation, migration
+      2. Frontend E2E: Selector, filters, badges, i18n switch, propagation
+      
+      Ready for comprehensive testing to verify allergen integration end-to-end.

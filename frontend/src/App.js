@@ -124,10 +124,6 @@ function App() {
             element={user ? <Layout><Wastage /></Layout> : <Navigate to="/login" />}
           />
           <Route
-            path="/profit-loss"
-            element={user ? <Layout><ProfitLoss /></Layout> : <Navigate to="/login" />}
-          />
-          <Route
             path="/suppliers"
             element={user ? <Layout><Suppliers /></Layout> : <Navigate to="/login" />}
           />

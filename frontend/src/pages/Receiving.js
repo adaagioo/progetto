@@ -170,6 +170,42 @@ function Receiving() {
   const updateLine = (index, field, value) => {
     const newLines = [...formData.lines];
     newLines[index][field] = value;
+    
+    // Auto-fill supplier and price when ingredient is selected
+    if (field === 'ingredientId' && value) {
+      const selectedIngredient = ingredients.find(ing => ing.id === value);
+      if (selectedIngredient) {
+        // Auto-fill description if empty
+        if (!newLines[index].description) {
+          newLines[index].description = selectedIngredient.name;
+        }
+        // Auto-fill unit if empty
+        if (!newLines[index].unit || newLines[index].unit === 'kg') {
+          newLines[index].unit = selectedIngredient.unit;
+        }
+        // Auto-fill unit price from packCost (convert from minor units)
+        if (!newLines[index].unitPrice) {
+          newLines[index].unitPrice = (selectedIngredient.packCost / 100).toFixed(2);
+        }
+        // Auto-fill packFormat from packSize
+        if (!newLines[index].packFormat && selectedIngredient.packSize) {
+          newLines[index].packFormat = `${selectedIngredient.packSize} ${selectedIngredient.unit}`;
+        }
+        
+        // Auto-fill supplier if ingredient has preferred supplier
+        if (selectedIngredient.preferredSupplierId && !formData.supplierId) {
+          setFormData(prev => ({ 
+            ...prev, 
+            supplierId: selectedIngredient.preferredSupplierId,
+            lines: newLines
+          }));
+          // Show toast to inform user
+          toast.success(t('receiving.supplierAutofilled') || 'Supplier auto-filled from ingredient');
+          return; // Exit early since we're updating the entire form
+        }
+      }
+    }
+    
     setFormData({ ...formData, lines: newLines });
   };
 

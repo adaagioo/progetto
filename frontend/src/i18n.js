@@ -16,6 +16,8 @@ const resources = {
       'nav.inventory': 'Inventory',
       'nav.sales': 'Sales',
       'nav.wastage': 'Wastage',
+      'nav.prepList': 'Prep List',
+      'nav.orderList': 'Order List',
       'nav.pl': 'P&L',
       'nav.settings': 'Settings',
       

@@ -263,6 +263,7 @@ class RecipeCreate(BaseModel):
     price: float
     items: List[RecipeItem]
     shelfLife: Optional[ShelfLife] = None
+    instructions: Optional[str] = None  # Recipe preparation instructions
 
 class RecipeUpdate(BaseModel):
     """Update recipe request"""
@@ -273,6 +274,7 @@ class RecipeUpdate(BaseModel):
     price: Optional[float] = None
     items: Optional[List[RecipeItem]] = None
     shelfLife: Optional[ShelfLife] = None
+    instructions: Optional[str] = None  # Recipe preparation instructions
 
 class Recipe(BaseModel):
     model_config = ConfigDict(extra="ignore")

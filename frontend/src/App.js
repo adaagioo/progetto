@@ -9,7 +9,7 @@ import Recipes from './pages/Recipes';
 import Inventory from './pages/Inventory';
 import Sales from './pages/Sales';
 import Wastage from './pages/Wastage';
-import ProfitLoss from './pages/ProfitLoss';
+import PLSnapshot from './pages/PLSnapshot';
 import Ingredients from './pages/Ingredients';
 import Settings from './pages/Settings';
 import Suppliers from './pages/Suppliers';

@@ -3775,6 +3775,17 @@ async def create_receiving_from_ocr(
         if not processed_lines:
             raise HTTPException(status_code=400, detail="No valid line items to import")
         
+        # Prepare attached files array (if original document provided)
+        attached_files = []
+        if document_data.get('originalDocumentUrl'):
+            attached_files.append({
+                "fileId": str(uuid.uuid4()),
+                "filename": document_data.get('originalFilename', 'ocr_document.pdf'),
+                "downloadUrl": document_data.get('originalDocumentUrl'),
+                "uploadedAt": datetime.now(timezone.utc).isoformat(),
+                "fileType": "ocr_invoice"
+            })
+        
         # Create receiving record
         receiving_data = {
             "id": receiving_id,
@@ -3783,9 +3794,15 @@ async def create_receiving_from_ocr(
             "category": document_data.get('category', 'food'),
             "arrivedAt": document_data.get('date') or datetime.now(timezone.utc).strftime('%Y-%m-%d'),
             "lines": processed_lines,
-            "notes": f"Imported from OCR - {document_data.get('documentType', 'invoice')}",
+            "notes": f"Imported from OCR - {document_data.get('documentType', 'invoice')} | Confidence: {document_data.get('confidence', 0)}%",
             "invoiceNumber": document_data.get('invoiceNumber'),
-            "attachedFiles": [],
+            "attachedFiles": attached_files,
+            "importedFromOCR": True,  # Flag for UI display
+            "ocrMetadata": {
+                "confidence": document_data.get('confidence', 0),
+                "documentType": document_data.get('documentType'),
+                "processedAt": datetime.now(timezone.utc).isoformat()
+            },
             "createdAt": datetime.now(timezone.utc).isoformat(),
             "createdBy": current_user["email"]
         }
@@ -3853,7 +3870,8 @@ async def create_receiving_from_ocr(
                 "supplierId": supplier_id,
                 "lineCount": len(processed_lines),
                 "documentType": document_data.get('documentType'),
-                "invoiceNumber": document_data.get('invoiceNumber')
+                "invoiceNumber": document_data.get('invoiceNumber'),
+                "ocrConfidence": document_data.get('confidence', 0)
             }
         )
         

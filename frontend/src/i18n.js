@@ -108,6 +108,12 @@ const resources = {
       'ingredients.success.updated': 'Ingredient updated successfully',
       'ingredients.error.save': 'Failed to save ingredient',
       'ingredients.error.load': 'Failed to load ingredients',
+      'ingredients.error.required': 'This field is required',
+      'ingredients.error.allergenTooLong': 'Allergen name too long (max 30 characters)',
+      'ingredients.error.tooManyCustomAllergens': 'Maximum 5 custom allergens allowed',
+      'ingredients.error.allergenAlreadyInList': 'This allergen is already in the standard list',
+      'ingredients.error.allergenAlreadyAdded': 'This allergen has already been added',
+      'ingredients.maxCustomAllergensReached': 'Maximum 5 custom allergens reached',
       
       // Preparations
       'preparations.title': 'Preparations',

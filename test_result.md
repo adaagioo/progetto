@@ -1442,6 +1442,56 @@ agent_communication:
       5. ⏳ After Phase 4 approval → Phase 5: P&L UI implementation
       
       CALLING BACKEND TESTING AGENT NOW ⏩
+
+  
+  - agent: "main"
+    message: |
+      PHASE 4 FRONTEND IMPLEMENTATION & BUG FIX COMPLETE ✅
+      
+      🐛 **AUTHENTICATION BUG FIXED:**
+      - **Issue**: User reported "Impossibile generare lista preparazioni" (Unable to generate prep list)
+      - **Root Cause**: Using `localStorage.getItem('authToken')` instead of `localStorage.getItem('token')`
+      - **Error**: 401 Unauthorized on all API calls to prep-list and order-list endpoints
+      - **Fix Applied**: Updated both PrepList.js and OrderList.js to use correct token reference
+      - **Verification**: Both modules now generate successfully with success messages
+      
+      📱 **PHASE 4 FRONTEND STATUS:**
+      
+      ✅ **Prep List Module**:
+      - Generate button works (calls /api/prep-list/forecast)
+      - Success message displays: "Lista preparazioni generata con successo"
+      - Table shows forecast data (5 preparations found)
+      - Displays: Forecast qty, Available qty, To Make qty, Source badges
+      - Urgency highlighting working (red background for high priority)
+      - Summary stats: Total: 5, To Make: 2
+      - Target date: 2025-10-20
+      
+      ✅ **Order List Module**:
+      - Generate button works (calls /api/order-list/forecast)
+      - Success message displays: "Lista ordini generata con successo"
+      - Table shows ingredient suggestions
+      - Driver badges displayed: "Esigenze Preparazioni" (blue), "Scorta Bassa" (red)
+      - Supplier mapping: "Metro" for some ingredients
+      - All columns rendering correctly
+      
+      ✅ **Navigation & i18n**:
+      - Sidebar: "Lista Prep" and "Lista Ordini" links visible
+      - Italian translations working throughout
+      - Icons displayed correctly (ClipboardList, ListOrdered)
+      
+      🎯 **NEXT: COMPREHENSIVE E2E TESTING**
+      Ready to test:
+      1. Generate forecast functionality
+      2. Manual overrides (editable quantities)
+      3. Save functionality
+      4. RBAC (Admin/Manager vs Staff access)
+      5. i18n language switching (EN ↔ IT)
+      6. Search and filter functionality
+      7. Notes field functionality
+      8. Summary stats accuracy
+      
+      CALLING FRONTEND TESTING AGENT NOW ⏩
+
   
   - agent: "testing"
     message: |

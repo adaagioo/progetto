@@ -13,6 +13,7 @@ const resources = {
       'nav.preparations': 'Preparations',
       'nav.suppliers': 'Suppliers',
       'nav.receiving': 'Receiving',
+      'nav.documentImport': 'Document Import',
       'nav.inventory': 'Inventory',
       'nav.sales': 'Sales',
       'nav.wastage': 'Wastage',

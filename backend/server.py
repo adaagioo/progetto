@@ -3409,6 +3409,10 @@ async def delete_receiving(receiving_id: str, current_user: dict = Depends(get_c
     """Delete a receiving record"""
     await check_subscription(current_user)
     
+    # RBAC: Only admin and manager can delete receiving records
+    if current_user["roleKey"] not in ["admin", "manager"]:
+        raise HTTPException(status_code=403, detail="Only administrators and managers can delete receiving records")
+    
     # Check if receiving exists
     receiving = await db.receiving.find_one(
         {"id": receiving_id, "restaurantId": current_user["restaurantId"]},

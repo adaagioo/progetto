@@ -25,6 +25,7 @@ function Receiving() {
   const [uploadingFor, setUploadingFor] = useState(null);
   const [showMappingDialog, setShowMappingDialog] = useState(false);
   const [parsedRows, setParsedRows] = useState([]);
+  const [priceHistory, setPriceHistory] = useState({});  // { ingredientId: { loading, data } }
   
   const [formData, setFormData] = useState({
     supplierId: '',

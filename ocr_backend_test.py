@@ -122,10 +122,50 @@ class OCRTester:
         return img_buffer.getvalue()
     
     def create_test_pdf(self) -> bytes:
-        """Create a simple test PDF (mock - returns image as bytes for now)"""
-        # For simplicity, return the same image as PNG
-        # In a real scenario, you'd create an actual PDF
-        return self.create_test_invoice_image()
+        """Create a simple test PDF with invoice content"""
+        try:
+            from reportlab.pdfgen import canvas
+            from reportlab.lib.pagesizes import letter
+            import io
+            
+            buffer = io.BytesIO()
+            p = canvas.Canvas(buffer, pagesize=letter)
+            
+            # Add invoice content
+            p.drawString(100, 750, "INVOICE")
+            p.drawString(100, 720, "Invoice Number: INV-2024-001")
+            p.drawString(100, 700, "Date: 2024-01-15")
+            p.drawString(100, 680, "Supplier: Fresh Foods Italia SRL")
+            
+            p.drawString(100, 640, "Description")
+            p.drawString(300, 640, "Qty")
+            p.drawString(400, 640, "Unit")
+            p.drawString(500, 640, "Price")
+            
+            p.drawString(100, 620, "San Marzano Tomatoes")
+            p.drawString(300, 620, "10.0")
+            p.drawString(400, 620, "kg")
+            p.drawString(500, 620, "€3.20")
+            
+            p.drawString(100, 600, "Extra Virgin Olive Oil")
+            p.drawString(300, 600, "5.0")
+            p.drawString(400, 600, "l")
+            p.drawString(500, 600, "€12.50")
+            
+            p.drawString(100, 580, "Mozzarella di Bufala")
+            p.drawString(300, 580, "3.0")
+            p.drawString(400, 580, "kg")
+            p.drawString(500, 580, "€18.00")
+            
+            p.drawString(400, 540, "Total: €86.50")
+            
+            p.showPage()
+            p.save()
+            
+            return buffer.getvalue()
+        except ImportError:
+            # Fallback to image if reportlab not available
+            return self.create_test_invoice_image()
     
     def setup_test_data(self):
         """Create suppliers and ingredients for testing"""

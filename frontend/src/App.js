@@ -17,6 +17,7 @@ import Receiving from './pages/Receiving';
 import Preparations from './pages/Preparations';
 import PrepList from './pages/PrepList';
 import OrderList from './pages/OrderList';
+import PLSnapshot from './pages/PLSnapshot';
 import ForgotPassword from './pages/ForgotPassword';
 import ResetPassword from './pages/ResetPassword';
 import Layout from './components/Layout';

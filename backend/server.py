@@ -3337,6 +3337,10 @@ async def update_receiving(
     """Update a receiving record"""
     await check_subscription(current_user)
     
+    # RBAC: Only admin and manager can update receiving records
+    if current_user["roleKey"] not in ["admin", "manager"]:
+        raise HTTPException(status_code=403, detail="Only administrators and managers can update receiving records")
+    
     # Check if receiving exists
     existing = await db.receiving.find_one(
         {"id": receiving_id, "restaurantId": current_user["restaurantId"]}

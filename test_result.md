@@ -1224,3 +1224,63 @@ agent_communication:
       - Integration: Stock deduction logic consistent across sales/wastage ✅
       
       ALL PHASE 3 BACKEND FUNCTIONALITY WORKING CORRECTLY WITH 100% TEST COVERAGE
+
+  
+  - agent: "main"
+    message: |
+      PHASE 4 & 5 BACKEND IMPLEMENTATION COMPLETE ✅ - READY FOR TESTING
+      
+      📋 USER CONFIRMATION RECEIVED:
+      - Prioritize Phase 4 completely (Prep List + Order List) before Phase 5
+      - Verify backend endpoints for both phases now
+      - Complete Phase 4 end-to-end (UI + tests + UAT) before moving to Phase 5
+      
+      🔧 BACKEND IMPLEMENTATION STATUS:
+      
+      **PHASE 4: PREP LIST**
+      ✅ Models: PrepListItem, PrepListCreate, PrepList
+      ✅ Endpoints:
+         - GET /api/prep-list/forecast: Get forecasted prep needs for a date
+         - GET /api/prep-list: List all prep lists (tenant-scoped)
+         - POST /api/prep-list: Create/update prep list for a date
+      ✅ Helper function: forecast_prep_needs()
+         - 4-week same-weekday moving average
+         - Calculates demand for each preparation based on recipe sales history
+         - Available vs To Make calculation (max(0, forecast - available))
+         - Shelf-life aware structure (basic implementation)
+      ✅ Audit logging for create/update operations
+      
+      **PHASE 4: ORDER LIST**
+      ✅ Models: OrderListItem, OrderListCreate, OrderList
+      ✅ Endpoints:
+         - GET /api/order-list/forecast: Get forecasted order needs for a date
+         - GET /api/order-list: List all order lists (tenant-scoped)
+         - POST /api/order-list: Create/update order list for a date
+      ✅ Helper function: forecast_order_needs()
+         - Multiple drivers: low_stock, prep_needs, expiring_soon
+         - Suggested quantity calculation
+         - Supplier mapping (basic)
+         - Expiry alerts (3-day threshold)
+      ✅ Audit logging for create/update operations
+      
+      **PHASE 5: P&L SNAPSHOT**
+      ✅ Models: PLPeriod, PLSnapshot, PLSnapshotCreate
+      ✅ Endpoints:
+         - POST /api/pl/snapshot: Create P&L snapshot for a period
+         - GET /api/pl/snapshot: List snapshots with optional date range filter
+      ✅ Features:
+         - Weekly Mon-Sun period support (Europe/Rome timezone)
+         - Multi-currency (EUR/USD)
+         - Multi-locale (it-IT/en-US)
+         - Automatic calculations: totals and EBITDA
+         - All amounts in major units with 2 decimal rounding
+      ✅ Audit logging
+      
+      🎯 NEXT STEPS:
+      1. ⏳ Backend testing for Phase 4 & 5 endpoints (RBAC, tenant isolation, calculations)
+      2. ⏳ Frontend implementation for Phase 4: Prep List UI
+      3. ⏳ Frontend implementation for Phase 4: Order List UI
+      4. ⏳ Phase 4 E2E testing & UAT
+      5. ⏳ After Phase 4 approval → Phase 5: P&L UI implementation
+      
+      CALLING BACKEND TESTING AGENT NOW ⏩

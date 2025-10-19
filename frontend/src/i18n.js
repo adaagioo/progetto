@@ -1018,6 +1018,13 @@ const resources = {
       'suppliers.error.fileUpload': 'Impossibile caricare il file',
       'suppliers.error.fileDownload': 'Impossibile scaricare il file',
       'suppliers.error.fileDelete': 'Impossibile eliminare il file',
+      'suppliers.priceList': 'Listino Prezzi',
+      'suppliers.uploadPriceList': 'Carica Listino Prezzi',
+      'suppliers.downloadPriceList': 'Scarica',
+      'suppliers.noPriceList': 'Nessun listino prezzi caricato',
+      'suppliers.priceListUploaded': 'Listino prezzi caricato con successo',
+      'suppliers.priceListDeleted': 'Listino prezzi eliminato con successo',
+      'suppliers.error.upload': 'Impossibile caricare il listino prezzi',
       
       // Receiving
       'receiving.title': 'Ricevute',

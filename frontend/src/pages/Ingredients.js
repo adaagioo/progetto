@@ -495,6 +495,24 @@ function Ingredients() {
         ))}
       </div>
 
+      {filteredIngredients.length === 0 && ingredients.length > 0 && (
+        <Card className="glass-morphism border-0">
+          <CardContent className="flex flex-col items-center justify-center py-12">
+            <p className="text-gray-500 mb-4">{t('common.noResults') || 'No ingredients match your filters'}</p>
+            <Button 
+              className="btn-primary text-white" 
+              variant="outline"
+              onClick={() => {
+                setSearchQuery('');
+                setSelectedAllergenFilter('all');
+              }}
+            >
+              {t('common.clearFilters') || 'Clear Filters'}
+            </Button>
+          </CardContent>
+        </Card>
+      )}
+
       {ingredients.length === 0 && (
         <Card className="glass-morphism border-0">
           <CardContent className="flex flex-col items-center justify-center py-12">

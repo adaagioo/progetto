@@ -582,6 +582,79 @@ backend:
           🎯 P&L SNAPSHOT MODULE IS PRODUCTION-READY ✅
           All calculations, multi-currency support, and CRUD operations working perfectly.
 
+  - task: "Phase 6: Supplier Mapping & Price Lists"
+    implemented: true
+    working: false
+    file: "backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+      - working: false
+        agent: "testing"
+        comment: |
+          PHASE 6 BACKEND TESTING COMPLETED - CRITICAL ISSUES FOUND ❌
+          
+          🧪 SUPPLIER MAPPING & PRICE LISTS TESTING (43 tests - 90.7% success rate):
+          
+          ✅ INGREDIENT-SUPPLIER MAPPING WORKING:
+          - Create ingredient with preferredSupplierId ✅
+          - Supplier name auto-population from lookup ✅
+          - Update ingredient supplier mapping ✅
+          - Remove supplier mapping (set to null) ✅
+          - All 6 test ingredients have correct supplier names ✅
+          
+          ✅ ALLERGEN TAXONOMY (NEW SYSTEM) WORKING:
+          - Ingredient creation with allergen codes (GLUTEN, DAIRY, etc.) ✅
+          - Custom allergens in otherAllergens field ✅
+          - Preparation allergen propagation from ingredients ✅
+          - Recipe allergen aggregation from ingredients + preparations ✅
+          - Allergen union logic working correctly ✅
+          
+          ✅ RECEIVING AUTO-FILL SUPPORT WORKING:
+          - All 31 ingredients have required fields (packCost, packSize, preferredSupplierId, unit) ✅
+          - Receiving creation with ingredientId reference ✅
+          - Backend data structure supports auto-fill functionality ✅
+          
+          ✅ TENANT ISOLATION WORKING:
+          - All suppliers belong to current restaurant ✅
+          - All ingredients belong to current restaurant ✅
+          - Restaurant-scoped data enforced correctly ✅
+          
+          ❌ CRITICAL ISSUES FOUND (4/43 tests failed):
+          
+          1. **PRICE LIST FILE TYPE NOT STORED** (High Priority):
+             - FileMetadata model missing fileType field ❌
+             - Files uploaded with fileType=price_list not storing the type ❌
+             - Supplier files list doesn't include fileType information ❌
+             - 🔍 Root Cause: FileMetadata Pydantic model needs fileType field
+          
+          2. **RBAC NOT ENFORCED FOR INGREDIENT UPDATES** (High Priority):
+             - Staff users can update ingredient supplier mappings (should be denied) ❌
+             - PUT /api/ingredients/{id} endpoint missing RBAC checks ❌
+             - Should only allow admin/manager to update ingredients ❌
+          
+          3. **RBAC NOT ENFORCED FOR FILE UPLOADS** (High Priority):
+             - Staff users can upload price lists to suppliers (should be denied) ❌
+             - POST /api/suppliers/{id}/files endpoint missing RBAC checks ❌
+             - Should only allow admin/manager to upload files ❌
+          
+          🔧 IMMEDIATE FIXES NEEDED:
+          1. Add fileType field to FileMetadata model
+          2. Add RBAC checks to ingredient update endpoint
+          3. Add RBAC checks to supplier file upload endpoint
+          
+          📊 TESTING COVERAGE ACHIEVED:
+          - ✅ Ingredient-supplier mapping - WORKING (4/4 tests)
+          - ❌ Price list file management - PARTIALLY WORKING (2/4 tests)
+          - ✅ Allergen taxonomy - WORKING (5/5 tests)
+          - ✅ Receiving auto-fill support - WORKING (2/2 tests)
+          - ❌ RBAC & tenant isolation - PARTIALLY WORKING (5/7 tests)
+          - ✅ Audit logging - WORKING (2/2 tests)
+          
+          🎯 PHASE 6 STATUS: 90.7% FUNCTIONAL
+          Core supplier mapping and allergen features working, but RBAC and file type management need fixes.
+
 frontend:
   - task: "Enhanced Recipe Editor with Keyboard UX"
     implemented: true

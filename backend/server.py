@@ -724,22 +724,38 @@ async def compute_recipe_allergens(items: List[dict], db) -> tuple[List[str], Li
         if item["type"] == "ingredient":
             ingredient = await db.ingredients.find_one({"id": item["itemId"]}, {"_id": 0})
             if ingredient:
+                # Collect allergen codes
                 allergens = ingredient.get("allergens", [])
                 if allergens:
                     all_allergens.update(allergens)
+                
+                # Collect other allergens
+                other_allergens = ingredient.get("otherAllergens", [])
+                if other_allergens:
+                    all_other_allergens.update(other_allergens)
+                
                 # Legacy support
                 if ingredient.get("allergen"):
-                    all_allergens.add(ingredient["allergen"])
+                    legacy_allergen = ingredient["allergen"].upper().replace(" ", "_")
+                    if legacy_allergen in ALLERGEN_CODES:
+                        all_allergens.add(legacy_allergen)
+                    else:
+                        all_other_allergens.add(ingredient["allergen"])
         
         elif item["type"] == "preparation":
             preparation = await db.preparations.find_one({"id": item["itemId"]}, {"_id": 0})
             if preparation:
+                # Collect allergen codes
                 allergens = preparation.get("allergens", [])
                 if allergens:
                     all_allergens.update(allergens)
+                
+                # Collect other allergens
+                other_allergens = preparation.get("otherAllergens", [])
+                if other_allergens:
+                    all_other_allergens.update(other_allergens)
     
-    # Normalize allergens to EU-14
-    return normalize_allergen_list(list(all_allergens))
+    return list(all_allergens), list(all_other_allergens)
 
 async def deduct_stock_for_recipe(recipe_id: str, qty: int, restaurant_id: str, db) -> List[dict]:
     """

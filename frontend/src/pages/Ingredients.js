@@ -477,7 +477,7 @@ function Ingredients() {
                       <div className="flex flex-wrap gap-1 mt-1">
                         {ingredient.allergens && ingredient.allergens.map(allergen => (
                           <span key={allergen} className="text-xs bg-red-100 text-red-800 px-2 py-0.5 rounded">
-                            {t(`allergens.${allergen}`) || allergen}
+                            {t(`allergens.${allergen.toUpperCase()}`) || allergen}
                           </span>
                         ))}
                         {ingredient.otherAllergens && ingredient.otherAllergens.map((allergen, idx) => (

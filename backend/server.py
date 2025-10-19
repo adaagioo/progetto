@@ -1862,9 +1862,10 @@ async def update_preparation(
         update_data["items"] = items_dict
         
         # Recompute cost and allergens
-        cost, allergens = await compute_preparation_cost_and_allergens(items_dict, db)
+        cost, allergens, other_allergens = await compute_preparation_cost_and_allergens(items_dict, db)
         update_data["cost"] = cost
         update_data["allergens"] = allergens
+        update_data["otherAllergens"] = other_allergens
     
     if prep_update.yield_ is not None:
         update_data["yield"] = prep_update.yield_.dict()

@@ -13,24 +13,6 @@ import { Plus, Trash2, Edit, AlertCircle } from 'lucide-react';
 import { toast } from 'sonner';
 import AllergenSelector from '../components/AllergenSelector';
 
-// EU-14 Official Allergens
-const ALLERGENS = [
-  'Cereals containing gluten',
-  'Crustaceans',
-  'Eggs',
-  'Fish',
-  'Peanuts',
-  'Soybeans',
-  'Milk',
-  'Nuts',
-  'Celery',
-  'Mustard',
-  'Sesame seeds',
-  'Sulphur dioxide and sulphites',
-  'Lupin',
-  'Molluscs'
-];
-
 function Ingredients() {
   const { t } = useTranslation();
   const { user } = useContext(AuthContext);

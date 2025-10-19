@@ -26,6 +26,8 @@ function Layout({ children }) {
     { path: '/inventory', label: t('nav.inventory'), icon: Package },
     { path: '/sales', label: t('nav.sales'), icon: ShoppingCart },
     { path: '/wastage', label: t('nav.wastage'), icon: AlertTriangle },
+    { path: '/prep-list', label: t('nav.prepList'), icon: ClipboardList },
+    { path: '/order-list', label: t('nav.orderList'), icon: ListOrdered },
     { path: '/profit-loss', label: t('nav.pl'), icon: TrendingUp },
     { path: '/settings', label: t('nav.settings'), icon: SettingsIcon }
   ];

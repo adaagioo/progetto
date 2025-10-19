@@ -589,6 +589,19 @@ function RecipesEnhanced() {
                   </div>
                 </div>
 
+                {/* Recipe Instructions */}
+                <div className="border-t pt-3">
+                  <Label htmlFor="instructions">{t('recipes.instructions') || 'Preparation Instructions'}</Label>
+                  <textarea
+                    id="instructions"
+                    className="flex min-h-[80px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 mt-2"
+                    value={formData.instructions}
+                    onChange={(e) => setFormData({ ...formData, instructions: e.target.value })}
+                    placeholder={t('recipes.instructionsPlaceholder') || 'Step-by-step cooking instructions...'}
+                    rows={4}
+                  />
+                </div>
+
                 {/* Footer */}
                 <div className="flex justify-end gap-2 pt-4 border-t">
                   <Button type="button" variant="outline" onClick={() => setIsDialogOpen(false)}>

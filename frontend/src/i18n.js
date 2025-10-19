@@ -687,6 +687,12 @@ const resources = {
       'ingredients.success.updated': 'Ingrediente aggiornato con successo',
       'ingredients.error.save': 'Impossibile salvare ingrediente',
       'ingredients.error.load': 'Impossibile caricare ingredienti',
+      'ingredients.error.required': 'Questo campo è obbligatorio',
+      'ingredients.error.allergenTooLong': 'Nome allergene troppo lungo (max 30 caratteri)',
+      'ingredients.error.tooManyCustomAllergens': 'Massimo 5 allergeni personalizzati consentiti',
+      'ingredients.error.allergenAlreadyInList': 'Questo allergene è già nella lista standard',
+      'ingredients.error.allergenAlreadyAdded': 'Questo allergene è già stato aggiunto',
+      'ingredients.maxCustomAllergensReached': 'Massimo 5 allergeni personalizzati raggiunto',
       
       // Preparations
       'preparations.title': 'Preparazioni',

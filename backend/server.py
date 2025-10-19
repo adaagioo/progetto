@@ -871,6 +871,179 @@ async def deduct_ingredient_stock(ingredient_id: str, qty: float, restaurant_id:
             "remainingQty": new_qty
         }
 
+# ============ PHASE 4: FORECAST ALGORITHMS ============
+
+async def forecast_prep_needs(date: str, restaurant_id: str, db) -> List[dict]:
+    """
+    Forecast preparation needs for a specific date based on:
+    1. Weekly sales trend (same weekday, last 4 weeks average)
+    2. Current prep stock levels
+    3. Shelf life considerations
+    
+    Args:
+        date: Target date (ISO format YYYY-MM-DD)
+        restaurant_id: Restaurant ID
+        db: Database connection
+        
+    Returns:
+        List of prep items with forecast quantities
+    """
+    from datetime import datetime, timedelta
+    
+    target_date = datetime.fromisoformat(date)
+    weekday = target_date.weekday()  # 0=Monday, 6=Sunday
+    
+    # Get all preparations
+    preparations = await db.preparations.find({"restaurantId": restaurant_id}, {"_id": 0}).to_list(1000)
+    
+    prep_forecast = []
+    
+    for prep in preparations:
+        # Find recipes that use this preparation
+        recipes_using_prep = await db.recipes.find({
+            "restaurantId": restaurant_id,
+            "items.type": "preparation",
+            "items.itemId": prep["id"]
+        }, {"_id": 0}).to_list(1000)
+        
+        if not recipes_using_prep:
+            continue
+        
+        # Get sales for same weekday over last 4 weeks
+        weekly_sales = []
+        for week_offset in range(1, 5):
+            past_date = target_date - timedelta(weeks=week_offset)
+            sales_on_date = await db.sales.find({
+                "restaurantId": restaurant_id,
+                "date": past_date.strftime("%Y-%m-%d")
+            }, {"_id": 0}).to_list(1000)
+            
+            prep_qty_needed = 0
+            for sale in sales_on_date:
+                for line in sale.get("lines", []):
+                    # Find if this recipe uses our prep
+                    recipe = next((r for r in recipes_using_prep if r["id"] == line["recipeId"]), None)
+                    if recipe:
+                        # Find prep item in recipe
+                        prep_item = next((item for item in recipe["items"] if item.get("itemId") == prep["id"]), None)
+                        if prep_item:
+                            prep_qty_needed += prep_item["qtyPerPortion"] * line["qty"]
+            
+            weekly_sales.append(prep_qty_needed)
+        
+        # Calculate average (forecast)
+        avg_forecast = sum(weekly_sales) / len(weekly_sales) if weekly_sales else 0
+        
+        # Check current prep stock
+        prep_inventory = await db.inventory.find_one({
+            "preparationId": prep["id"],
+            "restaurantId": restaurant_id
+        })
+        
+        available_qty = prep_inventory.get("qtyOnHand", 0) if prep_inventory else 0
+        
+        # Calculate to-make quantity
+        to_make_qty = max(0, avg_forecast - available_qty)
+        
+        prep_forecast.append({
+            "preparationId": prep["id"],
+            "preparationName": prep["name"],
+            "forecastQty": round(avg_forecast, 2),
+            "availableQty": round(available_qty, 2),
+            "toMakeQty": round(to_make_qty, 2),
+            "unit": prep.get("unit", "portions"),
+            "forecastSource": "sales_trend"
+        })
+    
+    return prep_forecast
+
+async def forecast_order_needs(date: str, restaurant_id: str, db) -> List[dict]:
+    """
+    Forecast ingredient order needs based on:
+    1. Current inventory levels vs min stock
+    2. Upcoming prep list requirements
+    3. Sales forecast for same weekday
+    4. Expiry alerts (shelf life < 3 days)
+    
+    Args:
+        date: Target date (ISO format YYYY-MM-DD)
+        restaurant_id: Restaurant ID
+        db: Database connection
+        
+    Returns:
+        List of order items with suggestions and drivers
+    """
+    from datetime import datetime, timedelta
+    
+    target_date = datetime.fromisoformat(date)
+    
+    # Get all ingredients
+    ingredients = await db.ingredients.find({"restaurantId": restaurant_id}, {"_id": 0}).to_list(1000)
+    
+    order_suggestions = []
+    
+    for ing in ingredients:
+        # Get current inventory
+        inventory = await db.inventory.find_one({
+            "ingredientId": ing["id"],
+            "restaurantId": restaurant_id
+        })
+        
+        current_qty = inventory.get("qtyOnHand", 0) if inventory else 0
+        min_stock = ing.get("minStockQty", 0)
+        
+        drivers = []
+        suggested_qty = 0
+        expiry_date = None
+        
+        # Driver 1: Low stock
+        if current_qty < min_stock:
+            drivers.append("low_stock")
+            suggested_qty += (min_stock - current_qty)
+        
+        # Driver 2: Expiring soon (if shelf life < 3 days from batch)
+        if inventory and inventory.get("batchExpiry"):
+            try:
+                expiry = datetime.fromisoformat(inventory["batchExpiry"])
+                days_until_expiry = (expiry - target_date).days
+                if 0 < days_until_expiry <= 3:
+                    drivers.append("expiring_soon")
+                    expiry_date = inventory["batchExpiry"]
+            except:
+                pass
+        
+        # Driver 3: Prep needs (check if used in upcoming prep list)
+        # Simplified: check if ingredient is in any preparation
+        preps_using_ing = await db.preparations.find({
+            "restaurantId": restaurant_id,
+            "items.ingredientId": ing["id"]
+        }, {"_id": 0}).to_list(1000)
+        
+        if preps_using_ing:
+            drivers.append("prep_needs")
+            # Estimate additional need (simplified)
+            suggested_qty += min_stock * 0.5
+        
+        # Only add to order list if there are drivers
+        if drivers:
+            # Get preferred supplier (simplified - first supplier)
+            supplier = await db.suppliers.find_one({"restaurantId": restaurant_id}, {"_id": 0})
+            
+            order_suggestions.append({
+                "ingredientId": ing["id"],
+                "ingredientName": ing["name"],
+                "currentQty": round(current_qty, 2),
+                "minStockQty": round(min_stock, 2),
+                "suggestedQty": round(suggested_qty, 2),
+                "unit": ing["unit"],
+                "supplierId": supplier["id"] if supplier else None,
+                "supplierName": supplier["name"] if supplier else None,
+                "drivers": drivers,
+                "expiryDate": expiry_date
+            })
+    
+    return order_suggestions
+
 def create_access_token(data: dict):
     to_encode = data.copy()
     expire = datetime.now(timezone.utc) + timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)

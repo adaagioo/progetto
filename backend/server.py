@@ -288,6 +288,7 @@ class Recipe(BaseModel):
     items: List[RecipeItem]
     allergens: List[str] = []  # Computed from all items
     shelfLife: Optional[ShelfLife] = None
+    instructions: Optional[str] = None  # Recipe preparation instructions
     createdAt: str
     updatedAt: Optional[str] = None
 

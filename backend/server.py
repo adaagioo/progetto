@@ -340,6 +340,152 @@ class Wastage(BaseModel):
     createdAt: str
     updatedAt: Optional[str] = None
 
+# ============ PHASE 4: PREP LIST & ORDER LIST MODELS ============
+
+class PrepListItem(BaseModel):
+    """Prep list item for a specific date"""
+    preparationId: str
+    preparationName: Optional[str] = None  # Denormalized
+    forecastQty: float  # Forecasted quantity needed
+    availableQty: float  # Current stock available
+    toMakeQty: float  # Quantity to prepare
+    actualQty: Optional[float] = None  # Actual quantity made (for tracking)
+    unit: str
+    forecastSource: str  # 'sales_trend', 'manual_override', 'shelf_life'
+    overrideQty: Optional[float] = None  # Manual override if set
+    notes: Optional[str] = None
+
+class PrepListCreate(BaseModel):
+    """Create prep list for a date"""
+    date: str  # ISO format YYYY-MM-DD
+    items: List[PrepListItem]
+
+class PrepList(BaseModel):
+    """Prep list document"""
+    model_config = ConfigDict(extra="ignore")
+    id: str
+    restaurantId: str
+    date: str
+    items: List[PrepListItem]
+    createdAt: str
+    updatedAt: Optional[str] = None
+
+class OrderListItem(BaseModel):
+    """Order list item for a specific date"""
+    ingredientId: str
+    ingredientName: Optional[str] = None  # Denormalized
+    currentQty: float  # Current inventory level
+    minStockQty: float  # Minimum stock threshold
+    suggestedQty: float  # Suggested order quantity
+    actualQty: Optional[float] = None  # Actual quantity ordered
+    unit: str
+    supplierId: Optional[str] = None
+    supplierName: Optional[str] = None
+    drivers: List[str]  # Reasons: 'low_stock', 'prep_needs', 'sales_forecast', 'expiring_soon'
+    expiryDate: Optional[str] = None  # If item is expiring
+    notes: Optional[str] = None
+
+class OrderListCreate(BaseModel):
+    """Create order list for a date"""
+    date: str  # ISO format YYYY-MM-DD
+    items: List[OrderListItem]
+
+class OrderList(BaseModel):
+    """Order list document"""
+    model_config = ConfigDict(extra="ignore")
+    id: str
+    restaurantId: str
+    date: str
+    items: List[OrderListItem]
+    createdAt: str
+    updatedAt: Optional[str] = None
+
+# ============ PHASE 5: P&L MODELS ============
+
+class PLPeriod(BaseModel):
+    """P&L period definition"""
+    start: str  # YYYY-MM-DD
+    end: str  # YYYY-MM-DD
+    timezone: str = "Europe/Rome"
+    granularity: str = "WEEK"  # Weekly Mon-Sun
+
+class PLSection(BaseModel):
+    """Generic P&L section with flexible line items"""
+    total: float  # In major units, 2 decimals
+    percent: Optional[float] = None  # Percent of turnover
+    items: Optional[dict] = None  # Line items as key-value pairs
+
+class PLSnapshot(BaseModel):
+    """Complete P&L snapshot"""
+    model_config = ConfigDict(extra="ignore")
+    id: str
+    restaurantId: str
+    period: PLPeriod
+    currency: str  # EUR or USD
+    displayLocale: str  # it-IT or en-US
+    
+    # Sales section
+    sales_turnover: float
+    sales_food_beverage: float
+    sales_delivery: float
+    
+    # COGS section
+    cogs_food_beverage: float
+    cogs_raw_waste: float
+    cogs_total: float
+    
+    # OPEX section
+    opex_non_food: float
+    opex_platforms: float
+    opex_total: float
+    
+    # Labour section
+    labour_employees: float
+    labour_staff_meal: float
+    labour_total: float
+    
+    # Marketing section
+    marketing_online_ads: float
+    marketing_free_items: float
+    marketing_total: float
+    
+    # Rent section
+    rent_base_effective: float
+    rent_garden: float
+    rent_total: float
+    
+    # Other costs
+    other_total: float
+    
+    # KPI
+    kpi_ebitda: float
+    
+    # Metadata
+    notes: Optional[str] = None
+    createdAt: str
+    updatedAt: Optional[str] = None
+
+class PLSnapshotCreate(BaseModel):
+    """Create P&L snapshot"""
+    period: PLPeriod
+    currency: str
+    displayLocale: str
+    sales_turnover: float
+    sales_food_beverage: float
+    sales_delivery: float
+    cogs_food_beverage: float
+    cogs_raw_waste: float
+    opex_non_food: float
+    opex_platforms: float
+    labour_employees: float
+    labour_staff_meal: float
+    marketing_online_ads: float
+    marketing_free_items: float
+    rent_base_effective: float
+    rent_garden: float
+    other_total: float
+    notes: Optional[str] = None
+
 class PLCreate(BaseModel):
     month: str
     revenue: float

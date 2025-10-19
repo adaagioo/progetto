@@ -732,6 +732,7 @@ const resources = {
       // Recipes
       'recipes.title': 'Ricette',
       'recipes.subtitle': 'Gestisci le voci del menu e i prezzi',
+      'recipes.filterByAllergen': 'Filtra per allergene',
       'recipes.add': 'Aggiungi Ricetta',
       'recipes.edit': 'Modifica Ricetta',
       'recipes.new': 'Nuova Ricetta',

@@ -145,6 +145,8 @@ const resources = {
       'recipes.perPortion': 'Per Portion',
       'recipes.noItems': 'No items yet',
       'recipes.shelfLife': 'Shelf Life',
+      'recipes.instructions': 'Preparation Instructions',
+      'recipes.instructionsPlaceholder': 'Step-by-step cooking instructions...',
       'recipes.confirm.delete': 'Are you sure you want to delete this recipe?',
       'recipes.success.created': 'Recipe created successfully',
       'recipes.success.updated': 'Recipe updated successfully',

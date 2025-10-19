@@ -206,8 +206,9 @@ class IngredientCreate(BaseModel):
     packCost: float
     supplier: Optional[str] = None  # Deprecated, use preferredSupplierId
     preferredSupplierId: Optional[str] = None  # Supplier UUID reference
-    allergen: Optional[str] = None  # Deprecated, use allergens array
-    allergens: Optional[List[str]] = []  # EU-14 + Other
+    allergen: Optional[str] = None  # Deprecated
+    allergens: Optional[List[str]] = []  # List of allergen codes (GLUTEN, DAIRY, etc.)
+    otherAllergens: Optional[List[str]] = []  # Free-text custom allergens
     minStockQty: float = 0
     category: Optional[str] = "food"  # food, beverage, nofood
     wastePct: Optional[float] = 0  # 0-100%
@@ -228,7 +229,8 @@ class Ingredient(BaseModel):
     preferredSupplierName: Optional[str] = None  # Populated from lookup
     lastPrice: Optional[float] = None  # Last purchase price (packCost from most recent receiving)
     allergen: Optional[str] = None  # Deprecated
-    allergens: List[str] = []
+    allergens: List[str] = []  # List of allergen codes
+    otherAllergens: List[str] = []  # Free-text custom allergens
     minStockQty: float
     category: str = "food"
     wastePct: float = 0

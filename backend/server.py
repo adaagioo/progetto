@@ -3862,10 +3862,10 @@ async def create_receiving_from_ocr(
         await log_audit(
             db=db,
             restaurant_id=current_user["restaurantId"],
-            user_email=current_user["email"],
+            user_id=current_user["id"],
             action="create_receiving_from_ocr",
-            resource_type="receiving",
-            resource_id=receiving_id,
+            entity_type="receiving",
+            entity_id=receiving_id,
             details={
                 "supplierId": supplier_id,
                 "lineCount": len(processed_lines),

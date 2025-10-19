@@ -362,17 +362,74 @@ const resources = {
       
       // P&L
       'pl.title': 'Profit & Loss',
-      'pl.subtitle': 'Monthly P&L snapshots',
-      'pl.add': 'Add P&L Snapshot',
-      'pl.new': 'New P&L Snapshot',
-      'pl.month': 'Month',
-      'pl.revenue': 'Revenue',
-      'pl.cogs': 'COGS',
-      'pl.grossMargin': 'Gross Margin',
-      'pl.marginPct': 'Margin %',
+      'pl.subtitle': 'Weekly P&L snapshots (Mon-Sun)',
+      'pl.weekPicker': 'Select Week',
+      'pl.create': 'Create Snapshot',
+      'pl.save': 'Save Snapshot',
+      'pl.edit': 'Edit Snapshot',
+      'pl.period': 'Period',
+      'pl.currency': 'Currency',
+      'pl.locale': 'Locale',
+      'pl.amount': 'Amount',
+      'pl.percent': '% of Turnover',
+      
+      // Sales section
+      'pl.sales': 'SALES',
+      'pl.sales.turnover': 'Turnover',
+      'pl.sales.foodBeverage': 'Food & Beverage',
+      'pl.sales.delivery': 'Delivery',
+      
+      // COGS section
+      'pl.cogs': 'COST OF GOODS SOLD',
+      'pl.cogs.foodBeverage': 'Food & Beverage',
+      'pl.cogs.rawWaste': 'Raw Waste',
+      'pl.cogs.total': 'Total COGS',
+      
+      // OPEX section
+      'pl.opex': 'OPERATING EXPENSES',
+      'pl.opex.nonFood': 'Non-Food Supplies',
+      'pl.opex.platforms': 'Delivery Platforms',
+      'pl.opex.total': 'Total OPEX',
+      
+      // Labour section
+      'pl.labour': 'LABOUR COSTS',
+      'pl.labour.employees': 'Employee Wages',
+      'pl.labour.staffMeal': 'Staff Meals',
+      'pl.labour.total': 'Total Labour',
+      
+      // Marketing section
+      'pl.marketing': 'SALES & MARKETING',
+      'pl.marketing.onlineAds': 'Online Advertising',
+      'pl.marketing.freeItems': 'Free Items / Promos',
+      'pl.marketing.total': 'Total Marketing',
+      
+      // Rent section
+      'pl.rent': 'RENT & FACILITIES',
+      'pl.rent.baseEffective': 'Base Rent',
+      'pl.rent.garden': 'Garden / Patio',
+      'pl.rent.total': 'Total Rent',
+      
+      // Other
+      'pl.other': 'OTHER COSTS',
+      'pl.other.total': 'Total Other',
+      
+      // KPI
+      'pl.kpi': 'KEY PERFORMANCE INDICATORS',
+      'pl.kpi.ebitda': 'EBITDA',
+      'pl.kpi.ebitdaPercent': 'EBITDA %',
+      
       'pl.notes': 'Notes',
-      'pl.noData': 'No P&L records yet',
-      'pl.addFirst': 'Add Your First Snapshot',
+      'pl.noData': 'No P&L snapshots yet',
+      'pl.createFirst': 'Create your first P&L snapshot',
+      'pl.addLine': 'Add Line',
+      'pl.removeLine': 'Remove',
+      'pl.manualLine': 'Manual Line',
+      'pl.success.created': 'P&L snapshot created successfully',
+      'pl.success.updated': 'P&L snapshot updated successfully',
+      'pl.success.deleted': 'P&L snapshot deleted successfully',
+      'pl.error.load': 'Failed to load P&L snapshots',
+      'pl.error.save': 'Failed to save P&L snapshot',
+      'pl.error.delete': 'Failed to delete P&L snapshot',
       
       // Suppliers
       'suppliers.title': 'Suppliers',

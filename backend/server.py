@@ -3798,9 +3798,9 @@ async def create_receiving_from_ocr(
             "arrivedAt": document_data.get('date') or datetime.now(timezone.utc).strftime('%Y-%m-%d'),
             "lines": processed_lines,
             "total": total_amount,
+            "files": attached_files,
             "notes": f"Imported from OCR - {document_data.get('documentType', 'invoice')} | Confidence: {document_data.get('confidence', 0)}%",
             "invoiceNumber": document_data.get('invoiceNumber'),
-            "attachedFiles": attached_files,
             "importedFromOCR": True,  # Flag for UI display
             "ocrMetadata": {
                 "confidence": document_data.get('confidence', 0),

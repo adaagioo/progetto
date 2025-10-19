@@ -45,9 +45,24 @@ function Suppliers() {
     }
   };
 
+  const fetchIngredients = async () => {
+    try {
+      const response = await axios.get(`${API}/ingredients`);
+      setIngredients(response.data);
+    } catch (error) {
+      console.error('Failed to load ingredients:', error);
+    }
+  };
+
   const handleOCRParsed = (data) => {
     setOCRParsedItems(data.items || []);
     setShowOCRPriceList(true);
+    // Initialize empty mappings for each item
+    const mappings = {};
+    (data.items || []).forEach((_, idx) => {
+      mappings[idx] = '';
+    });
+    setItemMappings(mappings);
     toast.success(t('suppliers.ocrParsed') || 'Price list parsed successfully');
   };
 

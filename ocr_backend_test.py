@@ -456,7 +456,20 @@ class OCRTester:
                     self.log_result("Create Receiving from OCR (Admin)", True, 
                                   f"ID: {receiving['id']}, Lines: {len(receiving.get('lines', []))}")
                 else:
-                    self.log_result("Create Receiving from OCR (Admin)", False, "Invalid receiving structure")
+                    # Debug output
+                    missing_fields = []
+                    if not receiving.get('id'):
+                        missing_fields.append('id')
+                    if receiving.get('supplierId') != self.test_data['supplier_id']:
+                        missing_fields.append(f"supplierId (expected {self.test_data['supplier_id']}, got {receiving.get('supplierId')})")
+                    if receiving.get('importedFromOCR') != True:
+                        missing_fields.append(f"importedFromOCR (got {receiving.get('importedFromOCR')})")
+                    if not receiving.get('ocrMetadata'):
+                        missing_fields.append('ocrMetadata')
+                    if 'Imported from OCR' not in receiving.get('notes', ''):
+                        missing_fields.append('notes with OCR info')
+                    
+                    self.log_result("Create Receiving from OCR (Admin)", False, f"Missing: {', '.join(missing_fields)}")
             else:
                 self.log_result("Create Receiving from OCR (Admin)", False, f"Status: {response.status_code}")
         except Exception as e:

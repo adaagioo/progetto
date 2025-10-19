@@ -3,7 +3,7 @@ import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { AuthContext } from '../App';
 import { useTranslation } from 'react-i18next';
 import { Button } from './ui/button';
-import { ChefHat, LayoutDashboard, BookOpen, Package, ShoppingCart, AlertTriangle, TrendingUp, UtensilsCrossed, LogOut, Settings as SettingsIcon, Truck, PackageCheck, Utensils, ClipboardList, ListOrdered } from 'lucide-react';
+import { ChefHat, LayoutDashboard, BookOpen, Package, ShoppingCart, AlertTriangle, TrendingUp, UtensilsCrossed, LogOut, Settings as SettingsIcon, Truck, PackageCheck, Utensils, ClipboardList, ListOrdered, FileText } from 'lucide-react';
 
 function Layout({ children }) {
   const { t } = useTranslation();

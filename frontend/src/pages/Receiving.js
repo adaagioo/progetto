@@ -388,9 +388,19 @@ function Receiving() {
           </DialogTrigger>
           <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
             <DialogHeader>
-              <DialogTitle>
-                {editingId ? (t('receiving.edit') || 'Edit Receiving') : (t('receiving.add') || 'Add Receiving')}
-              </DialogTitle>
+              <div className="flex items-center justify-between">
+                <DialogTitle>
+                  {editingId ? (t('receiving.edit') || 'Edit Receiving') : (t('receiving.add') || 'Add Receiving')}
+                </DialogTitle>
+                {!editingId && (
+                  <OCRUploadButton 
+                    onParsed={handleOCRParsed}
+                    context="receiving"
+                    supplierId={formData.supplierId}
+                    buttonVariant="outline"
+                  />
+                )}
+              </div>
             </DialogHeader>
             <form onSubmit={handleSubmit} className="space-y-4">
               <div className="grid grid-cols-2 gap-4">

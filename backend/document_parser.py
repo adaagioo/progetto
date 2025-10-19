@@ -183,12 +183,13 @@ class DocumentParser:
         - Price list: "Product Code Price Unit"
         """
         # Italian invoice pattern: "L0347 1\AMARO DEL CAPO 1LT 22 | N 14,96 14,96"
-        italian_pattern = r'^([A-Z0-9]+)\s+(\d+)[\\|](.+?)\s+(\d+)\s+\|\s+\w+\s+([\d,]+)\s+([\d,]+)$'
+        # Variations: 1\ or 1. or 1 or 6|
+        italian_pattern = r'^([A-Z]\d{4})\s+(\d+)[\\.\s|]+(.+?)\s+(\d+)\s+\|\s+\w+\s+([\d,]+(?:\.?\d+)?)\s+([\d,]+(?:\.?\d+)?)$'
         match = re.match(italian_pattern, line)
         if match:
             code, qty, description, iva, unit_price, total = match.groups()
             # Clean up description (remove size info at end if present)
-            desc_clean = re.sub(r'\s+(1LT|70CL|75CL|ML|LT|KG|G)$', '', description.strip())
+            desc_clean = re.sub(r'\s+(1LT|70CL\.?|75CL\.?|ML|LT|KG|G|\d+CL\.?)$', '', description.strip(), flags=re.IGNORECASE)
             
             return {
                 "description": desc_clean.strip(),

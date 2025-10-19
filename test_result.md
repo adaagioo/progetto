@@ -935,20 +935,52 @@ backend:
       - working: "NA"
         agent: "main"
         comment: |
-          Phase 8 M8.1 Suppliers OCR Integration completed:
+          Phase 8 M8.1 Suppliers OCR Integration FULLY COMPLETED:
+          
+          ✅ CORE OCR FEATURES:
           - Integrated OCRUploadButton component into Suppliers page
           - Added "OCR Price List" button next to existing upload buttons
-          - Created OCR price list review dialog with parsed items display
-          - Displays: description, code, qty, unit, price with confidence coloring
+          - Button invokes OCR processing with supplier context
+          
+          ✅ PRICE LIST REVIEW DIALOG:
+          - Created comprehensive review dialog for parsed price list items
+          - Displays: description, code, qty, unit, price, confidence
           - Confidence coloring: green (>80%), yellow (50-80%), red (<50%)
-          - State management: ocrSupplierId, ocrParsedItems, showOCRPriceList
-          - Handler: handleOCRParsed to process OCR results
-          - i18n translations added (EN/IT):
-            - ocr.reviewPriceList, ocr.reviewInstructions
-            - ocr.description, ocr.code, ocr.qty, ocr.unit, ocr.price
-            - suppliers.ocrPriceList, suppliers.priceListReviewed
-          - Frontend compiles successfully without errors
-          - Pending: E2E testing to verify OCR upload, parsing, and review flow
+          - Wide dialog (max-w-6xl) to accommodate all columns
+          
+          ✅ INGREDIENT MAPPING:
+          - Added ingredient dropdown for each parsed item
+          - Fetches all ingredients on page load
+          - Tracks mappings in itemMappings state
+          - Shows mapping progress: "X / Y mapped"
+          - Disables "Apply Prices" button when no mappings
+          
+          ✅ PRICE UPDATE FUNCTIONALITY:
+          - "Apply Prices" button updates ingredient packCost and packSize
+          - Converts price from major units to minor units (cents)
+          - Sets preferredSupplierId to current supplier
+          - Updates only mapped items
+          - Shows success toast with count of updated ingredients
+          
+          ✅ STATE MANAGEMENT:
+          - ocrSupplierId: tracks which supplier's price list
+          - ocrParsedItems: stores OCR parsed data
+          - itemMappings: tracks ingredient ID per item index
+          - ingredients: fetched on mount for mapping dropdown
+          
+          ✅ I18N TRANSLATIONS (EN/IT):
+          - ocr.reviewPriceList, ocr.reviewInstructions
+          - ocr.description, ocr.code, ocr.qty, ocr.unit, ocr.price
+          - suppliers.ocrPriceList, suppliers.applyPrices
+          - suppliers.pricesUpdated, suppliers.error.updatePrices
+          
+          ✅ ERROR HANDLING:
+          - Validates at least one item is mapped before update
+          - Shows error toast if no mappings
+          - Catches and displays API update errors
+          
+          Frontend compiles successfully without errors.
+          Pending: E2E testing to verify full OCR→mapping→price update flow.
 
 frontend:
   - task: "Enhanced Recipe Editor with Keyboard UX"

@@ -33,6 +33,54 @@ mongo_url = os.environ['MONGO_URL']
 client = AsyncIOMotorClient(mongo_url)
 db = client[os.environ['DB_NAME']]
 
+# Allergen taxonomy - authoritative list (EU-14 standard)
+ALLERGEN_CODES = [
+    "GLUTEN",
+    "CRUSTACEANS",
+    "MOLLUSCS",
+    "EGGS",
+    "FISH",
+    "TREE_NUTS",
+    "SOY",
+    "DAIRY",
+    "SESAME",
+    "CELERY",
+    "MUSTARD",
+    "SULPHITES"
+]
+
+# Locale-specific allergen labels
+ALLERGEN_LABELS = {
+    "it-IT": {
+        "GLUTEN": "glutine",
+        "CRUSTACEANS": "crostacei",
+        "MOLLUSCS": "molluschi",
+        "EGGS": "uova",
+        "FISH": "pesce",
+        "TREE_NUTS": "frutta a guscio",
+        "SOY": "soia",
+        "DAIRY": "latticini",
+        "SESAME": "sesamo",
+        "CELERY": "sedano",
+        "MUSTARD": "senape",
+        "SULPHITES": "solfiti"
+    },
+    "en-US": {
+        "GLUTEN": "gluten",
+        "CRUSTACEANS": "crustaceans",
+        "MOLLUSCS": "molluscs",
+        "EGGS": "eggs",
+        "FISH": "fish",
+        "TREE_NUTS": "tree nuts",
+        "SOY": "soy",
+        "DAIRY": "dairy",
+        "SESAME": "sesame",
+        "CELERY": "celery",
+        "MUSTARD": "mustard",
+        "SULPHITES": "sulphites"
+    }
+}
+
 # JWT Configuration
 SECRET_KEY = os.environ.get('JWT_SECRET_KEY', 'your-secret-key-change-in-production')
 ALGORITHM = "HS256"

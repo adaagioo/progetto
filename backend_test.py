@@ -24,10 +24,9 @@ TEST_USERS = {
 
 class OCRTester:
     def __init__(self):
-        self.session = None
-        self.auth_token = None
-        self.user_data = None
-        self.test_results = []
+        self.tokens = {}
+        self.test_data = {}
+        self.results = []
         
     async def __aenter__(self):
         self.session = aiohttp.ClientSession()

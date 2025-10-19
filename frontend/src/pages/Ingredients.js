@@ -35,6 +35,7 @@ function Ingredients() {
   const { user } = useContext(AuthContext);
   const { format } = useCurrency();
   const [ingredients, setIngredients] = useState([]);
+  const [suppliers, setSuppliers] = useState([]);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingId, setEditingId] = useState(null);
   const [formData, setFormData] = useState({
@@ -43,6 +44,7 @@ function Ingredients() {
     packSize: '',
     packCost: '',
     supplier: '',
+    preferredSupplierId: '',
     allergen: '',
     allergens: [],
     minStockQty: '',
@@ -53,7 +55,17 @@ function Ingredients() {
 
   useEffect(() => {
     fetchIngredients();
+    fetchSuppliers();
   }, []);
+
+  const fetchSuppliers = async () => {
+    try {
+      const response = await axios.get(`${API}/suppliers`);
+      setSuppliers(response.data);
+    } catch (error) {
+      console.error('Failed to load suppliers:', error);
+    }
+  };
 
   const fetchIngredients = async () => {
     try {

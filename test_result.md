@@ -1162,9 +1162,10 @@ metadata:
 
 test_plan:
   current_focus:
+    - "Allergen Taxonomy Backend - CRUD, uppercase storage, propagation, migration"
+    - "Allergen Taxonomy Frontend - Selector, filters, badges, i18n (EN/IT)"
     - "Phase 4: Prep List Frontend - E2E testing (generate, override, save, RBAC)"
     - "Phase 4: Order List Frontend - E2E testing (generate, drivers, save, RBAC)"
-    - "Phase 4: i18n verification (EN/IT language switching)"
   stuck_tasks:
     - "Enhanced Recipe Editor with Keyboard UX"
   test_all: false

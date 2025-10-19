@@ -21,6 +21,8 @@ function Ingredients() {
   const [suppliers, setSuppliers] = useState([]);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingId, setEditingId] = useState(null);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [selectedAllergenFilter, setSelectedAllergenFilter] = useState('all');
   const [formData, setFormData] = useState({
     name: '',
     unit: 'g',

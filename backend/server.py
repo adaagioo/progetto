@@ -1633,6 +1633,7 @@ async def update_ingredient(ingredient_id: str, ingredient_data: IngredientCreat
         "unitCost": unit_cost,
         "effectiveUnitCost": effective_unit_cost,
         "supplier": ingredient_data.supplier,
+        "preferredSupplierId": ingredient_data.preferredSupplierId,
         "allergen": ingredient_data.allergen,
         "allergens": ingredient_data.allergens or [],
         "minStockQty": ingredient_data.minStockQty,
@@ -1642,6 +1643,13 @@ async def update_ingredient(ingredient_id: str, ingredient_data: IngredientCreat
     
     await db.ingredients.update_one({"id": ingredient_id}, {"$set": update_data})
     updated = await db.ingredients.find_one({"id": ingredient_id}, {"_id": 0})
+    
+    # Populate supplier name
+    if updated.get("preferredSupplierId"):
+        supplier = await db.suppliers.find_one({"id": updated["preferredSupplierId"]}, {"_id": 0})
+        if supplier:
+            updated["preferredSupplierName"] = supplier.get("name")
+    
     return Ingredient(**updated)
 
 @api_router.delete("/ingredients/{ingredient_id}")

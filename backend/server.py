@@ -1587,6 +1587,7 @@ async def create_ingredient(ingredient_data: IngredientCreate, current_user: dic
         "unitCost": unit_cost,
         "effectiveUnitCost": effective_unit_cost,
         "supplier": ingredient_data.supplier,
+        "preferredSupplierId": ingredient_data.preferredSupplierId,
         "allergen": ingredient_data.allergen,
         "allergens": ingredient_data.allergens or [],
         "minStockQty": ingredient_data.minStockQty,
@@ -1597,6 +1598,13 @@ async def create_ingredient(ingredient_data: IngredientCreate, current_user: dic
     }
     
     await db.ingredients.insert_one(ingredient)
+    
+    # Populate supplier name
+    if ingredient.get("preferredSupplierId"):
+        supplier = await db.suppliers.find_one({"id": ingredient["preferredSupplierId"]}, {"_id": 0})
+        if supplier:
+            ingredient["preferredSupplierName"] = supplier.get("name")
+    
     return Ingredient(**ingredient)
 
 @api_router.get("/ingredients", response_model=List[Ingredient])

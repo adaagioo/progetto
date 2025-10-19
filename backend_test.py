@@ -22,7 +22,7 @@ TEST_USERS = {
     "staff": {"email": "staff@test.com", "password": "staff123"}
 }
 
-class BackendTester:
+class OCRTester:
     def __init__(self):
         self.session = None
         self.auth_token = None

@@ -110,6 +110,7 @@ function Preparations() {
       })),
       yield: prep.yield_ || { value: '', unit: 'portions' },
       shelfLife: prep.shelfLife || { value: '', unit: 'days' },
+      instructions: prep.instructions || '',
       notes: prep.notes || ''
     });
     setIsDialogOpen(true);

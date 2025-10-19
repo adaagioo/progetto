@@ -1189,6 +1189,7 @@ const resources = {
       'receiving.noHistory': 'Nessuno storico prezzi disponibile',
       'receiving.error.priceHistory': 'Impossibile caricare lo storico',
       'receiving.priceLists': 'Liste Prezzi',
+      'receiving.ocrImported': 'Importato OCR',
       'receiving.category.food': 'Cibo',
       'receiving.category.beverage': 'Bevande',
       'receiving.category.nofood': 'Non-Alimentare',

@@ -75,6 +75,7 @@ const resources = {
       'ingredients.allergensFree': 'Allergen-free',
       'ingredients.otherAllergens': 'Other Allergens',
       'ingredients.addOtherAllergen': 'Add other allergen',
+      'ingredients.filterByAllergen': 'Filter by allergen',
       
       // Standard allergen codes (EU-14)
       'allergens.GLUTEN': 'gluten',

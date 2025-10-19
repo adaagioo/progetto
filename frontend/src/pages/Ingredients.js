@@ -423,10 +423,10 @@ function Ingredients() {
                 <span className="text-gray-600">{t('ingredients.minStock') || 'Min Stock'}:</span>
                 <span className="font-medium">{ingredient.minStockQty} {ingredient.unit}</span>
               </div>
-              {ingredient.supplier && (
+              {(ingredient.preferredSupplierName || ingredient.supplier) && (
                 <div className="flex justify-between">
-                  <span className="text-gray-600">{t('ingredients.supplier') || 'Supplier'}:</span>
-                  <span className="font-medium">{ingredient.supplier}</span>
+                  <span className="text-gray-600">{t('ingredients.preferredSupplier') || 'Preferred Supplier'}:</span>
+                  <span className="font-medium">{ingredient.preferredSupplierName || ingredient.supplier}</span>
                 </div>
               )}
               {ingredient.category && (

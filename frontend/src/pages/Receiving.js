@@ -180,6 +180,47 @@ function Receiving() {
       lines: [{ ingredientId: '', description: '', qty: '', unit: 'kg', unitPrice: '', packFormat: '', expiryDate: '' }]
     });
     setEditingId(null);
+    setUploadingFor(null);
+    setShowMappingDialog(false);
+    setParsedRows([]);
+  };
+
+  const handleOCRParsed = (ocrData) => {
+    // Prefill form with OCR data
+    const { parsedData, items } = ocrData;
+    
+    // Set supplier if detected
+    if (parsedData.supplier_name) {
+      const matchedSupplier = suppliers.find(s => 
+        s.name.toLowerCase().includes(parsedData.supplier_name.toLowerCase())
+      );
+      if (matchedSupplier) {
+        setFormData(prev => ({ ...prev, supplierId: matchedSupplier.id }));
+      }
+    }
+    
+    // Set date if extracted
+    if (parsedData.date) {
+      setFormData(prev => ({ ...prev, arrivedAt: parsedData.date }));
+    }
+    
+    // Set line items
+    if (items && items.length > 0) {
+      const lines = items.map(item => ({
+        ingredientId: item.ingredientId || '',
+        description: item.description || '',
+        qty: item.qty?.toString() || '',
+        unit: item.unit || 'kg',
+        unitPrice: item.price?.toString() || '',
+        packFormat: '',
+        expiryDate: ''
+      }));
+      setFormData(prev => ({ ...prev, lines }));
+      
+      toast.success(
+        `${items.length} ${t('ocr.itemsLoaded') || 'items loaded from invoice'}`
+      );
+    }
   };
 
   const addLine = () => {

@@ -9,7 +9,7 @@
 
 ## 🌐 STAGING ENVIRONMENT
 
-**URL:** `https://ristobrain-1.preview.emergentagent.com`
+**URL:** `https://food-analytics.preview.emergentagent.com`
 
 **Tenant:** Test Restaurant (Multi-restaurant tenant)
 

@@ -1,0 +1,119 @@
+<analysis>
+The AI engineer has progressed RistoBrain from MVP through Phases 1-3, completing multi-currency, RBAC, password reset, and i18n. Phase 4 (Prep List & Order List) backend and frontend are largely implemented and stable, with minor gaps being addressed. Phase 5 (P&L Template) backend is complete, and its frontend UI has just been built and verified. An urgent request to update allergen taxonomy was received, and the backend changes for this are complete. The engineer is now actively integrating the new  component into the frontend, specifically in , and addressing UI issues related to its integration. Systematic testing (backend and frontend E2E) has been used to identify and fix issues like authentication tokens and RBAC. The project is following a prioritized roadmap, with Phase 6 (Suppliers+) next.
+</analysis>
+
+<product_requirements>
+RistoBrain is a multi-tenant PWA for restaurant cost control, built with React, FastAPI, and MongoDB. It features authentication, RBAC (admin/manager/waiter), multi-currency (EUR/USD, minor units), password reset, and EN/IT internationalization.
+
+**Implemented Phases:**
+*   **Phase 1:** Suppliers (CRUD, attachments), Receiving (CRUD, inventory write-through), Inventory Valuation (WAC, audit), interactive Dashboard.
+*   **Phase 2:** Enhanced Ingredients (waste %, allergens, shelf life, category), Preparations (sub-recipes, computed cost/allergens, instructions), Enhanced Recipe Editor (mixed items, in-place editing, keyboard UX, live cost, allergen badges, instructions). Allergen taxonomy normalized to EU-14.
+*   **Phase 3:** Sales & Wastage with WAC stock deductions, and Admin-only Users & Access management.
+
+**Current & Future Work:**
+*   **Phase 4 (Implemented, closing gaps):** Prep List (available/to make, forecast, shelf-life, manual overrides, expiry alerts, UI/UX, i18n/currency) and Order List (suggested qty, drivers, pack rounding, supplier switch, expiry alerts, RBAC).
+*   **Phase 5 (Backend Complete, Frontend Implemented):** Enhanced P&L template (weekly Mon–Sun, multi-currency/locale, detailed calculations, manual lines).
+*   **Phase 6 (Planned):** Suppliers+ (item mapping, price lists).
+*   **Phase 7 (Planned):** RBAC Matrix (customizable permissions).
+*   **Phase 8 (Planned):** Document Ingestion/OCR (parsing pipeline, review/mapping UI).
+</product_requirements>
+
+<key_technical_concepts>
+-   **FastAPI**: Python web framework for the backend APIs.
+-   **React**: JavaScript library for the progressive web application (PWA) frontend.
+-   **MongoDB**: NoSQL database for data storage, utilizing UUIDs for IDs.
+-   **JWT/RBAC**: JSON Web Tokens for authentication and Role-Based Access Control.
+-   **i18n**: Internationalization using  for English and Italian.
+-   **Minor Units**: Monetary value storage to prevent floating-point errors.
+-   **Weighted Average Cost (WAC)**: Inventory valuation methodology.
+-   **Playwright**: Frontend E2E testing framework.
+-   **EU-14 Allergens**: Standardized allergen taxonomy.
+</key_technical_concepts>
+
+<code_architecture>
+
+-   : The core FastAPI application.
+    -   **Importance**: Defines all API routes, data models, and business logic.
+    -   **Changes**: Updated , ,  models for new fields (e.g., waste%, allergens, instructions, ). Implemented CRUD for Preparations, enhanced Sales/Wastage. Added models (, , ) and endpoints for Prep Lists, Order Lists, and P&L configuration. Recently updated for allergen code storage ( and ). RBAC checks added to ingredient/supplier file upload endpoints.
+-   : Lists Python dependencies.
+    -   **Importance**: Ensures environment consistency.
+    -   **Changes**: Added , .
+-   : Utility for allergen normalization.
+    -   **Importance**: Standardizes allergen names to EU-14.
+    -   **Changes**: Created to handle allergen mapping.
+-   : Script to seed UAT data for Phase 4.
+    -   **Importance**: Facilitates testing of Prep List and Order List.
+    -   **Changes**: New script to create suppliers, ingredients, recipes, historical sales, and inventory.
+-   : Internationalization configuration and translations.
+    -   **Importance**: Provides multi-language support (EN/IT).
+    -   **Changes**: Expanded with translations for Preparations, Enhanced Recipe Editor, Sales, Wastage, Users, Prep Lists, Order Lists, P&L, Suppliers+, and new comprehensive allergen translations.
+-   : Main React application entry and routing.
+    -   **Importance**: Defines application routes and top-level context providers.
+    -   **Changes**: Added routes for , , and . Replaced old  route. Fixed duplicate imports.
+-   : Global application layout and navigation sidebar.
+    -   **Importance**: Consistent UI structure and navigation.
+    -   **Changes**: Added navigation links for Prep Lists, Order Lists, and P&L Snapshot.
+-   : Frontend UI for Prep Lists.
+    -   **Importance**: Allows users to view and manage preparation forecasts.
+    -   **Changes**: Created, implemented forecast display, manual overrides. Fixed authentication token usage ( to ) and RBAC user context ( instead of manual token decode).
+-   : Frontend UI for Order Lists.
+    -   **Importance**: Provides ingredient order suggestions.
+    -   **Changes**: Created, implemented order suggestions, pack rounding, editable supplier. Fixed authentication token usage ( to ) and RBAC user context ( instead of manual token decode).
+-   : Frontend UI for P&L Snapshots.
+    -   **Importance**: Displays weekly P&L reports.
+    -   **Changes**: Created, implemented week picker, display of various cost/revenue categories, percentages, and multi-currency/locale formatting.
+-   : Ingredients management page.
+    -   **Importance**: CRUD for ingredients.
+    -   **Changes**: Updated to use the new  component, including  field and a supplier dropdown. Fixed  component empty value handling.
+-   : Receiving records page.
+    -   **Importance**: Manages incoming inventory.
+    -   **Changes**: Enhanced  to auto-fill preferred supplier and last price when an ingredient is selected.
+-   : Suppliers management page.
+    -   **Importance**: CRUD for suppliers and file attachments.
+    -   **Changes**: Enhanced file upload to allow  metadata (e.g., priceList) and separate buttons for general files vs. price lists.
+-   : Reusable component for allergen selection.
+    -   **Importance**: Standardizes allergen input across forms.
+    -   **Changes**: Created to provide a checkbox grid for fixed EU-14 allergens and a free-text input for Other allergens.
+
+</code_architecture>
+
+<pending_tasks>
+-   **Phase 4 (Prep List & Order List):**
+    -   Verify expiry alerts with real seeded data.
+    -   Refine pack rounding display for Order List UI (tooltip for drivers).
+    -   Verify Staff RBAC limitations.
+    -   Re-run comprehensive Playwright tests (with longer timeouts) to achieve 100% pass rate.
+-   **Phase 6 (Suppliers+):**
+    -   Receiving UI enhancement (preferred supplier pre-fill, last price/pack auto-fill, price history popover, pack rounding).
+-   **Allergen Taxonomy Frontend:**
+    -   Integrate  into Preparations and Recipes pages.
+    -   Implement allergen badges in Recipe view/editor.
+    -   Add allergen filters.
+    -   Ensure i18n updates labels, badges, filters.
+    -   Validate propagation (Ingredient → Preparation → Recipe).
+-   **Phase 7 (RBAC Matrix):** Full implementation.
+-   **Phase 8 (Document Ingestion / OCR):** Full implementation.
+</pending_tasks>
+
+<current_work>
+Immediately prior to this summary, the AI engineer was focused on implementing the **Allergen Taxonomy Frontend Implementation**, as requested by the user.
+
+Specifically, the following actions were taken:
+1.  **Backend updates for Allergens**:  models (, , ) were updated to store allergens as codes and include an  field. Allergen computation logic was modified to handle these new fields. RBAC checks were also added to ingredient and supplier file upload endpoints.
+2.  **i18n Translations**: Comprehensive translations for new allergen fields, preferred supplier, and last price were added to  for both English and Italian.
+3.  **AllergenSelector Component**: A new reusable React component, , was created to manage allergen selection (fixed list checkboxes and free-text Other input).
+4.  **Ingredients Page Integration**: The engineer started integrating the  into . This involved:
+    *   Adding  to the  state.
+    *   Updating  to populate .
+    *   Replacing the previous allergen input with the new  component in the form.
+    *   Addressing a UI issue where the  component required a non-empty  prop, leading to updates in state initialization and handling.
+5.  **Suppliers+ Backend**:  was added to the  model, and supplier-related fields were handled in ingredient CRUD operations in . The  model was updated to include a  field, and RBAC was enforced on ingredient updates and supplier file uploads.
+6.  **Suppliers.js Frontend**: The file upload functionality was enhanced to include a  parameter, and separate buttons were added for general files and price lists. The  page was updated to include a supplier dropdown.
+7.  **Receiving.js Frontend**: The  function was enhanced to auto-fill supplier and price upon ingredient selection.
+
+The trajectory ends with the engineer in the process of correctly binding the props for the  component in , having identified that it was added with wrong props after fixing a previous error related to empty  component values. The frontend has successfully recompiled after these changes.
+</current_work>
+
+<optional_next_step>
+Continue integrating the  component into  by correctly binding its props and verifying its functionality.
+</optional_next_step>

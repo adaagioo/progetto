@@ -13,7 +13,7 @@ const { test, expect } = require('@playwright/test');
 const fs = require('fs');
 const path = require('path');
 
-const BACKEND_URL = process.env.REACT_APP_BACKEND_URL || 'https://ristobrain-1.preview.emergentagent.com';
+const BACKEND_URL = process.env.REACT_APP_BACKEND_URL || 'https://food-analytics.preview.emergentagent.com';
 const API = `${BACKEND_URL}/api`;
 
 // Test credentials

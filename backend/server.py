@@ -569,6 +569,7 @@ class FileMetadata(BaseModel):
     size: int
     mimeType: str
     hash: str
+    fileType: Optional[str] = "general"  # price_list, contract, general
     uploadedBy: str
     uploadedAt: str
 

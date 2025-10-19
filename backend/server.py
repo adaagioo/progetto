@@ -2286,8 +2286,9 @@ async def update_recipe(recipe_id: str, recipe_data: RecipeUpdate, current_user:
         items_dict = [item.dict() for item in recipe_data.items]
         update_data["items"] = items_dict
         # Recompute allergens when items change
-        allergens = await compute_recipe_allergens(items_dict, db)
+        allergens, other_allergens = await compute_recipe_allergens(items_dict, db)
         update_data["allergens"] = allergens
+        update_data["otherAllergens"] = other_allergens
     
     if recipe_data.shelfLife is not None:
         update_data["shelfLife"] = recipe_data.shelfLife.dict()

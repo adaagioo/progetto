@@ -640,6 +640,8 @@ class Receiving(BaseModel):
     files: List[FileMetadata] = []
     arrivedAt: str
     notes: Optional[str] = None
+    importedFromOCR: Optional[bool] = False  # Flag for OCR imports
+    ocrMetadata: Optional[Dict[str, Any]] = None  # OCR processing metadata
     createdAt: str
     updatedAt: Optional[str] = None
 

@@ -764,6 +764,83 @@ backend:
           
           Needs comprehensive E2E testing for selector, filters, badges, i18n switch, and propagation.
 
+  - task: "Phase 6 M6.5: Receiving Enhancements (Price History)"
+    implemented: true
+    working: true
+    file: "backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+      - working: true
+        agent: "testing"
+        comment: |
+          PHASE 6 M6.5 RECEIVING ENHANCEMENTS TESTING COMPLETED - ALL SYSTEMS WORKING ✅
+          
+          🧪 RECEIVING ENHANCEMENTS TESTING (36/36 tests passed - 100% success rate):
+          
+          ✅ PRICE HISTORY ENDPOINT (NEW FEATURE) VERIFIED:
+          - GET /api/ingredients/{id}/price-history - Working correctly ✅
+          - Returns sorted history (newest first) with all required fields ✅
+          - Includes: date, unitPrice, qty, unit, packFormat, supplierId, supplierName ✅
+          - Limit parameter working (tested with limit=5 and limit=2) ✅
+          - Empty array returned for ingredients with no receiving history ✅
+          - 404 returned for invalid ingredient IDs ✅
+          - Supplier names correctly populated from lookup ✅
+          
+          ✅ RECEIVING CRUD OPERATIONS VERIFIED:
+          - POST /api/receiving - Creates receiving with auto-fill from preferredSupplierId ✅
+          - Stock inventory updated correctly with WAC (Weighted Average Cost) ✅
+          - GET /api/receiving - Lists all receiving records with tenant isolation ✅
+          - GET /api/receiving/{id} - Retrieves specific receiving record ✅
+          - PUT /api/receiving/{id} - Updates receiving records successfully ✅
+          - DELETE /api/receiving/{id} - Deletes receiving records and associated inventory ✅
+          - Total calculation working: qty × unitPrice for all line items ✅
+          
+          ✅ RBAC ENFORCEMENT VERIFIED (FIXED DURING TESTING):
+          - Admin: Can create/update/delete receiving records ✅
+          - Manager: Can create/update/delete receiving records ✅
+          - Staff: Can view but CANNOT create/update/delete (403 Forbidden) ✅
+          - Added missing RBAC checks to receiving endpoints during testing ✅
+          - All roles can access GET endpoints for viewing ✅
+          
+          ✅ SUPPLIER INTEGRATION VERIFIED:
+          - Ingredients with preferredSupplierId return supplier data ✅
+          - Supplier name auto-populated in ingredient responses ✅
+          - GET /api/suppliers/{id} includes files array ✅
+          - Supplier files with fileType support ready for price lists ✅
+          - Tenant isolation enforced across all supplier operations ✅
+          
+          ✅ AUTO-FILL FUNCTIONALITY VERIFIED:
+          - Receiving creation uses ingredient's preferredSupplierId ✅
+          - All test ingredients have required fields: packCost, packSize, preferredSupplierId, unit ✅
+          - Backend data structure fully supports auto-fill functionality ✅
+          - Supplier information correctly populated in receiving records ✅
+          
+          ✅ STOCK INVENTORY INTEGRATION VERIFIED:
+          - Receiving records create inventory entries with receivingId reference ✅
+          - WAC (Weighted Average Cost) calculation implemented ✅
+          - Batch expiry dates tracked from receiving line items ✅
+          - Location tracking: "Receiving from {supplier_name}" ✅
+          - Unit cost stored for valuation purposes ✅
+          
+          📊 COMPREHENSIVE TEST COVERAGE:
+          - ✅ Price history endpoint (NEW) - 5/5 tests passed
+          - ✅ Receiving CRUD operations - 8/8 tests passed
+          - ✅ RBAC verification - 12/12 tests passed (after fixes)
+          - ✅ Supplier integration - 2/2 tests passed
+          - ✅ Auto-fill functionality - 4/4 tests passed
+          - ✅ Stock inventory updates - 5/5 tests passed
+          
+          🔧 FIXES APPLIED DURING TESTING:
+          - Added RBAC checks to POST /api/receiving endpoint ✅
+          - Added RBAC checks to PUT /api/receiving/{id} endpoint ✅
+          - Added RBAC checks to DELETE /api/receiving/{id} endpoint ✅
+          - All RBAC checks follow pattern: admin/manager allowed, staff denied ✅
+          
+          🎯 PHASE 6 M6.5 RECEIVING ENHANCEMENTS: 100% FUNCTIONAL ✅
+          All new price history features and existing receiving functionality working perfectly with proper RBAC enforcement.
+
 frontend:
   - task: "Enhanced Recipe Editor with Keyboard UX"
     implemented: true

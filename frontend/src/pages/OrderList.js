@@ -23,6 +23,27 @@ function OrderList() {
     setTargetDate(tomorrow.toISOString().split('T')[0]);
   }, []);
 
+  // Load suppliers list
+  useEffect(() => {
+    const loadSuppliers = async () => {
+      try {
+        const token = localStorage.getItem('token');
+        const response = await fetch(`${process.env.REACT_APP_BACKEND_URL}/api/suppliers`, {
+          headers: {
+            'Authorization': `Bearer ${token}`
+          }
+        });
+        if (response.ok) {
+          const data = await response.json();
+          setSuppliers(data);
+        }
+      } catch (error) {
+        console.error('Failed to load suppliers:', error);
+      }
+    };
+    loadSuppliers();
+  }, []);
+
   // RBAC check
   const canEdit = user?.roleKey === 'admin' || user?.roleKey === 'manager';
 

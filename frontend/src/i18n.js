@@ -460,6 +460,13 @@ const resources = {
       'suppliers.error.fileUpload': 'Failed to upload file',
       'suppliers.error.fileDownload': 'Failed to download file',
       'suppliers.error.fileDelete': 'Failed to delete file',
+      'suppliers.priceList': 'Price List',
+      'suppliers.uploadPriceList': 'Upload Price List',
+      'suppliers.downloadPriceList': 'Download',
+      'suppliers.noPriceList': 'No price list uploaded',
+      'suppliers.priceListUploaded': 'Price list uploaded successfully',
+      'suppliers.priceListDeleted': 'Price list deleted successfully',
+      'suppliers.error.upload': 'Failed to upload price list',
       
       // Receiving
       'receiving.title': 'Receiving',

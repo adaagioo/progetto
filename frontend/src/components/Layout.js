@@ -23,6 +23,7 @@ function Layout({ children }) {
     { path: '/preparations', label: t('nav.preparations'), icon: Utensils },
     { path: '/suppliers', label: t('nav.suppliers'), icon: Truck },
     { path: '/receiving', label: t('nav.receiving'), icon: PackageCheck },
+    { path: '/document-import', label: t('nav.documentImport'), icon: FileText },
     { path: '/inventory', label: t('nav.inventory'), icon: Package },
     { path: '/sales', label: t('nav.sales'), icon: ShoppingCart },
     { path: '/wastage', label: t('nav.wastage'), icon: AlertTriangle },

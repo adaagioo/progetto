@@ -536,6 +536,8 @@ const resources = {
       'suppliers.error.fileDelete': 'Failed to delete file',
       'suppliers.priceList': 'Price List',
       'suppliers.uploadPriceList': 'Upload Price List',
+      'suppliers.ocrPriceList': 'OCR Price List',
+      'suppliers.priceListReviewed': 'Price list data reviewed',
       'suppliers.downloadPriceList': 'Download',
       'suppliers.noPriceList': 'No price list uploaded',
       'suppliers.priceListUploaded': 'Price list uploaded successfully',

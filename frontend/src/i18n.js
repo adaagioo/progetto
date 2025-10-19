@@ -149,6 +149,7 @@ const resources = {
       // Recipes
       'recipes.title': 'Recipes',
       'recipes.subtitle': 'Manage your menu items and pricing',
+      'recipes.filterByAllergen': 'Filter by allergen',
       'recipes.add': 'Add Recipe',
       'recipes.edit': 'Edit Recipe',
       'recipes.new': 'New Recipe',

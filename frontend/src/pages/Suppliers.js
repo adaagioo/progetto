@@ -102,12 +102,13 @@ function Suppliers() {
     setEditingId(null);
   };
 
-  const handleFileUpload = async (supplierId, event) => {
+  const handleFileUpload = async (supplierId, event, fileType = 'general') => {
     const file = event.target.files[0];
     if (!file) return;
 
     const formData = new FormData();
     formData.append('file', file);
+    formData.append('fileType', fileType);
 
     try {
       setUploadingFor(supplierId);
@@ -116,10 +117,13 @@ function Suppliers() {
           'Content-Type': 'multipart/form-data'
         }
       });
-      toast.success(t('suppliers.success.fileUploaded') || 'File uploaded successfully');
+      const message = fileType === 'price_list' 
+        ? (t('suppliers.priceListUploaded') || 'Price list uploaded successfully')
+        : (t('suppliers.success.fileUploaded') || 'File uploaded successfully');
+      toast.success(message);
       fetchSuppliers();
     } catch (error) {
-      toast.error(error.response?.data?.detail || t('suppliers.error.fileUpload') || 'Failed to upload file');
+      toast.error(error.response?.data?.detail || t('suppliers.error.upload') || 'Failed to upload file');
     } finally {
       setUploadingFor(null);
       event.target.value = '';

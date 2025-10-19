@@ -273,7 +273,8 @@ function RecipesEnhanced() {
       targetFoodCostPct: recipe.targetFoodCostPct.toString(),
       price: (recipe.price / 100).toString(), // Convert from minor units
       items: recipe.items || [],
-      shelfLife: recipe.shelfLife || { value: '', unit: 'days' }
+      shelfLife: recipe.shelfLife || { value: '', unit: 'days' },
+      instructions: recipe.instructions || ''
     });
     setIsDialogOpen(true);
   };

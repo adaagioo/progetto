@@ -3306,14 +3306,30 @@ async def create_receiving(receiving: ReceivingCreate, current_user: dict = Depe
 @api_router.get("/receiving", response_model=List[Receiving])
 async def get_receiving(current_user: dict = Depends(get_current_user)):
     """Get all receiving records for the restaurant"""
-    await check_subscription(current_user)
-    
-    receiving_records = await db.receiving.find(
-        {"restaurantId": current_user["restaurantId"]},
-        {"_id": 0}
-    ).sort("arrivedAt", -1).to_list(1000)
-    
-    return [Receiving(**r) for r in receiving_records]
+    try:
+        await check_subscription(current_user)
+        
+        receiving_records = await db.receiving.find(
+            {"restaurantId": current_user["restaurantId"]},
+            {"_id": 0}
+        ).sort("arrivedAt", -1).to_list(1000)
+        
+        logger.info(f"Found {len(receiving_records)} receiving records")
+        
+        # Convert to Receiving objects
+        result = []
+        for r in receiving_records:
+            try:
+                result.append(Receiving(**r))
+            except Exception as e:
+                logger.error(f"Error serializing receiving record {r.get('id', 'unknown')}: {e}")
+                logger.error(f"Record data: {r}")
+                # Continue with other records
+        
+        return result
+    except Exception as e:
+        logger.error(f"Error in get_receiving: {e}", exc_info=True)
+        raise HTTPException(status_code=500, detail=str(e))
 
 @api_router.get("/receiving/{receiving_id}", response_model=Receiving)
 async def get_receiving_by_id(receiving_id: str, current_user: dict = Depends(get_current_user)):

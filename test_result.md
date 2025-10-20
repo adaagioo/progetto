@@ -939,6 +939,63 @@ backend:
           Pending: E2E testing to verify full OCR→mapping→price update flow.
 
 frontend:
+  - task: "Phase 7: RBAC Matrix UI"
+    implemented: true
+    working: "NA"
+    file: "frontend/src/pages/RBACTab.js, Settings.js"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: |
+          Phase 7 RBAC Matrix Implementation COMPLETED:
+          
+          ✅ BACKEND - RBAC SCHEMA & APIs:
+          - Created rbac_schema.py with permission definitions
+          - Default roles: admin, manager, waiter with granular permissions
+          - Resources: dashboard, recipes, ingredients, preparations, suppliers, receiving, inventory, sales, wastage, prep_list, order_list, pl_snapshot, users, settings, rbac
+          - Actions: view, create, update, delete
+          - API endpoints implemented:
+            - GET /api/rbac/roles - List all roles with permissions
+            - GET /api/rbac/resources - List all resources and actions
+            - PUT /api/rbac/roles/{role_key}/permissions - Update role permissions
+            - POST /api/rbac/roles/{role_key}/reset - Reset to defaults
+          - Restaurant-specific permission overrides with tenant isolation
+          - Audit logging for all RBAC changes
+          - Admin-only access enforcement (403 for non-admins)
+          
+          ✅ FRONTEND - RBAC MATRIX UI:
+          - Created RBACTab.js component with permission grid
+          - Added RBAC tab to Settings page (admin-only, 4th tab)
+          - Visual feedback: unsaved changes indicator
+          - Checkbox grid: roles × resources × actions
+          - Save button per role with loading state
+          - Reset to defaults button (only for customized roles)
+          - Customized badge indicator for modified roles
+          - Responsive table layout with overflow handling
+          
+          ✅ I18N TRANSLATIONS (EN/IT):
+          - rbac.title, rbac.description
+          - rbac.roles.* (admin, manager, waiter)
+          - rbac.roleDescription.* (detailed descriptions)
+          - rbac.actions.* (view, create, update, delete)
+          - rbac.resources.* (all 15 resources)
+          - rbac.success.*, rbac.error.*, rbac.confirm.*
+          - settings.rbac tab label
+          
+          ✅ FEATURE FLAG - DOCUMENT IMPORT:
+          - Added REACT_APP_FEATURE_DOCUMENT_IMPORT=false to .env
+          - Document Import tab hidden from navigation
+          - Route still exists in App.js (can be re-enabled)
+          - In-context OCR remains active in Suppliers/Receiving/Sales/P&L
+          
+          Frontend compiles successfully.
+          Backend running with new RBAC endpoints.
+          Pending: E2E testing, permission enforcement middleware
+
+frontend:
   - task: "Enhanced Recipe Editor with Keyboard UX"
     implemented: true
     working: false

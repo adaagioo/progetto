@@ -1173,22 +1173,53 @@ async def check_subscription(user: dict):
 
 @api_router.get("/health")
 async def health_check():
-    """Health check endpoint"""
+    """
+    Comprehensive health check endpoint
+    Verifies:
+    - Database connection
+    - JWT secrets present
+    - Essential services
+    """
+    health_status = {
+        "status": "healthy",
+        "timestamp": datetime.now(timezone.utc).isoformat(),
+        "database": "disconnected",
+        "jwt_secrets": "missing",
+        "currency": DEFAULT_CURRENCY,
+        "locale": DEFAULT_LOCALE
+    }
+    
+    # Check database
     try:
-        # Check DB connection
         await db.command("ping")
-        return {
-            "status": "healthy",
-            "timestamp": datetime.now(timezone.utc).isoformat(),
-            "database": "connected",
-            "currency": DEFAULT_CURRENCY,
-            "locale": DEFAULT_LOCALE
-        }
+        health_status["database"] = "connected"
     except Exception as e:
-        return {
-            "status": "unhealthy",
-            "error": str(e)
-        }
+        health_status["status"] = "unhealthy"
+        health_status["database"] = f"error: {str(e)}"
+    
+    # Check JWT secrets
+    if SECRET_KEY and len(SECRET_KEY) > 10:
+        health_status["jwt_secrets"] = "present"
+    else:
+        health_status["status"] = "unhealthy"
+        health_status["jwt_secrets"] = "missing or too short"
+    
+    # Check critical dependencies
+    try:
+        import magic
+        health_status["libmagic"] = "available"
+    except ImportError:
+        health_status["libmagic"] = "missing"
+        health_status["status"] = "degraded"
+    
+    try:
+        import pytesseract
+        pytesseract.get_tesseract_version()
+        health_status["tesseract"] = "available"
+    except:
+        health_status["tesseract"] = "unavailable"
+    
+    return health_status
 
 @api_router.post("/auth/register", response_model=TokenResponse)
 async def register(user_data: UserRegister):

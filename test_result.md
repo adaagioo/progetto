@@ -880,6 +880,77 @@ backend:
           📊 OVERALL PHASE 8 STATUS: 92% FUNCTIONAL
           Core OCR, document parsing, and Suppliers integration working excellently.
 
+  - task: "Phase 7: RBAC Backend Implementation"
+    implemented: true
+    working: true
+    file: "backend/server.py, backend/rbac_schema.py, backend/rbac_utils.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+      - working: true
+        agent: "testing"
+        comment: |
+          PHASE 7 RBAC BACKEND IMPLEMENTATION TESTING COMPLETED - ALL SYSTEMS WORKING ✅
+          
+          🧪 RBAC BACKEND TESTING (8/8 tests passed - 100% success rate):
+          
+          ✅ GET /api/rbac/roles (ADMIN ACCESS) VERIFIED:
+          - Returns array of 3 roles (admin, manager, waiter) ✅
+          - Each role has permissions object ✅
+          - Admin has full permissions on all resources including users/rbac ✅
+          - Manager has no access to users/rbac resources ✅
+          - Waiter has mostly view-only access (recipes: view only, no create/update/delete) ✅
+          
+          ✅ GET /api/rbac/roles (NON-ADMIN DENIED) VERIFIED:
+          - Manager correctly denied with 403 Forbidden ✅
+          - Staff correctly denied with 403 Forbidden ✅
+          - Proper access control enforcement ✅
+          
+          ✅ GET /api/rbac/resources VERIFIED:
+          - Returns 15 resources as expected ✅
+          - All expected resources present: dashboard, recipes, ingredients, preparations, suppliers, receiving, inventory, sales, wastage, prep_list, order_list, pl_snapshot, users, settings, rbac ✅
+          - Each resource has key, name, actions array ✅
+          - Proper structure validation ✅
+          
+          ✅ PUT /api/rbac/roles/{role_key}/permissions (UPDATE PERMISSIONS) VERIFIED:
+          - Successfully updated manager role with 'create' permission to 'users' resource ✅
+          - Manager role marked as isCustomized=true ✅
+          - New permission stored and retrievable ✅
+          - Success response with proper message ✅
+          
+          ✅ POST /api/rbac/roles/{role_key}/reset (RESET TO DEFAULTS) VERIFIED:
+          - Successfully reset manager role to defaults ✅
+          - Manager role isCustomized=false after reset ✅
+          - Permissions back to default state (no users access) ✅
+          - Success response with proper message ✅
+          
+          ✅ PERMISSION UPDATE VALIDATION VERIFIED:
+          - Invalid resource name correctly rejected with 400 Bad Request ✅
+          - Invalid action correctly rejected with 400 Bad Request ✅
+          - Non-existent role correctly rejected with 404 Not Found ✅
+          - Comprehensive input validation working ✅
+          
+          ✅ RBAC OPERATIONS (NON-ADMIN DENIED) VERIFIED:
+          - Manager correctly denied permission update with 403 Forbidden ✅
+          - Manager correctly denied permission reset with 403 Forbidden ✅
+          - Proper admin-only access enforcement ✅
+          
+          ✅ AUDIT LOGGING VERIFIED:
+          - All RBAC operations create audit log entries ✅
+          - Proper restaurant_id and user_id tracking ✅
+          - Operations logged with entity_type="rbac_permissions" ✅
+          
+          🔐 RBAC SECURITY FEATURES VERIFIED:
+          - Admin-only access to all RBAC endpoints ✅
+          - Proper 403 Forbidden responses for non-admin users ✅
+          - Restaurant-scoped permission overrides ✅
+          - Tenant isolation enforced ✅
+          - Input validation prevents invalid resources/actions ✅
+          
+          🎯 PHASE 7 RBAC BACKEND: 100% FUNCTIONAL ✅
+          All RBAC endpoints working perfectly with comprehensive security and audit logging.
+
   - task: "Phase 8 M8.1: Suppliers OCR Integration (Price List)"
     implemented: true
     working: "NA"

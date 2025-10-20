@@ -4109,6 +4109,149 @@ async def update_restaurant(data: dict, current_user: dict = Depends(get_current
     restaurant = await db.restaurants.find_one({"id": current_user["restaurantId"]}, {"_id": 0})
     return restaurant
 
+
+# ==================== RBAC ENDPOINTS ====================
+
+from rbac_schema import (
+    DEFAULT_PERMISSIONS,
+    Resource,
+    Action,
+    get_default_permissions,
+    has_permission,
+    merge_permissions
+)
+
+
+@api_router.get("/rbac/roles")
+async def get_rbac_roles(current_user: dict = Depends(get_current_user)):
+    """Get all roles with their default permissions"""
+    # Only admins can access RBAC
+    if current_user["roleKey"] != "admin":
+        raise HTTPException(status_code=403, detail="Admin access required")
+    
+    # Get restaurant-specific permission overrides
+    restaurant = await db.restaurants.find_one(
+        {"id": current_user["restaurantId"]},
+        {"_id": 0, "permissionOverrides": 1}
+    )
+    
+    overrides = restaurant.get("permissionOverrides", {}) if restaurant else {}
+    
+    # Build role list with merged permissions
+    roles = []
+    for role_key, default_perms in DEFAULT_PERMISSIONS.items():
+        role_overrides = overrides.get(role_key, {})
+        merged_perms = merge_permissions(default_perms, role_overrides)
+        
+        roles.append({
+            "roleKey": role_key,
+            "roleName": role_key.capitalize(),
+            "permissions": merged_perms,
+            "isCustomized": bool(role_overrides)
+        })
+    
+    return roles
+
+
+@api_router.get("/rbac/resources")
+async def get_rbac_resources(current_user: dict = Depends(get_current_user)):
+    """Get all available resources and actions"""
+    # Only admins can access RBAC
+    if current_user["roleKey"] != "admin":
+        raise HTTPException(status_code=403, detail="Admin access required")
+    
+    resources = [
+        {
+            "key": resource.value,
+            "name": resource.value.replace("_", " ").title(),
+            "actions": [action.value for action in Action]
+        }
+        for resource in Resource
+    ]
+    
+    return resources
+
+
+@api_router.put("/rbac/roles/{role_key}/permissions")
+async def update_role_permissions(
+    role_key: str,
+    permissions: Dict[str, List[str]],
+    current_user: dict = Depends(get_current_user)
+):
+    """Update permissions for a specific role"""
+    # Only admins can modify RBAC
+    if current_user["roleKey"] != "admin":
+        raise HTTPException(status_code=403, detail="Admin access required")
+    
+    # Validate role exists
+    if role_key not in DEFAULT_PERMISSIONS:
+        raise HTTPException(status_code=404, detail=f"Role {role_key} not found")
+    
+    # Validate all resources and actions
+    valid_resources = {r.value for r in Resource}
+    valid_actions = {a.value for a in Action}
+    
+    for resource, actions in permissions.items():
+        if resource not in valid_resources:
+            raise HTTPException(status_code=400, detail=f"Invalid resource: {resource}")
+        for action in actions:
+            if action not in valid_actions:
+                raise HTTPException(status_code=400, detail=f"Invalid action: {action}")
+    
+    # Update restaurant's permission overrides
+    await db.restaurants.update_one(
+        {"id": current_user["restaurantId"]},
+        {"$set": {f"permissionOverrides.{role_key}": permissions}}
+    )
+    
+    # Audit log
+    await log_audit(
+        db=db,
+        restaurant_id=current_user["restaurantId"],
+        user_id=current_user["id"],
+        action="update",
+        entity_type="rbac_permissions",
+        entity_id=role_key,
+        details={"permissions": permissions}
+    )
+    
+    return {"success": True, "message": f"Permissions updated for role {role_key}"}
+
+
+@api_router.post("/rbac/roles/{role_key}/reset")
+async def reset_role_permissions(
+    role_key: str,
+    current_user: dict = Depends(get_current_user)
+):
+    """Reset role permissions to defaults"""
+    # Only admins can modify RBAC
+    if current_user["roleKey"] != "admin":
+        raise HTTPException(status_code=403, detail="Admin access required")
+    
+    # Validate role exists
+    if role_key not in DEFAULT_PERMISSIONS:
+        raise HTTPException(status_code=404, detail=f"Role {role_key} not found")
+    
+    # Remove override for this role
+    await db.restaurants.update_one(
+        {"id": current_user["restaurantId"]},
+        {"$unset": {f"permissionOverrides.{role_key}": ""}}
+    )
+    
+    # Audit log
+    await log_audit(
+        db=db,
+        restaurant_id=current_user["restaurantId"],
+        user_id=current_user["id"],
+        action="reset",
+        entity_type="rbac_permissions",
+        entity_id=role_key,
+        details={"reset_to": "defaults"}
+    )
+    
+    return {"success": True, "message": f"Permissions reset to defaults for role {role_key}"}
+
+
 # Include the router
 app.include_router(api_router)
 

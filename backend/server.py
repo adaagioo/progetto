@@ -295,12 +295,16 @@ class Inventory(BaseModel):
     id: str
     restaurantId: str
     ingredientId: str
-    qty: float
+    qty: Optional[float] = None  # New schema
+    qtyOnHand: Optional[float] = None  # Legacy schema
     unit: str
-    countType: str
+    countType: Optional[str] = None  # New schema
+    unitCost: Optional[float] = None  # Legacy schema
+    totalValue: Optional[float] = None  # Legacy schema
     batchExpiry: Optional[str] = None
     location: Optional[str] = None
-    createdAt: str
+    createdAt: Optional[str] = None  # New schema
+    lastUpdated: Optional[str] = None  # Legacy schema
 
 class RecipeItem(BaseModel):
     """Item in a recipe - can be ingredient or preparation"""

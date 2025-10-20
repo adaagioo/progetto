@@ -16,14 +16,17 @@ function Layout({ children }) {
     navigate('/login');
   };
 
-  const navItems = [
+  // Feature flags
+  const FEATURE_DOCUMENT_IMPORT = process.env.REACT_APP_FEATURE_DOCUMENT_IMPORT === 'true';
+
+  const allNavItems = [
     { path: '/', label: t('nav.dashboard'), icon: LayoutDashboard },
     { path: '/recipes', label: t('nav.recipes'), icon: BookOpen },
     { path: '/ingredients', label: t('nav.ingredients'), icon: UtensilsCrossed },
     { path: '/preparations', label: t('nav.preparations'), icon: Utensils },
     { path: '/suppliers', label: t('nav.suppliers'), icon: Truck },
     { path: '/receiving', label: t('nav.receiving'), icon: PackageCheck },
-    { path: '/document-import', label: t('nav.documentImport'), icon: FileText },
+    { path: '/document-import', label: t('nav.documentImport'), icon: FileText, featureFlag: 'DOCUMENT_IMPORT' },
     { path: '/inventory', label: t('nav.inventory'), icon: Package },
     { path: '/sales', label: t('nav.sales'), icon: ShoppingCart },
     { path: '/wastage', label: t('nav.wastage'), icon: AlertTriangle },
@@ -32,6 +35,14 @@ function Layout({ children }) {
     { path: '/profit-loss', label: t('nav.pl'), icon: TrendingUp },
     { path: '/settings', label: t('nav.settings'), icon: SettingsIcon }
   ];
+
+  // Filter nav items based on feature flags
+  const navItems = allNavItems.filter(item => {
+    if (item.featureFlag === 'DOCUMENT_IMPORT') {
+      return FEATURE_DOCUMENT_IMPORT;
+    }
+    return true;
+  });
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-emerald-50 via-teal-50 to-green-50">

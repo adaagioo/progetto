@@ -253,9 +253,14 @@ function Settings() {
         </TabsContent>
 
         {user?.roleKey === 'admin' && (
-          <TabsContent value="users">
-            <UsersTab />
-          </TabsContent>
+          <>
+            <TabsContent value="users">
+              <UsersTab />
+            </TabsContent>
+            <TabsContent value="rbac">
+              <RBACTab />
+            </TabsContent>
+          </>
         )}
       </Tabs>
     </div>

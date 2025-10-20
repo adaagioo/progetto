@@ -642,6 +642,9 @@ class Receiving(BaseModel):
     notes: Optional[str] = None
     importedFromOCR: Optional[bool] = False  # Flag for OCR imports
     ocrMetadata: Optional[Dict[str, Any]] = None  # OCR processing metadata
+    invoiceNumber: Optional[str] = None  # Legacy field from old schema
+    attachedFiles: Optional[List] = []  # Legacy field from old schema  
+    createdBy: Optional[str] = None  # Legacy field from old schema
     createdAt: str
     updatedAt: Optional[str] = None
 

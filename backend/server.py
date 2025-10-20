@@ -2026,9 +2026,23 @@ async def create_inventory(inventory_data: InventoryCreate, current_user: dict =
 
 @api_router.get("/inventory", response_model=List[Inventory])
 async def get_inventory(current_user: dict = Depends(get_current_user)):
-    await check_subscription(current_user)
-    inventory = await db.inventory.find({"restaurantId": current_user["restaurantId"]}, {"_id": 0}).to_list(1000)
-    return [Inventory(**inv) for inv in inventory]
+    try:
+        await check_subscription(current_user)
+        inventory = await db.inventory.find({"restaurantId": current_user["restaurantId"]}, {"_id": 0}).to_list(1000)
+        
+        result = []
+        for inv in inventory:
+            try:
+                result.append(Inventory(**inv))
+            except Exception as e:
+                logger.error(f"Error serializing inventory record {inv.get('id', 'unknown')}: {e}")
+                logger.error(f"Record data keys: {list(inv.keys())}")
+                # Continue with other records
+        
+        return result
+    except Exception as e:
+        logger.error(f"Error in get_inventory: {e}", exc_info=True)
+        raise HTTPException(status_code=500, detail=str(e))
 
 @api_router.delete("/inventory/{inventory_id}")
 async def delete_inventory(inventory_id: str, current_user: dict = Depends(get_current_user)):

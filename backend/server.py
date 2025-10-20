@@ -4120,6 +4120,17 @@ from rbac_schema import (
     has_permission,
     merge_permissions
 )
+from rbac_middleware import get_user_permissions, get_user_capabilities
+
+
+@api_router.get("/rbac/capabilities/{resource}")
+async def get_resource_capabilities(
+    resource: str,
+    current_user: dict = Depends(get_current_user)
+):
+    """Get user's capabilities for a specific resource"""
+    capabilities = await get_user_capabilities(current_user, db, resource)
+    return capabilities
 
 
 @api_router.get("/rbac/roles")

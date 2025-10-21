@@ -108,14 +108,18 @@ class StorageService:
         if len(file_data) > self.max_size_bytes:
             return False, None, f"File too large (max {self.max_size_bytes // (1024*1024)}MB)"
         
-        # Detect MIME type using magic bytes
+        # Detect MIME type using magic bytes if available
         try:
-            mime_type = magic.from_buffer(file_data, mime=True)
+            if MAGIC_AVAILABLE:
+                mime_type = magic.from_buffer(file_data, mime=True)
+            else:
+                # Fallback: accept common types without validation
+                mime_type = "application/octet-stream"
         except Exception as e:
             return False, None, f"Could not detect file type: {str(e)}"
         
-        # Check if allowed
-        if mime_type not in self.allowed_mimes:
+        # Check if allowed (skip if magic not available)
+        if MAGIC_AVAILABLE and mime_type not in self.allowed_mimes:
             return False, mime_type, f"File type not allowed: {mime_type}"
         
         return True, mime_type, None

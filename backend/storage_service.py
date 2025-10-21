@@ -4,11 +4,17 @@ Currently supports local storage; S3/GCS can be added later.
 """
 import os
 import hashlib
-import magic
 from pathlib import Path
 from typing import Optional, Tuple
 from datetime import datetime
 from abc import ABC, abstractmethod
+
+# Optional import for file type detection
+try:
+    import magic
+    MAGIC_AVAILABLE = True
+except ImportError:
+    MAGIC_AVAILABLE = False
 
 
 class StorageDriver(ABC):

@@ -14,11 +14,15 @@ function Dashboard() {
   const navigate = useNavigate();
   const [kpis, setKpis] = useState(null);
   const [valuationSummary, setValuationSummary] = useState(null);
+  const [totalInventoryValue, setTotalInventoryValue] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [loadingTotal, setLoadingTotal] = useState(true);
+  const [totalError, setTotalError] = useState(false);
 
   useEffect(() => {
     fetchKPIs();
     fetchValuation();
+    fetchTotalInventoryValue();
   }, []);
 
   const fetchKPIs = async () => {
@@ -38,6 +42,20 @@ function Dashboard() {
       setValuationSummary(response.data);
     } catch (error) {
       console.error('Failed to load valuation:', error);
+    }
+  };
+
+  const fetchTotalInventoryValue = async () => {
+    try {
+      setLoadingTotal(true);
+      setTotalError(false);
+      const response = await axios.get(`${API}/inventory/valuation/total`);
+      setTotalInventoryValue(response.data);
+    } catch (error) {
+      console.error('Failed to load total inventory value:', error);
+      setTotalError(true);
+    } finally {
+      setLoadingTotal(false);
     }
   };
 

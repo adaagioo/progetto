@@ -217,12 +217,11 @@ class BackendTester:
             200, admin_token
         )
         
-        is_pdf = result['success'] and result['headers'].get('content-type', '').startswith('application/pdf')
-        content_type = result['headers'].get('content-type', 'N/A')
+        is_pdf = result['success'] and result['content_type'].startswith('application/pdf')
         self.log_test(
             "PrepList Export - With Auth (PDF)", 
             is_pdf,
-            f"Status: {result['status']}, Content-Type: {content_type}, Data: {result['data']}"
+            f"Status: {result['status']}, Content-Type: {result['content_type']}, Data: {result['data']}"
         )
         
         # Test 3: Export XLSX format

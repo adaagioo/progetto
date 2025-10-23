@@ -23,6 +23,8 @@ function RecipesEnhanced() {
   const [editingId, setEditingId] = useState(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedAllergenFilter, setSelectedAllergenFilter] = useState('all');
+  const [selectedItems, setSelectedItems] = useState([]);
+  const [showBulkDeleteDialog, setShowBulkDeleteDialog] = useState(false);
   const [formData, setFormData] = useState({
     name: '',
     category: '',

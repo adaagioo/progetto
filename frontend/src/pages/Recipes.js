@@ -27,11 +27,13 @@ function RecipesEnhanced() {
   const [searchQuery, setSearchQuery] = useState(searchParams.get('search') || '');
   const [debouncedSearch, setDebouncedSearch] = useState(searchParams.get('search') || '');
   const [selectedAllergenFilter, setSelectedAllergenFilter] = useState(searchParams.get('allergen') || 'all');
+  const [recipeTypeTab, setRecipeTypeTab] = useState(searchParams.get('type') || 'kitchen');
   const [selectedItems, setSelectedItems] = useState([]);
   const [showBulkDeleteDialog, setShowBulkDeleteDialog] = useState(false);
   const [formData, setFormData] = useState({
     name: '',
     category: '',
+    recipeType: 'kitchen',
     portions: '1',
     targetFoodCostPct: '30',
     price: '',

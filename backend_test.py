@@ -425,10 +425,15 @@ class ReceivingBulkDeleteTester:
         ) as response:
             if response.status == 200:
                 all_inventory = await response.json()
+                print(f"   🔍 Total inventory records: {len(all_inventory)}")
                 # Filter inventory records for this receiving
                 receiving_inventory = [inv for inv in all_inventory if inv.get("receivingId") == receiving_id]
                 initial_count = len(receiving_inventory)
-                print(f"   📊 Found {initial_count} inventory records for receiving before deletion")
+                print(f"   📊 Found {initial_count} inventory records for receiving {receiving_id} before deletion")
+                
+                # Debug: Show all receivingIds in inventory
+                receiving_ids = [inv.get("receivingId") for inv in all_inventory if inv.get("receivingId")]
+                print(f"   🔍 All receivingIds in inventory: {set(receiving_ids)}")
                 
                 if initial_count == 0:
                     print("   ⚠️  No inventory records found for this receiving")

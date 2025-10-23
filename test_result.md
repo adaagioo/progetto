@@ -120,6 +120,46 @@ user_problem_statement: |
   - Allergen propagation chain verification
 
 backend:
+  - task: "P2 Batch 5: Inventory Bulk Delete Backend (Final Batch)"
+    implemented: true
+    working: "NA"
+    file: "backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: |
+          BATCH 5 BACKEND IMPLEMENTATION COMPLETED (FINAL BATCH):
+          
+          ✅ NEW ENDPOINT ADDED:
+          - GET /api/inventory/{inventory_id}/dependencies
+            - Returns: { hasReferences: false, canDelete: bool, references: {}, message: string }
+            - Inventory records are ledger entries, no dependencies expected
+            - Always safe to delete (canDelete: true if exists)
+            - Tenant-scoped query
+          
+          ✅ DELETE ENDPOINT ENHANCED:
+          - DELETE /api/inventory/{inventory_id}
+            - RBAC updated: Only admin/manager can delete (was admin-only)
+            - Deletes ONLY the inventory record, NOT the master ingredient
+            - Added audit logging with ingredientId, qty, category
+            - Maintains stock ledger consistency
+            - Tenant isolation enforced
+          
+          ✅ KEY SAFETY FEATURES:
+          - Only deletes inventory records (ledger entries)
+          - Does NOT delete master Ingredient records
+          - Stock ledger remains consistent
+          - Audit trail preserved
+          
+          PENDING TESTING:
+          - Verify dependencies endpoint returns canDelete: true
+          - Verify delete removes inventory record only (not ingredient)
+          - Verify RBAC allows admin/manager but denies staff
+          - Test with multiple inventory records (bulk scenario)
+
   - task: "P2 Batch 4: Receiving Bulk Delete with Stock Reversal Backend"
     implemented: true
     working: true

@@ -232,7 +232,7 @@ function Ingredients() {
                 <Input
                   id="name"
                   value={formData.name}
-                  onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                  onChange={(e) => handleInputChange('name', e.target.value)}
                   required
                   data-testid="ingredient-name-input"
                   className="input-focus"

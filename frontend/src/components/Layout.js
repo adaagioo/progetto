@@ -21,8 +21,8 @@ function Layout({ children }) {
 
   const allNavItems = [
     { path: '/', label: t('nav.dashboard'), icon: LayoutDashboard },
-    { path: '/recipes', label: t('nav.recipes'), icon: BookOpen },
     { path: '/ingredients', label: t('nav.ingredients'), icon: UtensilsCrossed },
+    { path: '/recipes', label: t('nav.recipes'), icon: BookOpen },
     { path: '/preparations', label: t('nav.preparations'), icon: Utensils },
     { path: '/suppliers', label: t('nav.suppliers'), icon: Truck },
     { path: '/receiving', label: t('nav.receiving'), icon: PackageCheck },

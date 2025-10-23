@@ -631,6 +631,33 @@ function Ingredients() {
           </CardContent>
         </Card>
       )}
+
+      {/* Bulk Delete Confirmation Dialog */}
+      <Dialog open={showBulkDeleteDialog} onOpenChange={setShowBulkDeleteDialog}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>{t('common.confirmDelete') || 'Confirm Delete'}</DialogTitle>
+          </DialogHeader>
+          <p className="text-sm text-gray-600 mb-4">
+            {t('ingredients.confirmBulkDelete', { count: selectedItems.length }) || 
+             `Are you sure you want to delete ${selectedItems.length} selected ingredients? This action cannot be undone.`}
+          </p>
+          <div className="flex gap-2 justify-end">
+            <Button
+              variant="outline"
+              onClick={() => setShowBulkDeleteDialog(false)}
+            >
+              {t('common.cancel') || 'Cancel'}
+            </Button>
+            <Button
+              variant="destructive"
+              onClick={handleBulkDelete}
+            >
+              {t('common.delete') || 'Delete'}
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

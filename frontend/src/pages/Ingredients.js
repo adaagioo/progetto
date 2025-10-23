@@ -583,12 +583,20 @@ function Ingredients() {
                       <span className="text-xs font-medium text-red-600">{t('ingredients.allergens') || 'Allergens'}:</span>
                       <div className="flex flex-wrap gap-1 mt-1">
                         {ingredient.allergens && ingredient.allergens.map(allergen => (
-                          <span key={allergen} className="text-xs bg-red-100 text-red-800 px-2 py-0.5 rounded">
+                          <span 
+                            key={allergen} 
+                            className="inline-block text-xs bg-red-100 text-red-800 px-2 py-0.5 rounded max-w-[120px] truncate"
+                            title={t(`allergens.${allergen.toUpperCase()}`) || allergen}
+                          >
                             {t(`allergens.${allergen.toUpperCase()}`) || allergen}
                           </span>
                         ))}
                         {ingredient.otherAllergens && ingredient.otherAllergens.map((allergen, idx) => (
-                          <span key={`other-${idx}`} className="text-xs bg-orange-100 text-orange-800 px-2 py-0.5 rounded">
+                          <span 
+                            key={`other-${idx}`} 
+                            className="inline-block text-xs bg-orange-100 text-orange-800 px-2 py-0.5 rounded max-w-[120px] truncate"
+                            title={allergen}
+                          >
                             {allergen}
                           </span>
                         ))}

@@ -556,7 +556,7 @@ function Receiving() {
                   {formData.lines.map((line, index) => (
                     <Card key={index} className="p-3">
                       <div className="grid grid-cols-12 gap-2">
-                        <div className="col-span-3">
+                        <div className="col-span-2">
                           <Label className="text-xs">{t('receiving.form.ingredient') || 'Ingredient'}</Label>
                           <Select 
                             value={line.ingredientId} 
@@ -572,7 +572,7 @@ function Receiving() {
                             </SelectContent>
                           </Select>
                         </div>
-                        <div className="col-span-3">
+                        <div className="col-span-2">
                           <Label className="text-xs">{t('receiving.form.description') || 'Description'} *</Label>
                           <Input
                             className="h-9"
@@ -600,7 +600,7 @@ function Receiving() {
                             onChange={(e) => updateLine(index, 'unit', e.target.value)}
                           />
                         </div>
-                        <div className="col-span-3">
+                        <div className="col-span-2">
                           <Label htmlFor={`line-${index}-target`} className="text-xs">
                             {t('receiving.targetInventory') || 'Target Inventory'} *
                           </Label>
@@ -618,7 +618,7 @@ function Receiving() {
                             </SelectContent>
                           </Select>
                         </div>
-                        <div className="col-span-3">
+                        <div className="col-span-2">
                           <Label htmlFor={`line-${index}-price`} className="text-xs flex items-center gap-1">
                             {t('receiving.form.unitPrice') || 'Price'} *
                             {line.ingredientId && (

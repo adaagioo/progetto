@@ -58,6 +58,10 @@ const resources = {
       'dashboard.negativeStockWarning': '{{count}} item(s) with negative stock',
       'dashboard.couldNotLoadTotal': 'Couldn\'t load total',
       'dashboard.retry': 'Retry',
+      'export.dailyPrep': 'Export Daily Prep',
+      'export.pdf': 'PDF',
+      'export.xlsx': 'Excel',
+      'export.selectDate': 'Select Date',
       'dashboard.clickToView': 'Click to view',
       
       // Ingredients

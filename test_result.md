@@ -2369,7 +2369,7 @@ metadata:
 
 test_plan:
   current_focus:
-    - "P2 Batch 4: Receiving Bulk Delete with Stock Reversal - Backend inventory reversal, frontend UI with checkboxes"
+    - "P2 Batch 5: Inventory Bulk Delete + Search (FINAL BATCH) - Backend deletes records only, frontend with search + checkboxes"
   stuck_tasks:
     - "Enhanced Recipe Editor with Keyboard UX"
   test_all: false
@@ -2378,7 +2378,59 @@ test_plan:
 agent_communication:
   - agent: "main"
     message: |
-      📋 BATCH 4 (RECEIVING) IMPLEMENTATION COMPLETED - READY FOR TESTING
+      📋 BATCH 5 (INVENTORY) IMPLEMENTATION COMPLETED - FINAL BATCH - READY FOR TESTING
+      
+      🎯 THIS IS THE FINAL BATCH FOR P2 FEATURE COMPLETENESS
+      
+      IMPLEMENTED FEATURES:
+      
+      Backend (server.py):
+      - GET /api/inventory/{inventory_id}/dependencies endpoint
+      - Enhanced DELETE /api/inventory/{inventory_id} with RBAC and audit logging
+      - Deletes ONLY inventory records (ledger entries), NOT master Ingredients
+      - Maintains stock ledger consistency
+      
+      Frontend (Inventory.js):
+      - Added search input with URL-driven state (?search=...)
+      - Integrated search into existing filter logic (category, lowStock, expiring)
+      - Bulk select functionality (same pattern as all previous batches)
+      - Bulk delete with clarification that only inventory records deleted
+      - Complete UI: search bar, checkboxes, bulk action bar, confirmation dialog
+      - i18n translations (EN/IT)
+      - Added canEdit check
+      
+      TESTING REQUIREMENTS:
+      
+      Authentication: admin@test.com / admin123
+      
+      Backend Tests:
+      1. GET /api/inventory/{valid_id}/dependencies
+         - Should return canDelete: true for existing inventory records
+         - Should return canDelete: false for non-existent records
+      
+      2. DELETE /api/inventory/{id} - Ledger integrity
+         - Create inventory record for ingredient X
+         - Verify master ingredient X still exists
+         - Delete inventory record → Should succeed
+         - Verify inventory record deleted
+         - Verify master ingredient X still exists (NOT deleted)
+      
+      3. DELETE /api/inventory/{id} - RBAC enforcement
+         - Admin can delete ✅
+         - Manager can delete ✅
+         - Staff CANNOT delete (should return 403) ✅
+      
+      4. Bulk delete scenario:
+         - Create 3 test inventory records for different ingredients
+         - Verify all 3 inventory records exist
+         - Verify master ingredients exist
+         - Bulk delete all 3 inventory records → Should succeed
+         - Verify inventory records deleted
+         - Verify master ingredients still exist
+
+  - agent: "main"
+    message: |
+      📋 BATCH 4 (RECEIVING) IMPLEMENTATION COMPLETED - USER VALIDATED ✅
       
       IMPLEMENTED FEATURES:
       

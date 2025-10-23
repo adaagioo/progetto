@@ -122,11 +122,11 @@ user_problem_statement: |
 backend:
   - task: "P2 Batch 5: Inventory Bulk Delete Backend (Final Batch)"
     implemented: true
-    working: "NA"
+    working: true
     file: "backend/server.py"
     stuck_count: 0
     priority: "high"
-    needs_retesting: true
+    needs_retesting: false
     status_history:
       - working: "NA"
         agent: "main"
@@ -159,6 +159,49 @@ backend:
           - Verify delete removes inventory record only (not ingredient)
           - Verify RBAC allows admin/manager but denies staff
           - Test with multiple inventory records (bulk scenario)
+      - working: true
+        agent: "testing"
+        comment: |
+          P2 BATCH 5: INVENTORY BULK DELETE BACKEND TESTING COMPLETED - ALL SYSTEMS WORKING ✅
+          
+          🧪 COMPREHENSIVE BACKEND TESTING (12/12 tests passed - 100% success rate):
+          
+          ✅ INVENTORY DEPENDENCIES ENDPOINT VERIFIED:
+          - GET /api/inventory/{id}/dependencies - Working correctly ✅
+          - Returns correct structure: { hasReferences: bool, canDelete: bool, references: {}, message: string } ✅
+          - Existing inventory records: hasReferences=false, canDelete=true ✅
+          - Non-existent inventory records: hasReferences=false, canDelete=false with "not found" message ✅
+          - Inventory records are ledger entries with no dependencies (correct behavior) ✅
+          - Tenant isolation enforced correctly ✅
+          
+          ✅ DELETE ENDPOINT WITH MASTER INGREDIENT PRESERVATION VERIFIED:
+          - DELETE /api/inventory/{id} - Working correctly ✅
+          - Successfully deletes inventory records ✅
+          - CRITICAL: Master ingredients are NOT deleted (only inventory records) ✅
+          - Stock ledger integrity maintained ✅
+          - Audit logging working with ingredientId, qty, category ✅
+          - Non-existent inventory: Correctly returns 404 ✅
+          
+          ✅ RBAC ENFORCEMENT VERIFIED:
+          - Admin can delete: ✅ (full access working correctly)
+          - Manager can delete: ✅ (NEW FEATURE - enhanced RBAC working)
+          - Staff CANNOT delete: ✅ (returns 403 "Admin or Manager access required")
+          - All role-based access controls working correctly ✅
+          
+          ✅ BULK DELETE SCENARIO WITH MASTER INGREDIENT PRESERVATION TESTED:
+          - Created 3 inventory records for different ingredients ✅
+          - Verified all master ingredients exist before bulk delete ✅
+          - Successfully deleted all 3 inventory records ✅
+          - CRITICAL: All master ingredients preserved after bulk delete ✅
+          - Bulk scenario validation complete ✅
+          
+          ✅ AUTHENTICATION & SECURITY VERIFIED:
+          - All endpoints require authentication ✅
+          - Tenant isolation enforced (restaurant-scoped data only) ✅
+          - Test credentials working: admin@test.com, manager@test.com, staff@test.com ✅
+          
+          🎯 P2 BATCH 5 INVENTORY BULK DELETE BACKEND: 100% FUNCTIONAL ✅
+          All dependency checking, RBAC enforcement, and master ingredient preservation working perfectly.
 
   - task: "P2 Batch 4: Receiving Bulk Delete with Stock Reversal Backend"
     implemented: true

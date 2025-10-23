@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useContext } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { useCurrency } from '../contexts/CurrencyContext';
 import { useTranslation } from 'react-i18next';
 import axios from 'axios';
@@ -7,8 +8,9 @@ import { Button } from '../components/ui/button';
 import { Input } from '../components/ui/input';
 import { Label } from '../components/ui/label';
 import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/card';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '../components/ui/dialog';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogDescription, DialogFooter } from '../components/ui/dialog';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../components/ui/select';
+import { Checkbox } from '../components/ui/checkbox';
 import { Popover, PopoverContent, PopoverTrigger } from '../components/ui/popover';
 import { Plus, Trash2, Edit, Upload, Download, FileText, X, History, TrendingUp } from 'lucide-react';
 import { toast } from 'sonner';
@@ -18,6 +20,7 @@ function Receiving() {
   const { t } = useTranslation();
   const { user } = useContext(AuthContext);
   const { formatMinor } = useCurrency();
+  const [searchParams, setSearchParams] = useSearchParams();
   const [receivings, setReceivings] = useState([]);
   const [suppliers, setSuppliers] = useState([]);
   const [ingredients, setIngredients] = useState([]);
@@ -28,7 +31,10 @@ function Receiving() {
   const [parsedRows, setParsedRows] = useState([]);
   const [priceHistory, setPriceHistory] = useState({});  // { ingredientId: { loading, data } }
   const [ingredientTargetMemory, setIngredientTargetMemory] = useState({});  // { ingredientId: 'food'|'beverage'|'nofood' }
-  const [searchQuery, setSearchQuery] = useState('');
+  const [searchQuery, setSearchQuery] = useState(searchParams.get('search') || '');
+  const [debouncedSearch, setDebouncedSearch] = useState(searchParams.get('search') || '');
+  const [selectedItems, setSelectedItems] = useState([]);
+  const [showBulkDeleteDialog, setShowBulkDeleteDialog] = useState(false);
   
   const [formData, setFormData] = useState({
     supplierId: '',

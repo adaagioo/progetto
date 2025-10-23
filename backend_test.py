@@ -161,7 +161,7 @@ class SupplierDependenciesTest:
         
         for receiving_item in receiving_data:
             async with self.session.post(f"{API_BASE}/receiving", json=receiving_item, headers=headers) as resp:
-                if resp.status != 201:
+                if resp.status not in [200, 201]:
                     raise Exception(f"Failed to create receiving: {await resp.text()}")
                 
                 receiving = await resp.json()

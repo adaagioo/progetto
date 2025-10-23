@@ -436,11 +436,11 @@ class SmallQuantityCostingTester:
                     else:
                         self.log_result("4-Decimal Precision > 0", False, "Cost is €0.00")
                     
-                    # Check internal precision (should be stored as 0.0050)
-                    if preparation["cost"] >= 0.005:
-                        self.log_result("4-Decimal Internal Precision", True, f"Internally stored as €{preparation['cost']:.4f}")
+                    # Check internal precision (should be stored as 0.5000 cents)
+                    if preparation["cost"] >= 0.5:
+                        self.log_result("4-Decimal Internal Precision", True, f"Internally stored as {preparation['cost']:.4f} cents")
                     else:
-                        self.log_result("4-Decimal Internal Precision", False, f"Lost precision: €{preparation['cost']:.4f}")
+                        self.log_result("4-Decimal Internal Precision", False, f"Lost precision: {preparation['cost']:.4f} cents")
                     
                     # Clean up
                     await self.session.delete(f"{BASE_URL}/preparations/{preparation['id']}", headers=self.get_auth_headers())

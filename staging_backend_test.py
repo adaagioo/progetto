@@ -233,10 +233,11 @@ class BackendTester:
         )
         
         is_pdf = result['success'] and result['headers'].get('content-type', '').startswith('application/pdf')
+        error_detail = result['data'] if result['status'] != 200 else 'Success'
         self.log_test(
             "OrderList Export - With Auth (PDF)", 
             is_pdf,
-            f"Status: {result['status']}, Content-Type: {result['headers'].get('content-type', 'N/A')}"
+            f"Status: {result['status']}, Content-Type: {result['headers'].get('content-type', 'N/A')}, Error: {error_detail}"
         )
         
         # Test 3: Export XLSX format

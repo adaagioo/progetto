@@ -1540,6 +1540,69 @@ backend:
           All unit conversion and small quantity costing features working perfectly.
 
 frontend:
+  - task: "P2 Batch 5: Inventory Bulk Delete + Search UI (Final Batch)"
+    implemented: true
+    working: "NA"
+    file: "frontend/src/pages/Inventory.js"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: |
+          BATCH 5 FRONTEND IMPLEMENTATION COMPLETED (FINAL BATCH):
+          
+          ✅ SEARCH FUNCTIONALITY ADDED:
+          - Added search input with URL-driven state (?search=...)
+          - 200ms debounce on search input
+          - Integrated search into existing getFilteredInventory() function
+          - Filters by ingredient name and location
+          - Works alongside existing category and filterType filters
+          
+          ✅ BULK SELECT FUNCTIONALITY:
+          - toggleSelectAll(): Selects/deselects all filtered items
+          - toggleSelectItem(id): Individual selection toggle
+          - selectedItems state tracks IDs
+          - Works with filtered results
+          
+          ✅ BULK DELETE FUNCTIONALITY:
+          - handleBulkDelete() deletes selected inventory records
+          - Deletes ONLY inventory records, NOT master ingredients
+          - Refreshes both inventory list and valuation after delete
+          - Success toast with count
+          - Confirmation dialog warns inventory records will be deleted (not ingredients)
+          
+          ✅ UI COMPONENTS ADDED:
+          - Search input above filters
+          - "Select All" checkbox (admin/manager only)
+          - Individual checkboxes on each inventory card
+          - Bulk action bar when items selected
+          - Bulk delete confirmation dialog with clarification
+          - Empty state with "Clear Filters" button
+          
+          ✅ I18N TRANSLATIONS ADDED:
+          - inventory.search (EN/IT)
+          - inventory.confirmBulkDelete (EN/IT) - clarifies ingredients not deleted
+          - inventory.success.bulkDelete (EN/IT)
+          - inventory.error.bulkDelete (EN/IT)
+          
+          ✅ RBAC ENFORCEMENT:
+          - Checkboxes only shown when canEdit (admin/manager)
+          - Bulk action bar only shown when canEdit
+          - canEdit check added
+          
+          ✅ FRONTEND COMPILATION:
+          - Build successful, no errors
+          - Merged search into existing filter logic
+          
+          PENDING TESTING:
+          - E2E test: Bulk select and delete inventory records
+          - E2E test: Verify ingredients NOT deleted (only inventory records)
+          - E2E test: Search with URL state persistence
+          - E2E test: Search works with category filters
+          - E2E test: RBAC UI hiding for staff
+
   - task: "P2 Batch 4: Receiving Bulk Delete UI (Search Already Exists)"
     implemented: true
     working: "NA"

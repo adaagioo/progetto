@@ -118,32 +118,6 @@ function Inventory() {
   // RBAC: Check if user can edit
   const canEdit = user?.roleKey === 'admin' || user?.roleKey === 'manager';
 
-  // Filter inventory based on search and URL filters
-  const filteredInventory = React.useMemo(() => {
-    return inventory.filter(item => {
-      // Search filter
-      const ingredient = ingredients.find(ing => ing.id === item.ingredientId);
-      const matchesSearch = debouncedSearch === '' ||
-        (ingredient?.name && ingredient.name.toLowerCase().includes(debouncedSearch.toLowerCase())) ||
-        (item.location && item.location.toLowerCase().includes(debouncedSearch.toLowerCase()));
-
-      // Category filter from URL
-      const matchesCategory = !categoryFilter || item.category === categoryFilter;
-
-      // Filter type (lowStock, expiring) - keep existing logic
-      let matchesFilterType = true;
-      if (filterType === 'lowStock') {
-        // You can add low stock logic here if needed
-        matchesFilterType = true;
-      } else if (filterType === 'expiring') {
-        // You can add expiring logic here if needed
-        matchesFilterType = true;
-      }
-
-      return matchesSearch && matchesCategory && matchesFilterType;
-    });
-  }, [inventory, debouncedSearch, categoryFilter, filterType, ingredients]);
-
   // Bulk select handlers
   const toggleSelectAll = () => {
     if (selectedItems.length === filteredInventory.length && filteredInventory.length > 0) {

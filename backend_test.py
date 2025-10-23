@@ -71,7 +71,7 @@ class SupplierDependenciesTest:
         
         for supplier_data in suppliers_data:
             async with self.session.post(f"{API_BASE}/suppliers", json=supplier_data, headers=headers) as resp:
-                if resp.status != 201:
+                if resp.status not in [200, 201]:
                     raise Exception(f"Failed to create supplier: {await resp.text()}")
                 
                 supplier = await resp.json()

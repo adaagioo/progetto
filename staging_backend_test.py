@@ -71,9 +71,19 @@ class BackendTester:
             headers.update(self.get_auth_headers(token))
             
         async with self.session.request(method, url, headers=headers, **kwargs) as resp:
-            try:
-                data = await resp.json()
-            except:
+            content_type = resp.headers.get('content-type', '')
+            
+            # Handle different response types
+            if 'application/json' in content_type:
+                try:
+                    data = await resp.json()
+                except:
+                    data = await resp.text()
+            elif 'application/pdf' in content_type or 'spreadsheet' in content_type:
+                # For binary files, just read a small portion to verify it's binary
+                data = await resp.read()
+                data = f"Binary data ({len(data)} bytes)"
+            else:
                 data = await resp.text()
                 
             return {

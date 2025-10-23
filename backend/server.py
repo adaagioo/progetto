@@ -1864,7 +1864,8 @@ async def create_preparation(prep: PreparationCreate, current_user: dict = Depen
         "items": items_dict,
         "yield": prep.yield_.dict() if prep.yield_ else None,
         "shelfLife": prep.shelfLife.dict() if prep.shelfLife else None,
-        "instructions": prep.instructions,
+        "portions": prep.portions,  # Number of portions
+        "instructions": prep.instructions,  # Preparation procedure/method
         "notes": prep.notes,
         "cost": cost,
         "allergens": allergens,

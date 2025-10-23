@@ -603,6 +603,23 @@ function Preparations() {
           </Card>
         ))}
 
+        {filteredPreparations.length === 0 && preparations.length > 0 && (
+          <Card>
+            <CardContent className="flex flex-col items-center justify-center py-12">
+              <p className="text-gray-500 mb-4">{t('common.noResults') || 'No preparations match your search'}</p>
+              <Button
+                variant="outline"
+                onClick={() => {
+                  setSearchQuery('');
+                  setDebouncedSearch('');
+                }}
+              >
+                {t('common.clearFilters') || 'Clear Filters'}
+              </Button>
+            </CardContent>
+          </Card>
+        )}
+
         {preparations.length === 0 && (
           <div className="text-center py-12 text-muted-foreground">
             <Package className="h-12 w-12 mx-auto mb-4 opacity-50" />
@@ -611,6 +628,27 @@ function Preparations() {
           </div>
         )}
       </div>
+
+      {/* Bulk Delete Confirmation Dialog */}
+      <Dialog open={showBulkDeleteDialog} onOpenChange={setShowBulkDeleteDialog}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>{t('common.confirmDelete') || 'Confirm Delete'}</DialogTitle>
+            <DialogDescription>
+              {t('preparations.confirmBulkDelete', { count: selectedItems.length }) ||
+                `Are you sure you want to delete ${selectedItems.length} selected preparations? This action cannot be undone.`}
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setShowBulkDeleteDialog(false)}>
+              {t('common.cancel') || 'Cancel'}
+            </Button>
+            <Button variant="destructive" onClick={handleBulkDelete}>
+              {t('common.delete') || 'Delete'}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

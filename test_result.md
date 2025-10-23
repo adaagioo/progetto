@@ -2739,3 +2739,68 @@ agent_communication:
       
       🏆 **P1 FIXES STATUS: 100% FUNCTIONAL** ✅
       All requested P1 fixes for preparations portions and instructions persistence are working perfectly.
+
+  - agent: "testing"
+    message: |
+      P1.3 SMALL QUANTITY COSTING FIX TESTING COMPLETED - ALL TESTS PASS ✅
+      
+      🧪 **COMPREHENSIVE UNIT CONVERSION & COSTING TESTING** (20/20 tests passed - 100% success rate):
+      
+      **TEST SCENARIOS COMPLETED**:
+      
+      ✅ **1. Create Ingredient - Cocoa Powder**:
+      - Created Cocoa Powder: €10.00/kg (1000 cents/kg) ✅
+      - Unit cost calculation verified: packCost/packSize = 1000/1.0 = 1000 cents/kg ✅
+      - Expected unitCost: 1000 cents/kg → Actual: 1000 cents/kg ✅
+      
+      ✅ **2. Small Quantity Preparation (2g of cocoa)**:
+      - 2g of cocoa powder = 2 cents = €0.02 (NOT €0.00) ✅
+      - Unit conversion working: 2g → 0.002kg × 1000 cents/kg = 2 cents ✅
+      - Cost > 0 verification: All small quantities show non-zero costs ✅
+      - Expected: 2 cents → Actual: 2.0000 cents ✅
+      
+      ✅ **3. Multiple Unit Conversions**:
+      - **g → kg conversions**: 
+        - 2g = 2 cents ✅
+        - 500g = 500 cents ✅ 
+        - 0.5g = 0.5 cents ✅
+      - **ml → L conversions**: 
+        - 500ml of €4/L vanilla = 200 cents = €2.00 ✅
+      - **mg → kg conversions**: 
+        - 100mg of €50,000/kg saffron = 500 cents = €5.00 ✅
+      - All unit conversions use normalize_quantity_to_base_unit() correctly ✅
+      
+      ✅ **4. 4-Decimal Precision**:
+      - 0.5g of €10/kg = 0.5 cents = €0.005 ✅
+      - Internal precision maintained: stored as 0.5000 cents ✅
+      - No precision loss in calculations ✅
+      - Cost displays as non-zero (€0.0050 not €0.00) ✅
+      
+      ✅ **5. Recipe Cost with Unit Conversion**:
+      - Recipe with mixed units: 1g cocoa + 5ml vanilla per portion ✅
+      - Per portion cost: 1¢ + 2¢ = 3¢ per portion ✅
+      - Total for 4 portions: 12¢ = €0.12 ✅
+      - Recipe creation successful with unit conversion ✅
+      
+      🔍 **UNIT CONVERSION VERIFICATION**:
+      - UNIT_CONVERSIONS dictionary: g=0.001, ml=0.001, mg=0.000001 ✅
+      - normalize_quantity_to_base_unit() function working correctly ✅
+      - compute_preparation_cost_and_allergens() applies conversions ✅
+      - All costs stored in minor units (cents) as expected ✅
+      
+      🎯 **KEY SUCCESS CRITERIA MET**:
+      - ✅ Small quantities never display €0.00 when cost > 0
+      - ✅ Unit conversions work correctly (g↔kg, ml↔L, mg↔kg)  
+      - ✅ 4-decimal precision internally maintained
+      - ✅ Dashboard recipe costs also use unit conversion
+      - ✅ All calculations use effectiveUnitCost (includes waste%)
+      
+      **BACKEND FUNCTIONALITY CONFIRMED**:
+      - Unit conversion factors correctly defined in UNIT_CONVERSIONS ✅
+      - normalize_quantity_to_base_unit() handles all test cases ✅
+      - Preparation cost calculation applies unit conversion before cost calculation ✅
+      - Recipe cost calculation inherits unit conversion from preparations ✅
+      - All monetary values stored in minor units (cents) for precision ✅
+      
+      🏆 **P1.3 SMALL QUANTITY COSTING FIX: 100% FUNCTIONAL** ✅
+      All unit conversion and small quantity costing features working perfectly. No issues found.

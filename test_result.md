@@ -2637,3 +2637,49 @@ agent_communication:
       **RECOMMENDATION**: 
       Focus testing on frontend inventory display and filtering logic rather than backend sync.
       The backend receiving → inventory sync is functioning correctly.
+  
+  - agent: "testing"
+    message: |
+      P1 FIXES TESTING COMPLETED - PREPARATIONS PORTIONS + INSTRUCTIONS PERSISTENCE ✅
+      
+      🧪 **COMPREHENSIVE P1 FIXES TESTING RESULTS** (18/18 tests passed - 100% success rate):
+      
+      **TEST SCENARIOS COMPLETED**:
+      
+      ✅ **1. Preparations - Portions Field**:
+      - Create preparation with portions=12 → Verified persists in DB ✅
+      - GET preparation → Verified portions=12 returned correctly ✅
+      - Update portions to 8 → Verified update persists ✅
+      - Invalid values testing:
+        - portions=0 → Correctly rejected with 422 error ✅
+        - portions=-1 → Correctly rejected with 422 error ✅
+        - portions=1.5 → Correctly rejected with 422 error ✅
+      
+      ✅ **2. Preparations - Instructions Persistence**:
+      - Create with instructions="Mix ingredients well\nBake at 180°C for 30 minutes" ✅
+      - Verified instructions persist exactly (no trimming, supports multi-line) ✅
+      - GET preparation → Verified instructions returned unchanged ✅
+      - Update instructions to new value → Verified update persists ✅
+      
+      ✅ **3. Recipes - Instructions Persistence**:
+      - Create with instructions="Step 1: Prepare base\nStep 2: Add toppings\nStep 3: Cook" ✅
+      - Verified instructions persist exactly ✅
+      - GET recipe → Verified instructions returned unchanged ✅
+      - Update instructions to new value → Verified update persists ✅
+      
+      🎯 **ALL SUCCESS CRITERIA MET**:
+      ✅ All create/read/update/read cycles work correctly
+      ✅ Portions validation rejects invalid values with clear 422 error
+      ✅ Instructions support multi-line and special characters
+      ✅ All fields survive reload and return unchanged
+      ✅ Testing performed with admin credentials as requested
+      
+      **BACKEND VALIDATION CONFIRMED**:
+      - PreparationCreate/PreparationUpdate models have proper portions validation (≥1) ✅
+      - Instructions field supports multi-line text with special characters ✅
+      - Database persistence working correctly for both fields ✅
+      - API endpoints return data unchanged after storage ✅
+      - Update operations preserve field integrity ✅
+      
+      🏆 **P1 FIXES STATUS: 100% FUNCTIONAL** ✅
+      All requested P1 fixes for preparations portions and instructions persistence are working perfectly.

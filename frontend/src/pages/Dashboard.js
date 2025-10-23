@@ -277,11 +277,14 @@ function Dashboard() {
             </CardHeader>
             <CardContent>
               {loadingTotal ? (
-                <div className="text-2xl font-bold animate-pulse">
-                  ⋯
-                </div>
+                <>
+                  <div className="text-2xl font-bold animate-pulse">
+                    ⋯
+                  </div>
+                  <p className="text-xs text-white/80 mt-1">Loading...</p>
+                </>
               ) : totalError ? (
-                <div>
+                <>
                   <div className="text-lg font-medium text-white/90 mb-2">
                     {t('dashboard.couldNotLoadTotal') || 'Couldn\'t load total'}
                   </div>
@@ -294,16 +297,16 @@ function Dashboard() {
                   >
                     {t('dashboard.retry') || 'Retry'}
                   </button>
-                </div>
-              ) : (
+                </>
+              ) : totalInventoryValue ? (
                 <>
                   <div className="text-2xl font-bold">
-                    {formatMinor(totalInventoryValue?.totalValue || 0)}
+                    {formatMinor(totalInventoryValue.totalValue || 0)}
                   </div>
                   <p className="text-xs text-white/80 mt-1">
                     {t('dashboard.asOfNow') || 'as of now'}
                   </p>
-                  {totalInventoryValue?.negativeCount > 0 && (
+                  {totalInventoryValue.negativeCount > 0 && (
                     <div 
                       className="mt-2 text-xs bg-red-500/20 border border-red-300/30 rounded px-2 py-1 flex items-center gap-1 cursor-pointer hover:bg-red-500/30 transition-colors"
                       onClick={(e) => {
@@ -316,6 +319,13 @@ function Dashboard() {
                         `${totalInventoryValue.negativeCount} item(s) with negative stock`}
                     </div>
                   )}
+                </>
+              ) : (
+                <>
+                  <div className="text-2xl font-bold">€0.00</div>
+                  <p className="text-xs text-white/80 mt-1">
+                    {t('dashboard.asOfNow') || 'as of now'}
+                  </p>
                 </>
               )}
             </CardContent>

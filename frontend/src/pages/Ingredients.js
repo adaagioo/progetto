@@ -148,14 +148,44 @@ function Ingredients() {
   };
 
   const handleDelete = async (id) => {
-    if (!window.confirm('Are you sure you want to delete this ingredient?')) return;
-
+    if (!window.confirm(t('ingredients.confirm.delete') || 'Are you sure you want to delete this ingredient?')) {
+      return;
+    }
+    
     try {
       await axios.delete(`${API}/ingredients/${id}`);
-      toast.success('Ingredient deleted');
+      toast.success(t('ingredients.success.delete') || 'Ingredient deleted successfully');
       fetchIngredients();
     } catch (error) {
-      toast.error('Failed to delete ingredient');
+      toast.error(error.response?.data?.detail || t('ingredients.error.delete') || 'Failed to delete ingredient');
+    }
+  };
+
+  const toggleSelectAll = () => {
+    if (selectedItems.length === filteredIngredients.length) {
+      setSelectedItems([]);
+    } else {
+      setSelectedItems(filteredIngredients.map(ing => ing.id));
+    }
+  };
+
+  const toggleSelectItem = (id) => {
+    setSelectedItems(prev => 
+      prev.includes(id) ? prev.filter(i => i !== id) : [...prev, id]
+    );
+  };
+
+  const handleBulkDelete = async () => {
+    if (selectedItems.length === 0) return;
+    
+    try {
+      await Promise.all(selectedItems.map(id => axios.delete(`${API}/ingredients/${id}`)));
+      toast.success(t('ingredients.success.bulkDelete', { count: selectedItems.length }) || `${selectedItems.length} ingredients deleted`);
+      setSelectedItems([]);
+      setShowBulkDeleteDialog(false);
+      fetchIngredients();
+    } catch (error) {
+      toast.error(error.response?.data?.detail || t('ingredients.error.bulkDelete') || 'Failed to delete ingredients');
     }
   };
 

@@ -9,7 +9,7 @@ import { Label } from '../components/ui/label';
 import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/card';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '../components/ui/dialog';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../components/ui/select';
-import { Plus, Trash2, Calculator, AlertCircle, Edit, Package, DollarSign } from 'lucide-react';
+import { Plus, Trash2, Calculator, AlertCircle, Edit, Package } from 'lucide-react';
 import { toast } from 'sonner';
 
 function RecipesEnhanced() {

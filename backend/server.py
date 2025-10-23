@@ -2573,7 +2573,15 @@ async def delete_recipe(recipe_id: str, current_user: dict = Depends(get_current
         raise HTTPException(status_code=404, detail="Recipe not found")
     
     # Log audit
-    await log_audit(current_user["restaurantId"], current_user["userId"], "recipe", "delete", {"recipeId": recipe_id})
+    await log_audit(
+        db,
+        current_user["restaurantId"],
+        current_user["id"],
+        "delete",
+        "recipe",
+        recipe_id,
+        {"recipeId": recipe_id}
+    )
     
     return {"message": "Recipe deleted"}
 

@@ -240,10 +240,10 @@ class SmallQuantityCostingTester:
                     preparation = await response.json()
                     
                     # Expected cost calculation:
-                    # unitCost = €10/kg = €0.01/g
-                    # qty = 2g
-                    # cost = €0.01 * 2 = €0.02
-                    expected_cost = 10.0 * (2 / 1000)  # Convert 2g to kg, then multiply by €10/kg
+                    # unitCost = 1000 cents/kg
+                    # qty = 2g = 0.002kg
+                    # cost = 1000 * 0.002 = 2 cents = €0.02
+                    expected_cost = 2.0  # 2 cents
                     
                     if preparation["cost"] > 0:
                         self.log_result("Small Quantity Cost > 0", True, f"Cost is €{preparation['cost']:.4f} (not €0.00)")

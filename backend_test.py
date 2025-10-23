@@ -1,25 +1,30 @@
 #!/usr/bin/env python3
 """
-Backend Test Suite for P2 Batch 4: Receiving Bulk Delete with Stock Reversal
-Tests the receiving dependencies endpoint and delete functionality with stock reversal.
+Backend Testing for Critical Staging Issues
+Tests the three critical fixes:
+1. PrepList Export with Auth
+2. OrderList Export with Auth  
+3. Dashboard Total Inventory Value
+4. PrepList Data Structure
+5. PrepList Forecast
 """
 
 import asyncio
 import aiohttp
 import json
 import os
-from datetime import datetime, timezone
-from typing import Dict, List, Any
+from datetime import datetime, timedelta
+from typing import Dict, Any, List
 
 # Configuration
 BACKEND_URL = os.getenv('REACT_APP_BACKEND_URL', 'https://bulk-delete-rbac.preview.emergentagent.com')
 API_BASE = f"{BACKEND_URL}/api"
 
-# Test credentials
-TEST_USERS = {
-    "admin": {"email": "admin@test.com", "password": "admin123"},
-    "manager": {"email": "manager@test.com", "password": "manager123"},
-    "staff": {"email": "staff@test.com", "password": "staff123"}
+# Test credentials from test_result.md history
+TEST_CREDENTIALS = {
+    'admin': {'email': 'admin@test.com', 'password': 'password123'},
+    'manager': {'email': 'manager@test.com', 'password': 'password123'},
+    'staff': {'email': 'staff@test.com', 'password': 'password123'}
 }
 
 class ReceivingBulkDeleteTester:

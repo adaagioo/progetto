@@ -94,6 +94,21 @@ function Inventory() {
     }
   };
 
+  const handleCategoryFilter = (category) => {
+    const newParams = new URLSearchParams(searchParams);
+    if (categoryFilter === category) {
+      // Toggle off if clicking same category
+      newParams.delete('category');
+    } else {
+      newParams.set('category', category);
+    }
+    setSearchParams(newParams);
+  };
+
+  const clearFilters = () => {
+    setSearchParams(new URLSearchParams());
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
 

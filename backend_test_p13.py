@@ -340,8 +340,8 @@ class SmallQuantityCostingTester:
                 if response.status == 200:
                     preparation = await response.json()
                     
-                    # Expected: 500ml = 0.5L, €4/L * 0.5L = €2.00
-                    expected_cost = 4.0 * 0.5
+                    # Expected: 500ml = 0.5L, 400 cents/L * 0.5L = 200 cents = €2.00
+                    expected_cost = 200.0
                     
                     if preparation["cost"] > 0:
                         self.log_result("ML to L Conversion > 0", True, f"Cost €{preparation['cost']:.4f} > 0")

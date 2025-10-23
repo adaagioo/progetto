@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useContext } from 'react';
+import React, { useState, useEffect, useContext, useCallback } from 'react';
 import { useCurrency } from '../contexts/CurrencyContext';
 import { useTranslation } from 'react-i18next';
 import axios from 'axios';
@@ -13,6 +13,23 @@ import { Plus, Trash2, Edit, AlertCircle } from 'lucide-react';
 import { toast } from 'sonner';
 import AllergenSelector from '../components/AllergenSelector';
 
+// Debounce hook for input optimization
+function useDebounce(value, delay) {
+  const [debouncedValue, setDebouncedValue] = useState(value);
+
+  useEffect(() => {
+    const handler = setTimeout(() => {
+      setDebouncedValue(value);
+    }, delay);
+
+    return () => {
+      clearTimeout(handler);
+    };
+  }, [value, delay]);
+
+  return debouncedValue;
+}
+
 function Ingredients() {
   const { t } = useTranslation();
   const { user } = useContext(AuthContext);
@@ -23,6 +40,10 @@ function Ingredients() {
   const [editingId, setEditingId] = useState(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedAllergenFilter, setSelectedAllergenFilter] = useState('all');
+  
+  // Debounce search query for better performance
+  const debouncedSearchQuery = useDebounce(searchQuery, 300);
+  
   const [formData, setFormData] = useState({
     name: '',
     unit: 'g',

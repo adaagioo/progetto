@@ -3969,3 +3969,142 @@ agent_communication:
       
       🏆 **P1.3 SMALL QUANTITY COSTING FIX: 100% FUNCTIONAL** ✅
       All unit conversion and small quantity costing features working perfectly. No issues found.
+
+  - task: "Dashboard: Total Inventory Value Card - Fix Rendering"
+    implemented: false
+    working: false
+    file: "frontend/src/pages/Dashboard.js"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: false
+        agent: "user"
+        comment: |
+          USER REPORT: Dashboard shows empty/faded fourth card slot next to Non-Food Inventory.
+          This slot is meant for Total Inventory Value card.
+          Card should show formatted total (e.g., €12,345.67) and be clickable to open Inventory.
+          
+          EXPECTED:
+          - Card shows populated value (not hidden/disabled)
+          - Grid should not leave faded placeholder
+          - If loading: show skeleton
+          - If error: show "Couldn't load total" + Retry button
+          
+          CURRENT CODE ANALYSIS:
+          - Card is always rendered (lines 269-332)
+          - Has loadingTotal state with skeleton
+          - Has totalError state with retry button
+          - Fetches from GET /api/inventory/valuation/total
+          
+          POTENTIAL ISSUE:
+          - API might be returning error or empty data
+          - CSS class might be causing faded appearance
+          - Need to verify backend endpoint is working
+
+  - task: "PrepList: Rows Not Rendering Despite Totals Showing"
+    implemented: false
+    working: false
+    file: "frontend/src/pages/PrepList.js"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: false
+        agent: "user"
+        comment: |
+          USER REPORT: PrepList shows "Total Preparations: 3" but table has no rows.
+          Clicked into PrepList from sidebar; default filter is "To Make".
+          
+          EXPECTED:
+          - Rows for that date render according to selected filter (To Make / All)
+          - If filter yields 0, totals row should also reflect 0
+          - Or the list should show the 3 rows that totals indicate
+          
+          CURRENT CODE ANALYSIS:
+          - filteredItems logic looks correct (lines 186-201)
+          - Table tbody maps over filteredItems (lines 355-431)
+          - Summary shows prepList.items.length (line 461)
+          
+          POTENTIAL ISSUES:
+          - Filter logic might be excluding all items incorrectly
+          - Data structure from backend might be missing required fields
+          - toMakeQty values might all be <= 0 when filter is "toMake"
+          - Need to check actual data structure from backend
+
+  - task: "Exports: Fix Authentication - Not Sending JWT Token"
+    implemented: false
+    working: false
+    file: "frontend/src/pages/PrepList.js, OrderList.js"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: false
+        agent: "user"
+        comment: |
+          USER REPORT: When clicking PDF or Excel export buttons, browser downloads JSON error:
+          {"detail":"Not authenticated"}
+          
+          CAUSE: window.open() doesn't carry Authorization: Bearer header.
+          Export endpoints require authentication but plain href/window.open can't send headers.
+          
+          SOLUTION OPTIONS:
+          1. Cookie-based session so download inherits auth automatically
+          2. Authenticated fetch + blob: fetch with auth header, then URL.createObjectURL(blob)
+          3. Signed URL: authenticated endpoint returns short-lived (60s) URL, then redirect
+          
+          RECOMMENDED: Option 2 (fetch + blob) - simplest and most secure
+          
+          AFFECTED FILES:
+          - PrepList.js lines 252-270 (export buttons)
+          - OrderList.js lines 302-320 (export buttons)
+          
+          IMPLEMENTATION:
+          - Replace window.open() with authenticated fetch
+          - Convert response to blob
+          - Create object URL and trigger download
+          - Show loading/error states with toast
+
+  - task: "Dashboard Unified Report: Implementation"
+    implemented: false
+    working: "NA"
+    file: "backend/export_utils.py, server.py, frontend/src/pages/Dashboard.js"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: |
+          REQUIREMENT: Comprehensive dashboard report with date range support.
+          
+          SPEC:
+          - Endpoints: GET /api/reports/dashboard/export-pdf and export-xlsx
+          - Params: start=YYYY-MM-DD, end=YYYY-MM-DD, tz=Europe/Rome
+          - Date range: Default = current week (Mon-Sun, local TZ)
+          - URL-driven search with debouncing
+          
+          SECTIONS (in order):
+          1. Sales summary - total revenue, orders count, avg ticket, by-day breakdown
+          2. Wastage summary - total waste cost, top 5 items by waste cost
+          3. Inventory snapshot - valuation at start vs end, delta, top 5 movers
+          4. Production snapshot - planned vs prepared portions (sum) for range
+          5. KPIs - COGS %, Waste %, Gross margin proxy
+          
+          FORMATS:
+          - PDF: A4, sectioned; header: restaurant + date range; footer: page x/y + export timestamp
+          - XLSX: Sheets = Sales, Wastage, Inventory, Production, KPIs
+          
+          BEHAVIOR:
+          - Respect current filters where applicable
+          - Locale/currency: EUR with 2 decimals
+          - Filenames: DashboardReport_<restaurant>_<YYYY-MM-DD>_to_<YYYY-MM-DD>.pdf|xlsx
+          
+          ACCEPTANCE:
+          - Totals reconcile with module data for same range
+          - PDF/XLSX generated within ~3-5s for typical volumes
+          - Progress state shown during generation
+          - Friendly error with requestId on failure
+          
+          PENDING: Backend implementation + frontend date picker integration

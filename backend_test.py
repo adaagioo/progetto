@@ -27,7 +27,7 @@ TEST_CREDENTIALS = {
     'staff': {'email': 'staff@test.com', 'password': 'password123'}
 }
 
-class ReceivingBulkDeleteTester:
+class BackendTester:
     def __init__(self):
         self.session = None
         self.tokens = {}

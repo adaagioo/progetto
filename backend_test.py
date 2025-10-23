@@ -462,26 +462,21 @@ class ReceivingBulkDeleteTester:
         """Test that tenant isolation is maintained"""
         print("\n🏢 Testing Tenant Isolation...")
         
-        # Try to access dependencies for a receiving with different user (should fail)
-        if len(self.test_data["receiving_records"]) > 0:
-            receiving_id = self.test_data["receiving_records"][0]["id"]
+        # Test tenant isolation by trying to delete a non-existent receiving
+        # (This tests that the delete endpoint properly validates receiving existence)
+        async with self.session.delete(
+            f"{API_BASE}/receiving/different-tenant-receiving",
+            headers=self.get_auth_headers("admin")
+        ) as response:
+            self.results["total_tests"] += 1
             
-            # This test assumes we have proper tenant isolation
-            # In a real scenario, we'd need a user from a different restaurant
-            # For now, we'll test that non-existent receiving returns 404
-            async with self.session.get(
-                f"{API_BASE}/receiving/different-tenant-receiving/dependencies",
-                headers=self.get_auth_headers("admin")
-            ) as response:
-                self.results["total_tests"] += 1
-                
-                if response.status == 404:
-                    print(f"   ✅ Tenant isolation: Non-existent receiving correctly returns 404")
-                    self.results["passed"] += 1
-                else:
-                    print(f"   ❌ Tenant isolation: Should return 404 for non-existent receiving")
-                    self.results["failed"] += 1
-                    self.results["errors"].append("Tenant isolation test failed")
+            if response.status == 404:
+                print(f"   ✅ Tenant isolation: Non-existent receiving correctly returns 404 on delete")
+                self.results["passed"] += 1
+            else:
+                print(f"   ❌ Tenant isolation: Should return 404 for non-existent receiving on delete")
+                self.results["failed"] += 1
+                self.results["errors"].append("Tenant isolation test failed - delete should return 404")
 
     async def cleanup_test_data(self):
         """Clean up test data"""

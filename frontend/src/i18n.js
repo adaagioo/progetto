@@ -61,6 +61,8 @@ const resources = {
       'export.dailyPrep': 'Export Daily Prep',
       'export.pdf': 'PDF',
       'export.xlsx': 'Excel',
+      'export.success': 'Export successful',
+      'export.error': 'Export failed',
       'export.selectDate': 'Select Date',
       'export.purchaseOrders': 'Export Purchase Orders',
       'dashboard.clickToView': 'Click to view',

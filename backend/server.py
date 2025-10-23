@@ -2538,14 +2538,42 @@ async def update_recipe(recipe_id: str, recipe_data: RecipeUpdate, current_user:
     
     return Recipe(**updated_recipe)
 
+@api_router.get("/recipes/{recipe_id}/dependencies")
+async def get_recipe_dependencies(recipe_id: str, current_user: dict = Depends(get_current_user)):
+    """Check if recipe is used in sales records"""
+    # Check sales
+    sales_count = await db.sales.count_documents({
+        "restaurantId": current_user["restaurantId"],
+        "lines.recipeId": recipe_id
+    })
+    
+    return {
+        "hasReferences": sales_count > 0,
+        "references": {
+            "sales": sales_count
+        }
+    }
+
 @api_router.delete("/recipes/{recipe_id}")
 async def delete_recipe(recipe_id: str, current_user: dict = Depends(get_current_user)):
-    if current_user["role"] != "admin":
-        raise HTTPException(status_code=403, detail="Admin access required")
+    # RBAC: Only admin/manager can delete
+    if current_user["role"] not in ["admin", "manager"]:
+        raise HTTPException(status_code=403, detail="Admin or Manager access required")
+    
+    # Check dependencies before deleting
+    deps = await get_recipe_dependencies(recipe_id, current_user)
+    if deps["hasReferences"]:
+        raise HTTPException(
+            status_code=400, 
+            detail=f"Cannot delete recipe: referenced in {deps['references']['sales']} sales records"
+        )
     
     result = await db.recipes.delete_one({"id": recipe_id, "restaurantId": current_user["restaurantId"]})
     if result.deleted_count == 0:
         raise HTTPException(status_code=404, detail="Recipe not found")
+    
+    # Log audit
+    await log_audit(current_user["restaurantId"], current_user["userId"], "recipe", "delete", {"recipeId": recipe_id})
     
     return {"message": "Recipe deleted"}
 

@@ -596,6 +596,17 @@ function Inventory() {
         </div>
       )}
 
+      {/* Search Bar */}
+      <div className="mb-6">
+        <Input
+          type="text"
+          placeholder={t('inventory.search') || 'Search inventory...'}
+          value={searchQuery}
+          onChange={(e) => setSearchQuery(e.target.value)}
+          className="max-w-md"
+        />
+      </div>
+
       {/* Active Filters Display */}
       {(categoryFilter || filterType) && (
         <div className="flex items-center gap-2 p-3 bg-blue-50 border border-blue-200 rounded-lg">
@@ -629,11 +640,62 @@ function Inventory() {
         </div>
       )}
 
+      {/* Bulk Actions Bar */}
+      {canEdit && selectedItems.length > 0 && (
+        <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 mb-4 flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <span className="font-medium text-blue-900">
+              {selectedItems.length} {t('common.selected') || 'selected'}
+            </span>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => setSelectedItems([])}
+            >
+              <X className="h-4 w-4" />
+            </Button>
+          </div>
+          <Button
+            variant="destructive"
+            size="sm"
+            onClick={() => setShowBulkDeleteDialog(true)}
+          >
+            <Trash2 className="h-4 w-4 mr-2" />
+            {t('common.deleteSelected') || 'Delete Selected'}
+          </Button>
+        </div>
+      )}
+
+      {/* Select All Checkbox */}
+      {canEdit && filteredInventory.length > 0 && (
+        <div className="flex items-center gap-2 mb-4">
+          <input
+            type="checkbox"
+            id="select-all-inventory"
+            checked={selectedItems.length === filteredInventory.length && filteredInventory.length > 0}
+            onChange={toggleSelectAll}
+            className="h-4 w-4"
+          />
+          <Label htmlFor="select-all-inventory" className="text-sm font-medium cursor-pointer">
+            {t('common.selectAll') || 'Select All'}
+          </Label>
+        </div>
+      )}
+
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
         {filteredInventory.map((inv) => (
           <Card key={inv.id} className="glass-morphism border-0 card-hover" data-testid="inventory-card">
             <CardHeader>
               <CardTitle className="flex items-center justify-between">
+                {canEdit && (
+                  <input
+                    type="checkbox"
+                    checked={selectedItems.includes(inv.id)}
+                    onChange={() => toggleSelectItem(inv.id)}
+                    className="h-4 w-4 mr-2"
+                    onClick={(e) => e.stopPropagation()}
+                  />
+                )}
                 <div className="flex items-center gap-2">
                   <Package className="w-5 h-5 text-emerald-500" />
                   <span className="text-lg">{getIngredientName(inv.ingredientId)}</span>

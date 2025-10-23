@@ -1892,6 +1892,40 @@ agent_communication:
       - Staff: staff@test.com / staff123
   - agent: "testing"
     message: |
+      P2 RECIPE DEPENDENCIES & BULK DELETE BACKEND TESTING COMPLETED ✅
+      
+      🎯 ALL CRITICAL VALIDATION TESTS PASSED (22/22 - 100% success rate):
+      
+      ✅ **Recipe Dependencies Endpoint**:
+      - GET /api/recipes/{id}/dependencies working correctly
+      - Returns proper structure: { hasReferences: bool, references: { sales: count } }
+      - Correctly detects recipes with/without sales references
+      
+      ✅ **Delete with Dependency Blocking**:
+      - Recipes with sales CANNOT be deleted (400 error with clear message)
+      - Recipes without sales CAN be deleted successfully
+      - Error message includes sales count for transparency
+      
+      ✅ **RBAC Enforcement**:
+      - Admin can delete: ✅
+      - Manager can delete: ✅ (NEW - was admin-only before)
+      - Staff CANNOT delete: ✅ (403 "Admin or Manager access required")
+      
+      ✅ **Bulk Delete Scenario**:
+      - Created 3 test recipes, added sales to one
+      - Dependencies endpoint correctly detected sales reference
+      - Recipe with sales blocked from deletion
+      - Recipes without sales deleted successfully
+      
+      🔧 **Bug Fixed During Testing**:
+      - Fixed audit logging error in delete_recipe endpoint
+      - Changed current_user["userId"] to current_user["id"]
+      
+      🏆 **BACKEND READY FOR PRODUCTION**:
+      All P2 Recipe Dependencies & Bulk Delete features working perfectly.
+      Main agent can now focus on frontend implementation or mark as complete.
+  - agent: "testing"
+    message: |
       PHASE 7 RBAC BACKEND IMPLEMENTATION TESTING COMPLETED - ALL SYSTEMS WORKING ✅
       
       🧪 COMPREHENSIVE RBAC TESTING RESULTS (8/8 tests passed - 100% success rate):

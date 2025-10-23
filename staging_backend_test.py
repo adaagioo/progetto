@@ -22,9 +22,9 @@ API_BASE = f"{BACKEND_URL}/api"
 
 # Test credentials from test_result.md history
 TEST_CREDENTIALS = {
-    'admin': {'email': 'admin@test.com', 'password': 'password123'},
-    'manager': {'email': 'manager@test.com', 'password': 'password123'},
-    'staff': {'email': 'staff@test.com', 'password': 'password123'}
+    'admin': {'email': 'admin@test.com', 'password': 'admin123'},
+    'manager': {'email': 'manager@test.com', 'password': 'manager123'},
+    'staff': {'email': 'staff@test.com', 'password': 'staff123'}
 }
 
 class BackendTester:

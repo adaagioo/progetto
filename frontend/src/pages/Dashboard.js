@@ -234,16 +234,52 @@ function Dashboard() {
             >
               <CardHeader className="pb-2">
                 <CardTitle className="text-sm font-medium text-white/90">
-                  {t('inventory.valuation.total') || 'Total Inventory Value'}
+                  {t('dashboard.totalInventoryValue') || 'Total Inventory Value'}
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold">
-                  {formatMinor(valuationSummary.total)}
-                </div>
-                <p className="text-xs text-white/80 mt-1">
-                  {valuationSummary.itemCount} {t('inventory.valuation.items') || 'items'}
-                </p>
+                {loadingTotal ? (
+                  <div className="text-2xl font-bold animate-pulse">
+                    ⋯
+                  </div>
+                ) : totalError ? (
+                  <div>
+                    <div className="text-lg font-medium text-white/90 mb-2">
+                      {t('dashboard.couldNotLoadTotal') || 'Couldn\'t load total'}
+                    </div>
+                    <button 
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        fetchTotalInventoryValue();
+                      }}
+                      className="text-sm underline text-white/80 hover:text-white"
+                    >
+                      {t('dashboard.retry') || 'Retry'}
+                    </button>
+                  </div>
+                ) : (
+                  <>
+                    <div className="text-2xl font-bold">
+                      {formatMinor(totalInventoryValue?.totalValue || 0)}
+                    </div>
+                    <p className="text-xs text-white/80 mt-1">
+                      {t('dashboard.asOfNow') || 'as of now'}
+                    </p>
+                    {totalInventoryValue?.negativeCount > 0 && (
+                      <div 
+                        className="mt-2 text-xs bg-red-500/20 border border-red-300/30 rounded px-2 py-1 flex items-center gap-1 cursor-pointer hover:bg-red-500/30 transition-colors"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          navigate('/inventory'); // TODO: Add negative stock filter
+                        }}
+                      >
+                        <AlertTriangle className="h-3 w-3" />
+                        {t('dashboard.negativeStockWarning', { count: totalInventoryValue.negativeCount }) || 
+                          `${totalInventoryValue.negativeCount} item(s) with negative stock`}
+                      </div>
+                    )}
+                  </>
+                )}
               </CardContent>
             </Card>
           </div>

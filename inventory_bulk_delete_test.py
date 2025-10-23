@@ -135,7 +135,7 @@ class InventoryBulkDeleteTester:
         
         for ingredient_data in test_ingredients:
             status, data = await self.make_request("POST", "/ingredients", json=ingredient_data)
-            if status == 201:
+            if status in [200, 201]:
                 self.test_data["ingredients"].append(data)
                 print(f"✅ Created ingredient: {data['name']} (ID: {data['id']})")
             else:

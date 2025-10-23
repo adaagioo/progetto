@@ -617,6 +617,7 @@ const resources = {
       'common.cancel': 'Cancel',
       'common.delete': 'Delete',
       'common.edit': 'Edit',
+      'common.allergens': 'Allergens',
       'common.clearFilters': 'Clear Filters',
       'common.all': 'All',
       'common.noResults': 'No results found',

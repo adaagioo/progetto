@@ -269,11 +269,11 @@ class SmallQuantityCostingTester:
         if not cocoa_ingredient:
             return
         
-        # Test with different small quantities
+        # Test with different small quantities (costs in cents)
         test_cases = [
-            {"qty": 2, "unit": "g", "expected": 0.02},  # 2g = €0.02
-            {"qty": 500, "unit": "g", "expected": 5.0},  # 500g = €5.00
-            {"qty": 0.5, "unit": "g", "expected": 0.005},  # 0.5g = €0.005
+            {"qty": 2, "unit": "g", "expected": 2.0},  # 2g = 2 cents = €0.02
+            {"qty": 500, "unit": "g", "expected": 500.0},  # 500g = 500 cents = €5.00
+            {"qty": 0.5, "unit": "g", "expected": 0.5},  # 0.5g = 0.5 cents = €0.005
         ]
         
         for case in test_cases:

@@ -22,7 +22,7 @@ TEST_USERS = {
     "staff": {"email": "staff@test.com", "password": "staff123"}
 }
 
-class SupplierDependenciesTest:
+class ReceivingBulkDeleteTester:
     def __init__(self):
         self.session = None
         self.tokens = {}

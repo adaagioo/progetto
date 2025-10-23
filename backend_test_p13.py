@@ -485,15 +485,15 @@ class SmallQuantityCostingTester:
                     recipe = await response.json()
                     
                     # Expected per portion:
-                    # Cocoa: 1g = €0.01
-                    # Vanilla: 5ml = €0.02 (€4/L * 0.005L)
-                    # Total per portion: €0.03
-                    # Total for 4 portions: €0.12
+                    # Cocoa: 1g = 1 cent
+                    # Vanilla: 5ml = 2 cents (400 cents/L * 0.005L)
+                    # Total per portion: 3 cents
+                    # Total for 4 portions: 12 cents = €0.12
                     
-                    cocoa_per_portion = 10.0 * (1 / 1000)  # €0.01
-                    vanilla_per_portion = 4.0 * (5 / 1000)  # €0.02
-                    expected_per_portion = cocoa_per_portion + vanilla_per_portion  # €0.03
-                    expected_total = expected_per_portion * 4  # €0.12
+                    cocoa_per_portion = 1.0  # 1 cent
+                    vanilla_per_portion = 2.0  # 2 cents
+                    expected_per_portion = cocoa_per_portion + vanilla_per_portion  # 3 cents
+                    expected_total = expected_per_portion * 4  # 12 cents
                     
                     self.log_result("Recipe Unit Conversion Created", True, f"Recipe created successfully")
                     self.log_result("Recipe Cost Calculation", True, f"Expected total cost: €{expected_total:.4f}")

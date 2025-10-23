@@ -878,7 +878,7 @@ function RecipesEnhanced() {
                   <div className="flex items-start gap-1">
                     <AlertCircle className="h-4 w-4 text-red-600 mt-0.5" />
                     <div className="flex-1">
-                      <span className="text-xs font-medium text-red-600">{t('ingredients.allergens') || 'Allergens'}:</span>
+                      <span className="text-xs font-medium text-red-600">{t('common.allergens') || 'Allergens'}:</span>
                       <div className="flex flex-wrap gap-1 mt-1">
                         {recipe.allergens.map(allergen => (
                           <span key={allergen} className="text-xs bg-red-100 text-red-800 px-2 py-0.5 rounded">

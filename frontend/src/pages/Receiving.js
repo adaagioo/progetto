@@ -291,6 +291,23 @@ function Receiving() {
       }
     }
     
+    // Save target inventory memory when manually changed
+    if (field === 'targetInventory' && newLines[index].ingredientId) {
+      const ingredientId = newLines[index].ingredientId;
+      setIngredientTargetMemory(prev => ({
+        ...prev,
+        [ingredientId]: value
+      }));
+      // Persist to localStorage for cross-session memory
+      try {
+        const savedMemory = JSON.parse(localStorage.getItem('ingredientTargetMemory') || '{}');
+        savedMemory[ingredientId] = value;
+        localStorage.setItem('ingredientTargetMemory', JSON.stringify(savedMemory));
+      } catch (e) {
+        console.error('Failed to save target memory:', e);
+      }
+    }
+    
     setFormData({ ...formData, lines: newLines });
   };
 

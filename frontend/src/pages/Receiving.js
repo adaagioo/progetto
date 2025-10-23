@@ -50,6 +50,16 @@ function Receiving() {
     fetchReceivings();
     fetchSuppliers();
     fetchIngredients();
+    
+    // Load ingredient target memory from localStorage
+    try {
+      const savedMemory = localStorage.getItem('ingredientTargetMemory');
+      if (savedMemory) {
+        setIngredientTargetMemory(JSON.parse(savedMemory));
+      }
+    } catch (e) {
+      console.error('Failed to load target memory:', e);
+    }
   }, []);
 
   const fetchReceivings = async () => {

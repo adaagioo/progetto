@@ -29,7 +29,14 @@ class ReceivingBulkDeleteTester:
         self.test_data = {
             "suppliers": [],
             "ingredients": [],
-            "receiving": []
+            "receiving_records": [],
+            "inventory_records": []
+        }
+        self.results = {
+            "total_tests": 0,
+            "passed": 0,
+            "failed": 0,
+            "errors": []
         }
         
     async def setup_session(self):

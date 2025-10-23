@@ -173,118 +173,155 @@ function Dashboard() {
       </div>
 
       {/* Inventory Valuation by Category */}
-      {valuationSummary && (
-        <div>
-          <h2 className="text-xl font-bold mb-4">{t('dashboard.inventoryValuation') || 'Inventory Valuation'}</h2>
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-            <Card 
-              className="glass-morphism border-0 card-hover cursor-pointer" 
-              onClick={() => navigate('/inventory?category=food')}
-            >
-              <CardHeader className="pb-2">
-                <CardTitle className="text-sm font-medium text-gray-600">
-                  {t('inventory.valuation.food') || 'Food Inventory'}
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold text-green-600">
-                  {formatMinor(valuationSummary.categories.food)}
-                </div>
-                <p className="text-xs text-gray-500 mt-1">{t('dashboard.clickToView') || 'Click to view'}</p>
-              </CardContent>
-            </Card>
-
-            <Card 
-              className="glass-morphism border-0 card-hover cursor-pointer"
-              onClick={() => navigate('/inventory?category=beverage')}
-            >
-              <CardHeader className="pb-2">
-                <CardTitle className="text-sm font-medium text-gray-600">
-                  {t('inventory.valuation.beverage') || 'Beverage Inventory'}
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold text-blue-600">
-                  {formatMinor(valuationSummary.categories.beverage)}
-                </div>
-                <p className="text-xs text-gray-500 mt-1">{t('dashboard.clickToView') || 'Click to view'}</p>
-              </CardContent>
-            </Card>
-
-            <Card 
-              className="glass-morphism border-0 card-hover cursor-pointer"
-              onClick={() => navigate('/inventory?category=nofood')}
-            >
-              <CardHeader className="pb-2">
-                <CardTitle className="text-sm font-medium text-gray-600">
-                  {t('inventory.valuation.nofood') || 'Non-Food Inventory'}
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold text-gray-600">
-                  {formatMinor(valuationSummary.categories.nofood)}
-                </div>
-                <p className="text-xs text-gray-500 mt-1">{t('dashboard.clickToView') || 'Click to view'}</p>
-              </CardContent>
-            </Card>
-
-            <Card 
-              className="glass-morphism border-0 bg-gradient-to-br from-emerald-500 to-teal-600 text-white cursor-pointer"
-              onClick={() => navigate('/inventory')}
-            >
-              <CardHeader className="pb-2">
-                <CardTitle className="text-sm font-medium text-white/90">
-                  {t('dashboard.totalInventoryValue') || 'Total Inventory Value'}
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                {loadingTotal ? (
-                  <div className="text-2xl font-bold animate-pulse">
-                    ⋯
+      <div>
+        <h2 className="text-xl font-bold mb-4">{t('dashboard.inventoryValuation') || 'Inventory Valuation'}</h2>
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+          {valuationSummary ? (
+            <>
+              <Card 
+                className="glass-morphism border-0 card-hover cursor-pointer" 
+                onClick={() => navigate('/inventory?category=food')}
+              >
+                <CardHeader className="pb-2">
+                  <CardTitle className="text-sm font-medium text-gray-600">
+                    {t('inventory.valuation.food') || 'Food Inventory'}
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="text-2xl font-bold text-green-600">
+                    {formatMinor(valuationSummary.categories.food)}
                   </div>
-                ) : totalError ? (
-                  <div>
-                    <div className="text-lg font-medium text-white/90 mb-2">
-                      {t('dashboard.couldNotLoadTotal') || 'Couldn\'t load total'}
-                    </div>
-                    <button 
+                  <p className="text-xs text-gray-500 mt-1">{t('dashboard.clickToView') || 'Click to view'}</p>
+                </CardContent>
+              </Card>
+
+              <Card 
+                className="glass-morphism border-0 card-hover cursor-pointer"
+                onClick={() => navigate('/inventory?category=beverage')}
+              >
+                <CardHeader className="pb-2">
+                  <CardTitle className="text-sm font-medium text-gray-600">
+                    {t('inventory.valuation.beverage') || 'Beverage Inventory'}
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="text-2xl font-bold text-blue-600">
+                    {formatMinor(valuationSummary.categories.beverage)}
+                  </div>
+                  <p className="text-xs text-gray-500 mt-1">{t('dashboard.clickToView') || 'Click to view'}</p>
+                </CardContent>
+              </Card>
+
+              <Card 
+                className="glass-morphism border-0 card-hover cursor-pointer"
+                onClick={() => navigate('/inventory?category=nofood')}
+              >
+                <CardHeader className="pb-2">
+                  <CardTitle className="text-sm font-medium text-gray-600">
+                    {t('inventory.valuation.nofood') || 'Non-Food Inventory'}
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="text-2xl font-bold text-gray-600">
+                    {formatMinor(valuationSummary.categories.nofood)}
+                  </div>
+                  <p className="text-xs text-gray-500 mt-1">{t('dashboard.clickToView') || 'Click to view'}</p>
+                </CardContent>
+              </Card>
+            </>
+          ) : (
+            <>
+              {/* Skeleton cards for category cards when loading */}
+              <Card className="glass-morphism border-0">
+                <CardHeader className="pb-2">
+                  <CardTitle className="text-sm font-medium text-gray-600">
+                    {t('inventory.valuation.food') || 'Food Inventory'}
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="text-2xl font-bold text-gray-400 animate-pulse">⋯</div>
+                </CardContent>
+              </Card>
+              <Card className="glass-morphism border-0">
+                <CardHeader className="pb-2">
+                  <CardTitle className="text-sm font-medium text-gray-600">
+                    {t('inventory.valuation.beverage') || 'Beverage Inventory'}
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="text-2xl font-bold text-gray-400 animate-pulse">⋯</div>
+                </CardContent>
+              </Card>
+              <Card className="glass-morphism border-0">
+                <CardHeader className="pb-2">
+                  <CardTitle className="text-sm font-medium text-gray-600">
+                    {t('inventory.valuation.nofood') || 'Non-Food Inventory'}
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="text-2xl font-bold text-gray-400 animate-pulse">⋯</div>
+                </CardContent>
+              </Card>
+            </>
+          )}
+
+          {/* Total Inventory Value Card - ALWAYS VISIBLE */}
+          <Card 
+            className="glass-morphism border-0 bg-gradient-to-br from-emerald-500 to-teal-600 text-white cursor-pointer"
+            onClick={() => navigate('/inventory')}
+          >
+            <CardHeader className="pb-2">
+              <CardTitle className="text-sm font-medium text-white/90">
+                {t('dashboard.totalInventoryValue') || 'Total Inventory Value'}
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              {loadingTotal ? (
+                <div className="text-2xl font-bold animate-pulse">
+                  ⋯
+                </div>
+              ) : totalError ? (
+                <div>
+                  <div className="text-lg font-medium text-white/90 mb-2">
+                    {t('dashboard.couldNotLoadTotal') || 'Couldn\'t load total'}
+                  </div>
+                  <button 
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      fetchTotalInventoryValue();
+                    }}
+                    className="text-sm underline text-white/80 hover:text-white"
+                  >
+                    {t('dashboard.retry') || 'Retry'}
+                  </button>
+                </div>
+              ) : (
+                <>
+                  <div className="text-2xl font-bold">
+                    {formatMinor(totalInventoryValue?.totalValue || 0)}
+                  </div>
+                  <p className="text-xs text-white/80 mt-1">
+                    {t('dashboard.asOfNow') || 'as of now'}
+                  </p>
+                  {totalInventoryValue?.negativeCount > 0 && (
+                    <div 
+                      className="mt-2 text-xs bg-red-500/20 border border-red-300/30 rounded px-2 py-1 flex items-center gap-1 cursor-pointer hover:bg-red-500/30 transition-colors"
                       onClick={(e) => {
                         e.stopPropagation();
-                        fetchTotalInventoryValue();
+                        navigate('/inventory');
                       }}
-                      className="text-sm underline text-white/80 hover:text-white"
                     >
-                      {t('dashboard.retry') || 'Retry'}
-                    </button>
-                  </div>
-                ) : (
-                  <>
-                    <div className="text-2xl font-bold">
-                      {formatMinor(totalInventoryValue?.totalValue || 0)}
+                      <AlertTriangle className="h-3 w-3" />
+                      {t('dashboard.negativeStockWarning', { count: totalInventoryValue.negativeCount }) || 
+                        `${totalInventoryValue.negativeCount} item(s) with negative stock`}
                     </div>
-                    <p className="text-xs text-white/80 mt-1">
-                      {t('dashboard.asOfNow') || 'as of now'}
-                    </p>
-                    {totalInventoryValue?.negativeCount > 0 && (
-                      <div 
-                        className="mt-2 text-xs bg-red-500/20 border border-red-300/30 rounded px-2 py-1 flex items-center gap-1 cursor-pointer hover:bg-red-500/30 transition-colors"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          navigate('/inventory'); // TODO: Add negative stock filter
-                        }}
-                      >
-                        <AlertTriangle className="h-3 w-3" />
-                        {t('dashboard.negativeStockWarning', { count: totalInventoryValue.negativeCount }) || 
-                          `${totalInventoryValue.negativeCount} item(s) with negative stock`}
-                      </div>
-                    )}
-                  </>
-                )}
-              </CardContent>
-            </Card>
-          </div>
+                  )}
+                </>
+              )}
+            </CardContent>
+          </Card>
         </div>
-      )}
+      </div>
 
       {/* Revenue & COGS Summary */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">

@@ -103,14 +103,59 @@
 #====================================================================================================
 
 user_problem_statement: |
-  Allergen Taxonomy Frontend Integration (P0 Priority)
-  - Complete allergen taxonomy with EU-14 codes (GLUTEN, DAIRY, CRUSTACEANS, etc.)
-  - Integrate AllergenSelector component in Ingredients, Preparations, Recipes
-  - Add allergen filters with i18n support (EN/IT)
-  - Verify allergen propagation: Ingredients → Preparations → Recipes
-  - Migration logic for legacy allergen strings → codes + otherAllergens
+  P2 Feature Completeness: Bulk Select + Delete and Global Search & Filters
+  
+  BATCH 1: Recipes Page (In Progress)
+  - Backend: Add recipe dependencies check endpoint (sales records)
+  - Backend: Update delete endpoint with dependency validation and RBAC (admin/manager only)
+  - Frontend: Complete bulk delete UI (checkboxes, bulk action bar, confirmation dialog)
+  - Frontend: Add URL-driven search with 200ms debounce
+  - Frontend: Add "Select All" functionality
+  - i18n: Add bulk delete translations (EN/IT)
+  - Testing: Verify dependency blocking, RBAC enforcement, and URL state persistence
+  
+  Previous Context (P0):
+  - Allergen Taxonomy Frontend Integration with EU-14 codes
+  - AllergenSelector integration across Ingredients, Preparations, Recipes
+  - Allergen propagation chain verification
 
 backend:
+  - task: "P2: Recipe Dependencies & Bulk Delete Backend"
+    implemented: true
+    working: "NA"
+    file: "backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: |
+          BATCH 1 BACKEND IMPLEMENTATION COMPLETED:
+          
+          ✅ NEW ENDPOINT ADDED:
+          - GET /api/recipes/{recipe_id}/dependencies
+            - Checks if recipe is referenced in sales records
+            - Returns: { hasReferences: bool, references: { sales: count } }
+            - Tenant-scoped query
+          
+          ✅ DELETE ENDPOINT UPDATED:
+          - DELETE /api/recipes/{recipe_id}
+            - Enhanced RBAC: Only admin/manager can delete (was admin-only)
+            - Added dependency checking before deletion
+            - Returns 400 error if recipe referenced in sales with clear message
+            - Added audit logging for delete operations
+            - Tenant isolation enforced
+          
+          ✅ BUG FIX:
+          - Fixed shutdown_db_client() error: changed mongo_client.close() to client.close()
+          
+          PENDING TESTING:
+          - Verify dependency check endpoint returns correct sales counts
+          - Verify bulk delete fails when recipes have sales references
+          - Verify RBAC allows admin/manager but denies staff
+          - Verify audit logging captures delete operations
+          - Test with multiple recipes (bulk scenario)
   - task: "Enhanced Recipe Models and Endpoints"
     implemented: true
     working: false

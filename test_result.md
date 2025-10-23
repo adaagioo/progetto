@@ -1048,6 +1048,57 @@ backend:
           The reported P1 bug cannot be reproduced. Backend receiving → inventory sync 
           is functioning correctly. Issue likely in frontend inventory display/filtering.
 
+  - task: "P1 Fixes: Preparations Portions + Instructions Persistence"
+    implemented: true
+    working: true
+    file: "backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+      - working: true
+        agent: "testing"
+        comment: |
+          P1 FIXES TESTING COMPLETED - ALL SYSTEMS WORKING ✅
+          
+          🧪 PREPARATIONS PORTIONS + INSTRUCTIONS PERSISTENCE TESTING (18/18 tests passed - 100% success rate):
+          
+          ✅ **PREPARATIONS - PORTIONS FIELD VERIFIED**:
+          - Create preparation with portions=12 - Stored correctly ✅
+          - GET preparation returns portions=12 unchanged ✅
+          - Update portions to 8 - Updated successfully ✅
+          - Updated portions=8 persists after GET verification ✅
+          - Invalid portions validation working:
+            - portions=0 correctly rejected with 422 ✅
+            - portions=-1 correctly rejected with 422 ✅
+            - portions=1.5 correctly rejected with 422 ✅
+          
+          ✅ **PREPARATIONS - INSTRUCTIONS PERSISTENCE VERIFIED**:
+          - Multi-line instructions stored exactly (no trimming) ✅
+          - Instructions: "Mix ingredients well\nBake at 180°C for 30 minutes" ✅
+          - GET preparation returns instructions unchanged ✅
+          - Update instructions to new multi-line value ✅
+          - Updated instructions persist correctly after verification ✅
+          - Supports special characters (°C) and line breaks ✅
+          
+          ✅ **RECIPES - INSTRUCTIONS PERSISTENCE VERIFIED**:
+          - Multi-line recipe instructions stored exactly ✅
+          - Instructions: "Step 1: Prepare base\nStep 2: Add toppings\nStep 3: Cook" ✅
+          - GET recipe returns instructions unchanged ✅
+          - Update recipe instructions to new multi-line value ✅
+          - Updated recipe instructions persist correctly ✅
+          - Full create/read/update/read cycle working perfectly ✅
+          
+          🎯 **SUCCESS CRITERIA MET**:
+          ✅ All create/read/update/read cycles work correctly
+          ✅ Portions validation rejects invalid values with clear 422 error
+          ✅ Instructions support multi-line and special characters
+          ✅ All fields survive reload and return unchanged
+          ✅ Admin credentials used for testing as requested
+          
+          🏆 P1 FIXES: 100% FUNCTIONAL ✅
+          All portions validation and instructions persistence features working perfectly.
+
 frontend:
   - task: "Phase 7: RBAC Matrix UI"
     implemented: true

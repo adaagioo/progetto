@@ -3316,10 +3316,50 @@ async def update_supplier(
     
     return Supplier(**updated_supplier)
 
+@api_router.get("/suppliers/{supplier_id}/dependencies")
+async def get_supplier_dependencies(supplier_id: str, current_user: dict = Depends(get_current_user)):
+    """Check if supplier is used in ingredients or receiving records"""
+    # Check ingredients
+    ingredients_count = await db.ingredients.count_documents({
+        "restaurantId": current_user["restaurantId"],
+        "preferredSupplierId": supplier_id
+    })
+    
+    # Check receiving records
+    receiving_count = await db.receiving.count_documents({
+        "restaurantId": current_user["restaurantId"],
+        "supplierId": supplier_id
+    })
+    
+    return {
+        "hasReferences": (ingredients_count > 0 or receiving_count > 0),
+        "references": {
+            "ingredients": ingredients_count,
+            "receiving": receiving_count
+        }
+    }
+
 @api_router.delete("/suppliers/{supplier_id}")
 async def delete_supplier(supplier_id: str, current_user: dict = Depends(get_current_user)):
     """Delete a supplier"""
     await check_subscription(current_user)
+    
+    # RBAC: Only admin/manager can delete
+    if current_user["role"] not in ["admin", "manager"]:
+        raise HTTPException(status_code=403, detail="Admin or Manager access required")
+    
+    # Check dependencies before deleting
+    deps = await get_supplier_dependencies(supplier_id, current_user)
+    if deps["hasReferences"]:
+        ref_details = []
+        if deps["references"]["ingredients"] > 0:
+            ref_details.append(f"{deps['references']['ingredients']} ingredients")
+        if deps["references"]["receiving"] > 0:
+            ref_details.append(f"{deps['references']['receiving']} receiving records")
+        raise HTTPException(
+            status_code=400,
+            detail=f"Cannot delete supplier: referenced in {', '.join(ref_details)}"
+        )
     
     # Check if supplier exists
     supplier = await db.suppliers.find_one(

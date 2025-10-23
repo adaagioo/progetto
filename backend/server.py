@@ -752,7 +752,8 @@ async def send_email(to_email: str, subject: str, body: str):
 async def compute_preparation_cost_and_allergens(items: List[dict], db) -> tuple[float, List[str]]:
     """
     Compute preparation cost and allergens from ingredient items.
-    Cost includes waste percentage: effectiveUnitCost * qty
+    Cost includes waste percentage and proper unit conversion.
+    Uses 4-decimal precision internally for accuracy.
     Allergens normalized to EU-14 standard.
     """
     total_cost = 0
@@ -764,9 +765,17 @@ async def compute_preparation_cost_and_allergens(items: List[dict], db) -> tuple
         if not ingredient:
             continue
         
-        # Use effectiveUnitCost which includes waste
-        effective_cost = ingredient.get("effectiveUnitCost", ingredient.get("unitCost", 0))
-        item_cost = effective_cost * item["qty"]
+        # Get effective cost per ingredient unit (includes waste)
+        effective_cost_per_unit = ingredient.get("effectiveUnitCost", ingredient.get("unitCost", 0))
+        ingredient_unit = ingredient.get("unit", "kg")
+        item_qty = item["qty"]
+        item_unit = item.get("unit", ingredient_unit)
+        
+        # Normalize item quantity to ingredient's unit for cost calculation
+        normalized_qty = normalize_quantity_to_base_unit(item_qty, item_unit, ingredient_unit)
+        
+        # Calculate cost with 4-decimal precision
+        item_cost = round(effective_cost_per_unit * normalized_qty, 4)
         total_cost += item_cost
         
         # Collect allergen codes
@@ -787,7 +796,8 @@ async def compute_preparation_cost_and_allergens(items: List[dict], db) -> tuple
             else:
                 all_other_allergens.add(ingredient["allergen"])
     
-    return total_cost, list(all_allergens), list(all_other_allergens)
+    # Round total to 4 decimals (display will round to 2)
+    return round(total_cost, 4), list(all_allergens), list(all_other_allergens)
 
 async def compute_recipe_allergens(items: List[dict], db) -> tuple[List[str], List[str]]:
     """

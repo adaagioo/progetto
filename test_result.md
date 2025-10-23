@@ -1781,17 +1781,64 @@ metadata:
 
 test_plan:
   current_focus:
-    - "Phase 8: OCR Document Processing - COMPLETED ✅"
-    - "Allergen Taxonomy Backend - CRUD, uppercase storage, propagation, migration"
-    - "Allergen Taxonomy Frontend - Selector, filters, badges, i18n (EN/IT)"
-    - "Phase 4: Prep List Frontend - E2E testing (generate, override, save, RBAC)"
-    - "Phase 4: Order List Frontend - E2E testing (generate, drivers, save, RBAC)"
+    - "P2 Batch 1: Recipes Bulk Delete & Search - Backend dependencies endpoint, frontend UI with checkboxes, URL-driven search"
   stuck_tasks:
     - "Enhanced Recipe Editor with Keyboard UX"
   test_all: false
   test_priority: "high_first"
 
 agent_communication:
+  - agent: "main"
+    message: |
+      📋 BATCH 1 (RECIPES) IMPLEMENTATION COMPLETED - READY FOR TESTING
+      
+      IMPLEMENTED FEATURES:
+      
+      Backend (server.py):
+      - GET /api/recipes/{recipe_id}/dependencies endpoint
+      - Enhanced DELETE /api/recipes/{recipe_id} with dependency checks and RBAC
+      - Fixed shutdown_db_client() bug
+      
+      Frontend (Recipes.js):
+      - URL-driven search with 200ms debounce
+      - Bulk select functionality (toggleSelectAll, toggleSelectItem)
+      - Bulk delete with parallel dependency checking
+      - Complete UI: checkboxes, bulk action bar, confirmation dialog
+      - i18n translations (EN/IT)
+      
+      TESTING REQUIREMENTS:
+      
+      Authentication: admin@test.com / admin123
+      
+      Backend Tests (use deep_testing_backend_v2):
+      1. GET /api/recipes/{valid_id}/dependencies
+         - Should return hasReferences and sales count
+         - Test with recipe that HAS sales records
+         - Test with recipe that has NO sales records
+      
+      2. DELETE /api/recipes/{id} - Dependency blocking
+         - Attempt to delete recipe with sales → Should return 400 with error message
+         - Delete recipe without sales → Should succeed
+      
+      3. DELETE /api/recipes/{id} - RBAC enforcement
+         - Admin can delete ✅
+         - Manager can delete ✅  
+         - Staff CANNOT delete (should return 403) ✅
+      
+      4. Bulk delete scenario:
+         - Create 3 test recipes (A, B, C)
+         - Add sales for recipe A
+         - Attempt bulk delete A+B+C → Should fail with dependency error
+         - Bulk delete B+C (no dependencies) → Should succeed
+      
+      Frontend Tests (if needed, ask user first):
+      - Will test after backend validation passes
+      - Focus on: bulk select, URL state, dependency error display, RBAC UI hiding
+      
+      CREDENTIALS FOR TESTING:
+      - Admin: admin@test.com / admin123
+      - Manager: manager@test.com / manager123
+      - Staff: staff@test.com / staff123
   - agent: "testing"
     message: |
       PHASE 7 RBAC BACKEND IMPLEMENTATION TESTING COMPLETED - ALL SYSTEMS WORKING ✅

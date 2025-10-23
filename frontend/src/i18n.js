@@ -636,6 +636,11 @@ const resources = {
       'common.notes': 'Notes',
       'common.total': 'Total',
       'common.unknown': 'Unknown',
+      'common.selectAll': 'Select All',
+      'common.selected': 'selected',
+      'common.clearSelection': 'Clear Selection',
+      'common.deleteSelected': 'Delete Selected',
+      'common.confirmDelete': 'Confirm Delete',
       
       // Settings
       'settings.title': 'Settings',

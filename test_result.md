@@ -1285,6 +1285,73 @@ backend:
           All unit conversion and small quantity costing features working perfectly.
 
 frontend:
+  - task: "P2 Batch 2: Preparations Bulk Delete & Search UI"
+    implemented: true
+    working: "NA"
+    file: "frontend/src/pages/Preparations.js"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: |
+          BATCH 2 FRONTEND IMPLEMENTATION COMPLETED (Same pattern as Recipes):
+          
+          ✅ IMPORTS & DEPENDENCIES:
+          - Added useSearchParams for URL state
+          - Added Checkbox, DialogDescription, DialogFooter, X icon
+          
+          ✅ URL-DRIVEN SEARCH STATE:
+          - Search query synced with URL parameter (?search=...)
+          - 200ms debounce on search input
+          - URL state persists on page refresh
+          - filteredPreparations uses debouncedSearch
+          
+          ✅ BULK SELECT FUNCTIONALITY:
+          - toggleSelectAll(): Selects/deselects all filtered preparations
+          - toggleSelectItem(id): Individual selection toggle
+          - selectedItems state tracks IDs
+          
+          ✅ BULK DELETE WITH DEPENDENCY CHECKING:
+          - handleBulkDelete() checks dependencies in parallel
+          - Blocks deletion if ANY preparation has recipe references
+          - Shows error with count of preparations with dependencies
+          - Deletes all selected if no dependencies
+          - Success toast with count
+          
+          ✅ UI COMPONENTS ADDED:
+          - "Select All" checkbox above list (admin/manager only)
+          - Individual checkboxes on each card
+          - Bulk action bar when items selected
+          - Bulk delete confirmation dialog
+          - Empty state with "Clear Filters" button
+          
+          ✅ I18N TRANSLATIONS ADDED:
+          - preparations.search (EN/IT)
+          - preparations.confirmBulkDelete (EN/IT)
+          - preparations.success.bulkDelete (EN/IT)
+          - preparations.error.bulkDelete (EN/IT)
+          - preparations.error.hasDependencies (EN/IT)
+          - common.allergens (EN/IT) - NEW for consistency
+          
+          ✅ RBAC ENFORCEMENT:
+          - Checkboxes only shown when canEdit (admin/manager)
+          - Bulk action bar only shown when canEdit
+          
+          ✅ I18N FIX FOR RECIPES:
+          - Changed allergen labels from 'ingredients.allergens' to 'common.allergens'
+          - More consistent and reusable across modules
+          
+          ✅ FRONTEND COMPILATION:
+          - Build successful, no errors
+          
+          PENDING TESTING:
+          - E2E test: Bulk select and delete preparations
+          - E2E test: Dependency blocking with recipes
+          - E2E test: Search with URL state persistence
+          - E2E test: RBAC UI hiding for staff
+
   - task: "P2 Batch 1: Recipes Bulk Delete & Search UI"
     implemented: true
     working: "NA"

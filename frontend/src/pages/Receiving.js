@@ -246,7 +246,7 @@ function Receiving() {
   const addLine = () => {
     setFormData({
       ...formData,
-      lines: [...formData.lines, { ingredientId: '', description: '', qty: '', unit: 'kg', unitPrice: '', packFormat: '', expiryDate: '' }]
+      lines: [...formData.lines, { ingredientId: '', description: '', qty: '', unit: 'kg', unitPrice: '', packFormat: '', expiryDate: '', targetInventory: 'food' }]
     });
   };
 

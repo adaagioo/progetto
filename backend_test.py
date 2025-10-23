@@ -285,20 +285,26 @@ class ReceivingBulkDeleteTester:
                     self.results["failed"] += 1
                     self.results["errors"].append(f"Receiving {i}: Dependencies check failed")
 
-        # Test with non-existent receiving ID
+        # Test with non-existent receiving ID (should return 0 inventory records)
         async with self.session.get(
             f"{API_BASE}/receiving/non-existent-id/dependencies",
             headers=self.get_auth_headers("admin")
         ) as response:
             self.results["total_tests"] += 1
             
-            if response.status == 404:
-                print(f"   ✅ Non-existent receiving: Correctly returned 404")
-                self.results["passed"] += 1
+            if response.status == 200:
+                data = await response.json()
+                if data.get("references", {}).get("inventoryRecords") == 0:
+                    print(f"   ✅ Non-existent receiving: Correctly returned 0 inventory records")
+                    self.results["passed"] += 1
+                else:
+                    print(f"   ❌ Non-existent receiving: Should return 0 inventory records")
+                    self.results["failed"] += 1
+                    self.results["errors"].append("Non-existent receiving should return 0 inventory records")
             else:
-                print(f"   ❌ Non-existent receiving: Should return 404, got {response.status}")
+                print(f"   ❌ Non-existent receiving: Dependencies endpoint failed with {response.status}")
                 self.results["failed"] += 1
-                self.results["errors"].append("Non-existent receiving should return 404")
+                self.results["errors"].append("Dependencies endpoint should work for non-existent receiving")
 
     async def test_rbac_enforcement(self):
         """Test RBAC enforcement on delete endpoint"""

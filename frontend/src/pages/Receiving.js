@@ -197,7 +197,7 @@ function Receiving() {
       category: 'food',
       arrivedAt: new Date().toISOString().split('T')[0],
       notes: '',
-      lines: [{ ingredientId: '', description: '', qty: '', unit: 'kg', unitPrice: '', packFormat: '', expiryDate: '' }]
+      lines: [{ ingredientId: '', description: '', qty: '', unit: 'kg', unitPrice: '', packFormat: '', expiryDate: '', targetInventory: 'food' }]
     });
     setEditingId(null);
     setUploadingFor(null);

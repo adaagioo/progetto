@@ -1,21 +1,25 @@
 #!/usr/bin/env python3
 """
-Backend Testing for P2 Batch 2: Preparation Dependencies & Bulk Delete
-Tests the preparation dependencies endpoint and enhanced delete functionality with RBAC.
+P2 Batch 3: Suppliers Bulk Delete & Dependencies Backend Testing
+Tests the supplier dependencies endpoint and delete functionality with RBAC enforcement.
 """
 
-import requests
+import asyncio
+import aiohttp
 import json
-import uuid
+import os
 from datetime import datetime, timezone
 
-# Configuration
-BACKEND_URL = "https://resto-doc-scan.preview.emergentagent.com/api"
+# Backend URL from environment
+BACKEND_URL = os.getenv('REACT_APP_BACKEND_URL', 'https://resto-doc-scan.preview.emergentagent.com')
+API_BASE = f"{BACKEND_URL}/api"
 
 # Test credentials
-ADMIN_CREDENTIALS = {"email": "admin@test.com", "password": "admin123"}
-MANAGER_CREDENTIALS = {"email": "manager@test.com", "password": "manager123"}
-STAFF_CREDENTIALS = {"email": "staff@test.com", "password": "staff123"}
+TEST_USERS = {
+    "admin": {"email": "admin@test.com", "password": "admin123"},
+    "manager": {"email": "manager@test.com", "password": "manager123"},
+    "staff": {"email": "staff@test.com", "password": "staff123"}
+}
 
 class TestRunner:
     def __init__(self):

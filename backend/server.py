@@ -2993,12 +2993,18 @@ async def export_daily_preparations(
     export_data = []
     for item in prep_list.get("items", []):
         prep = prep_map.get(item["preparationId"], {})
-        cost_per_portion = prep.get("cost", 0) / max(prep.get("yield", {}).get("value", 1), 1)
+        
+        # Safely get yield value with proper None handling
+        yield_data = prep.get("yield") or prep.get("yield_") or {}
+        yield_value = yield_data.get("value", 1) if isinstance(yield_data, dict) else 1
+        
+        cost_per_portion = prep.get("cost", 0) / max(yield_value, 1)
         to_prepare = item.get("toMakeQty", 0)
         
         shelf_life_str = "-"
-        if prep.get("shelfLife"):
-            shelf_life_str = f"{prep['shelfLife'].get('value', '-')} {prep['shelfLife'].get('unit', '')}"
+        shelf_life = prep.get("shelfLife")
+        if shelf_life and isinstance(shelf_life, dict):
+            shelf_life_str = f"{shelf_life.get('value', '-')} {shelf_life.get('unit', '')}"
         
         export_data.append({
             "name": item.get("preparationName", prep.get("name", "Unknown")),

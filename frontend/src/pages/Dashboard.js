@@ -161,7 +161,7 @@ function Dashboard() {
         >
           <CardHeader className="flex flex-row items-center justify-between pb-2">
             <CardTitle className="text-sm font-medium text-gray-600">{t('dashboard.lastMonthGM')}</CardTitle>
-            <DollarSign className="h-5 w-5 text-emerald-500" />
+            <TrendingUp className="h-5 w-5 text-emerald-500" />
           </CardHeader>
           <CardContent>
             <div className="text-3xl font-bold text-emerald-600" data-testid="gross-margin-value">

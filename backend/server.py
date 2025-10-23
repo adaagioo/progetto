@@ -3101,6 +3101,90 @@ async def create_order_list(order_data: OrderListCreate, current_user: dict = De
     result = await db.order_lists.find_one({"id": order_list_id}, {"_id": 0})
     return OrderList(**result)
 
+@api_router.get("/order-list/export")
+async def export_purchase_orders(
+    date: str,
+    format: str = "pdf",
+    locale: str = "en",
+    current_user: dict = Depends(get_current_user)
+):
+    """Export purchase orders to PDF or XLSX (grouped by supplier)"""
+    from fastapi.responses import StreamingResponse
+    await check_subscription(current_user)
+    
+    # Get order list for date
+    order_list = await db.order_lists.find_one({
+        "restaurantId": current_user["restaurantId"],
+        "date": date
+    })
+    
+    if not order_list:
+        raise HTTPException(status_code=404, detail="No order list found for this date")
+    
+    # Get ingredients and suppliers
+    ingredient_ids = [item["ingredientId"] for item in order_list.get("items", [])]
+    ingredients = await db.ingredients.find({
+        "id": {"$in": ingredient_ids},
+        "restaurantId": current_user["restaurantId"]
+    }).to_list(1000)
+    
+    ingredient_map = {ing["id"]: ing for ing in ingredients}
+    
+    # Get all suppliers
+    supplier_ids = list(set([ing.get("preferredSupplierId") for ing in ingredients if ing.get("preferredSupplierId")]))
+    suppliers = await db.suppliers.find({
+        "id": {"$in": supplier_ids},
+        "restaurantId": current_user["restaurantId"]
+    }).to_list(1000)
+    
+    supplier_map = {sup["id"]: sup for sup in suppliers}
+    
+    # Group by supplier
+    grouped_data = {}
+    
+    for item in order_list.get("items", []):
+        ingredient = ingredient_map.get(item["ingredientId"], {})
+        supplier_id = ingredient.get("preferredSupplierId")
+        supplier = supplier_map.get(supplier_id, {})
+        supplier_name = supplier.get("name", "Unknown Supplier")
+        
+        if supplier_name not in grouped_data:
+            grouped_data[supplier_name] = []
+        
+        # Get last price
+        last_price = ingredient.get("lastPrice", 0)
+        unit_price = last_price / max(ingredient.get("lastPackSize", 1), 1)
+        
+        grouped_data[supplier_name].append({
+            "itemName": ingredient.get("name", "Unknown"),
+            "qtyToOrder": item.get("suggestedQty", 0),
+            "unit": ingredient.get("unit", ""),
+            "unitPrice": unit_price,
+            "deliveryDate": item.get("deliveryDate", ""),
+            "driver": item.get("driver", "")[:50] if item.get("driver") else "",
+            "notes": item.get("notes", "")
+        })
+    
+    # Get restaurant name
+    restaurant = await db.users.find_one({"id": current_user["id"]})
+    restaurant_name = restaurant.get("restaurantName", "Restaurant")
+    
+    # Generate export
+    if format == "xlsx":
+        content = generate_purchase_orders_xlsx(grouped_data, date, restaurant_name, locale)
+        filename = f"PurchaseOrders_{restaurant_name.replace(' ', '_')}_{date}.xlsx"
+        media_type = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+    else:  # pdf
+        content = generate_purchase_orders_pdf(grouped_data, date, restaurant_name, locale)
+        filename = f"PurchaseOrders_{restaurant_name.replace(' ', '_')}_{date}.pdf"
+        media_type = "application/pdf"
+    
+    return StreamingResponse(
+        BytesIO(content),
+        media_type=media_type,
+        headers={"Content-Disposition": f"attachment; filename={filename}"}
+    )
+
 # ============ PHASE 5: P&L ROUTES ============
 
 @api_router.post("/pl/snapshot", response_model=PLSnapshot)

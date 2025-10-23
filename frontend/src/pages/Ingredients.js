@@ -179,9 +179,9 @@ function Ingredients() {
   // Filter ingredients based on search and allergen filter
   const filteredIngredients = React.useMemo(() => {
     return ingredients.filter(ingredient => {
-      // Search filter
-      const matchesSearch = searchQuery === '' || 
-        ingredient.name.toLowerCase().includes(searchQuery.toLowerCase());
+      // Search filter (using debounced value)
+      const matchesSearch = debouncedSearchQuery === '' || 
+        ingredient.name.toLowerCase().includes(debouncedSearchQuery.toLowerCase());
       
       // Allergen filter
       const matchesAllergen = selectedAllergenFilter === 'all' ||
@@ -189,7 +189,7 @@ function Ingredients() {
       
       return matchesSearch && matchesAllergen;
     });
-  }, [ingredients, searchQuery, selectedAllergenFilter]);
+  }, [ingredients, debouncedSearchQuery, selectedAllergenFilter]);
 
   return (
     <div className="space-y-6" data-testid="ingredients-page">

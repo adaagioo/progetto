@@ -959,6 +959,7 @@ const resources = {
       'inventory.valuation.nofood': 'Inventario Non-Alimentare',
       'inventory.valuation.total': 'Valore Totale Inventario',
       'inventory.valuation.items': 'articoli',
+      'inventory.clickToFilter': 'Clicca per filtrare',
       'inventory.activeFilters': 'Filtri Attivi',
       'inventory.batchExpiry': 'Data Scadenza Lotto',
       'inventory.location': 'Posizione',

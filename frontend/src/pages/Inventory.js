@@ -10,7 +10,7 @@ import { Label } from '../components/ui/label';
 import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/card';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogDescription, DialogFooter } from '../components/ui/dialog';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../components/ui/select';
-import { Plus, Trash2, Package, DollarSign, TrendingUp, X } from 'lucide-react';
+import { Plus, Trash2, Package, TrendingUp, X } from 'lucide-react';
 import { toast } from 'sonner';
 import { format } from 'date-fns';
 

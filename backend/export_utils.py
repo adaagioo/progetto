@@ -80,7 +80,7 @@ def generate_daily_prep_pdf(
             shelf_life,
             format_currency(cost_per_portion, locale),
             format_currency(total_item_cost, locale),
-            notes[:20] + '...' if len(notes) > 20 else notes
+            (notes[:20] + '...' if len(notes) > 20 else notes) if notes else ''
         ])
         
         total_cost += total_item_cost

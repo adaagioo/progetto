@@ -2545,6 +2545,7 @@ async def create_recipe(recipe_data: RecipeCreate, current_user: dict = Depends(
         "restaurantId": current_user["restaurantId"],
         "name": recipe_data.name,
         "category": recipe_data.category,
+        "recipeType": recipe_data.recipeType or "kitchen",
         "portions": recipe_data.portions,
         "targetFoodCostPct": recipe_data.targetFoodCostPct,
         "price": recipe_data.price,

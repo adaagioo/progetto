@@ -968,12 +968,50 @@ function Receiving() {
           );
         })}
 
+        {filteredReceivings.length === 0 && receivings.length > 0 && (
+          <Card>
+            <CardContent className="flex flex-col items-center justify-center py-12">
+              <p className="text-gray-500 mb-4">{t('common.noResults') || 'No receiving records match your search'}</p>
+              <Button
+                variant="outline"
+                onClick={() => {
+                  setSearchQuery('');
+                  setDebouncedSearch('');
+                }}
+              >
+                {t('common.clearFilters') || 'Clear Filters'}
+              </Button>
+            </CardContent>
+          </Card>
+        )}
+
         {receivings.length === 0 && (
           <div className="text-center py-12 text-muted-foreground">
             {t('receiving.noData') || 'No receiving records yet'}
           </div>
         )}
       </div>
+
+      {/* Bulk Delete Confirmation Dialog */}
+      <Dialog open={showBulkDeleteDialog} onOpenChange={setShowBulkDeleteDialog}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>{t('common.confirmDelete') || 'Confirm Delete'}</DialogTitle>
+            <DialogDescription>
+              {t('receiving.confirmBulkDelete', { count: selectedItems.length }) ||
+                `Are you sure you want to delete ${selectedItems.length} selected receiving records? This will reverse stock movements. This action cannot be undone.`}
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setShowBulkDeleteDialog(false)}>
+              {t('common.cancel') || 'Cancel'}
+            </Button>
+            <Button variant="destructive" onClick={handleBulkDelete}>
+              {t('common.delete') || 'Delete'}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

@@ -2404,6 +2404,9 @@ async def update_recipe(recipe_id: str, recipe_data: RecipeUpdate, current_user:
     if recipe_data.shelfLife is not None:
         update_data["shelfLife"] = recipe_data.shelfLife.dict()
     
+    if recipe_data.instructions is not None:
+        update_data["instructions"] = recipe_data.instructions
+    
     update_data["updatedAt"] = datetime.now(timezone.utc).isoformat()
     
     # Update in database

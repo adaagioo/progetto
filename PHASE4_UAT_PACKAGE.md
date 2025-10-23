@@ -9,7 +9,7 @@
 
 ## 🌐 STAGING ENVIRONMENT
 
-**URL:** `https://resto-doc-scan.preview.emergentagent.com`
+**URL:** `https://bulk-delete-rbac.preview.emergentagent.com`
 
 **Tenant:** Test Restaurant (Multi-restaurant tenant)
 

@@ -7,7 +7,7 @@ import asyncio
 import aiohttp
 import json
 
-BASE_URL = "https://resto-doc-scan.preview.emergentagent.com/api"
+BASE_URL = "https://bulk-delete-rbac.preview.emergentagent.com/api"
 
 async def debug_preparation_cost():
     async with aiohttp.ClientSession() as session:

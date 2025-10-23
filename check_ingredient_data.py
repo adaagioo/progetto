@@ -6,7 +6,7 @@ Check actual ingredient data from the backend
 import asyncio
 import aiohttp
 
-BASE_URL = "https://resto-doc-scan.preview.emergentagent.com/api"
+BASE_URL = "https://bulk-delete-rbac.preview.emergentagent.com/api"
 
 async def check_ingredients():
     async with aiohttp.ClientSession() as session:

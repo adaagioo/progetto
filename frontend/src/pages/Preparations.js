@@ -198,6 +198,75 @@ function Preparations() {
   // RBAC: Check if user can edit (admin or manager)
   const canEdit = user?.roleKey === 'admin' || user?.roleKey === 'manager';
 
+  // Filter preparations based on search
+  const filteredPreparations = React.useMemo(() => {
+    return preparations.filter(prep => {
+      const matchesSearch = debouncedSearch === '' ||
+        prep.name.toLowerCase().includes(debouncedSearch.toLowerCase());
+      return matchesSearch;
+    });
+  }, [preparations, debouncedSearch]);
+
+  // Bulk select handlers
+  const toggleSelectAll = () => {
+    if (selectedItems.length === filteredPreparations.length && filteredPreparations.length > 0) {
+      setSelectedItems([]);
+    } else {
+      setSelectedItems(filteredPreparations.map(p => p.id));
+    }
+  };
+
+  const toggleSelectItem = (id) => {
+    setSelectedItems(prev =>
+      prev.includes(id) ? prev.filter(i => i !== id) : [...prev, id]
+    );
+  };
+
+  // Bulk delete with dependency checking
+  const handleBulkDelete = async () => {
+    if (selectedItems.length === 0) return;
+
+    try {
+      // Check dependencies for all selected preparations
+      const dependencyChecks = await Promise.all(
+        selectedItems.map(async (id) => {
+          try {
+            const response = await axios.get(`${API}/preparations/${id}/dependencies`);
+            return { id, ...response.data };
+          } catch (error) {
+            return { id, hasReferences: false, references: {} };
+          }
+        })
+      );
+
+      // Find preparations with dependencies
+      const prepsWithDeps = dependencyChecks.filter(d => d.hasReferences);
+      
+      if (prepsWithDeps.length > 0) {
+        toast.error(
+          t('preparations.error.hasDependencies', { count: prepsWithDeps.length }) ||
+          `Cannot delete: ${prepsWithDeps.length} preparations are referenced in recipes`
+        );
+        setShowBulkDeleteDialog(false);
+        return;
+      }
+
+      // Delete all selected preparations
+      await Promise.all(selectedItems.map(id => axios.delete(`${API}/preparations/${id}`)));
+      
+      toast.success(
+        t('preparations.success.bulkDelete', { count: selectedItems.length }) ||
+        `${selectedItems.length} preparations deleted successfully`
+      );
+      setSelectedItems([]);
+      setShowBulkDeleteDialog(false);
+      fetchPreparations();
+    } catch (error) {
+      const errorMsg = error.response?.data?.detail || t('preparations.error.bulkDelete') || 'Failed to delete preparations';
+      toast.error(errorMsg);
+    }
+  };
+
   return (
     <div className="p-6">
       <div className="flex justify-between items-center mb-6">

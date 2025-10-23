@@ -384,8 +384,8 @@ class SmallQuantityCostingTester:
                 if response.status == 200:
                     preparation = await response.json()
                     
-                    # Expected: 100mg = 0.0001kg, €50,000/kg * 0.0001kg = €5.00
-                    expected_cost = saffron_ingredient["unitCost"] * (100 / 1000000)  # Convert mg to kg
+                    # Expected: 100mg = 0.0001kg, 5,000,000 cents/kg * 0.0001kg = 500 cents = €5.00
+                    expected_cost = 500.0
                     
                     if preparation["cost"] > 0:
                         self.log_result("MG to KG Conversion > 0", True, f"Cost €{preparation['cost']:.4f} > 0")

@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
-P2 Batch 3: Suppliers Bulk Delete & Dependencies Backend Testing
-Tests the supplier dependencies endpoint and delete functionality with RBAC enforcement.
+Backend Test Suite for P2 Batch 4: Receiving Bulk Delete with Stock Reversal
+Tests the receiving dependencies endpoint and delete functionality with stock reversal.
 """
 
 import asyncio
@@ -9,8 +9,9 @@ import aiohttp
 import json
 import os
 from datetime import datetime, timezone
+from typing import Dict, List, Any
 
-# Backend URL from environment
+# Configuration
 BACKEND_URL = os.getenv('REACT_APP_BACKEND_URL', 'https://resto-doc-scan.preview.emergentagent.com')
 API_BASE = f"{BACKEND_URL}/api"
 

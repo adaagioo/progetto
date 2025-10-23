@@ -40,6 +40,8 @@ function Ingredients() {
   const [editingId, setEditingId] = useState(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedAllergenFilter, setSelectedAllergenFilter] = useState('all');
+  const [selectedItems, setSelectedItems] = useState([]);
+  const [showBulkDeleteDialog, setShowBulkDeleteDialog] = useState(false);
   
   // Debounce search query for better performance
   const debouncedSearchQuery = useDebounce(searchQuery, 300);

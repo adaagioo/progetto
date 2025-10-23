@@ -115,6 +115,72 @@ function Inventory() {
     }
   };
 
+  // RBAC: Check if user can edit
+  const canEdit = user?.roleKey === 'admin' || user?.roleKey === 'manager';
+
+  // Filter inventory based on search and URL filters
+  const filteredInventory = React.useMemo(() => {
+    return inventory.filter(item => {
+      // Search filter
+      const ingredient = ingredients.find(ing => ing.id === item.ingredientId);
+      const matchesSearch = debouncedSearch === '' ||
+        (ingredient?.name && ingredient.name.toLowerCase().includes(debouncedSearch.toLowerCase())) ||
+        (item.location && item.location.toLowerCase().includes(debouncedSearch.toLowerCase()));
+
+      // Category filter from URL
+      const matchesCategory = !categoryFilter || item.category === categoryFilter;
+
+      // Filter type (lowStock, expiring) - keep existing logic
+      let matchesFilterType = true;
+      if (filterType === 'lowStock') {
+        // You can add low stock logic here if needed
+        matchesFilterType = true;
+      } else if (filterType === 'expiring') {
+        // You can add expiring logic here if needed
+        matchesFilterType = true;
+      }
+
+      return matchesSearch && matchesCategory && matchesFilterType;
+    });
+  }, [inventory, debouncedSearch, categoryFilter, filterType, ingredients]);
+
+  // Bulk select handlers
+  const toggleSelectAll = () => {
+    if (selectedItems.length === filteredInventory.length && filteredInventory.length > 0) {
+      setSelectedItems([]);
+    } else {
+      setSelectedItems(filteredInventory.map(item => item.id));
+    }
+  };
+
+  const toggleSelectItem = (id) => {
+    setSelectedItems(prev =>
+      prev.includes(id) ? prev.filter(i => i !== id) : [...prev, id]
+    );
+  };
+
+  // Bulk delete (deletes inventory records, NOT master ingredients)
+  const handleBulkDelete = async () => {
+    if (selectedItems.length === 0) return;
+
+    try {
+      // Delete all selected inventory records
+      await Promise.all(selectedItems.map(id => axios.delete(`${API}/inventory/${id}`)));
+
+      toast.success(
+        t('inventory.success.bulkDelete', { count: selectedItems.length }) ||
+        `${selectedItems.length} inventory records deleted successfully`
+      );
+      setSelectedItems([]);
+      setShowBulkDeleteDialog(false);
+      fetchInventory();
+      fetchValuation(); // Refresh valuation after deleting inventory
+    } catch (error) {
+      const errorMsg = error.response?.data?.detail || t('inventory.error.bulkDelete') || 'Failed to delete inventory records';
+      toast.error(errorMsg);
+    }
+  };
+
   const handleCategoryFilter = (category) => {
     const newParams = new URLSearchParams(searchParams);
     if (categoryFilter === category) {

@@ -97,7 +97,7 @@ class ReceivingBulkDeleteTester:
             json=supplier_data,
             headers=self.get_auth_headers("admin")
         ) as response:
-            if response.status == 201:
+            if response.status == 200:
                 supplier = await response.json()
                 self.test_data["suppliers"].append(supplier)
                 print(f"   ✅ Created supplier: {supplier['name']}")

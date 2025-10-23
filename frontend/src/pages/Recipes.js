@@ -496,7 +496,7 @@ function RecipesEnhanced() {
               </DialogHeader>
               <form onSubmit={handleSubmit} className="space-y-4">
                 {/* Basic Info */}
-                <div className="grid grid-cols-2 gap-4">
+                <div className="grid grid-cols-3 gap-4">
                   <div>
                     <Label htmlFor="name">{t('recipes.name') || 'Recipe Name'} *</Label>
                     <Input
@@ -514,6 +514,21 @@ function RecipesEnhanced() {
                       onChange={(e) => setFormData({ ...formData, category: e.target.value })}
                       required
                     />
+                  </div>
+                  <div>
+                    <Label htmlFor="recipeType">{t('recipes.recipeType') || 'Recipe Type'} *</Label>
+                    <Select
+                      value={formData.recipeType}
+                      onValueChange={(value) => setFormData({ ...formData, recipeType: value })}
+                    >
+                      <SelectTrigger>
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="kitchen">{t('recipes.kitchen') || 'Kitchen'}</SelectItem>
+                        <SelectItem value="bar">{t('recipes.bar') || 'Bar'}</SelectItem>
+                      </SelectContent>
+                    </Select>
                   </div>
                 </div>
 

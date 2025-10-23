@@ -143,7 +143,8 @@ class BackendTester:
                     }]
                 }
                 
-                await self.test_endpoint_auth('POST', '/prep-list', 201, token, json=prep_list_data)
+                prep_list_result = await self.test_endpoint_auth('POST', '/prep-list', 201, token, json=prep_list_data)
+                print(f"   Prep list creation: {prep_list_result['status']} - {prep_list_result.get('data', 'No data')}")
                 
                 # Create order list
                 order_list_data = {
@@ -159,7 +160,8 @@ class BackendTester:
                     }]
                 }
                 
-                await self.test_endpoint_auth('POST', '/order-list', 201, token, json=order_list_data)
+                order_list_result = await self.test_endpoint_auth('POST', '/order-list', 201, token, json=order_list_data)
+                print(f"   Order list creation: {order_list_result['status']} - {order_list_result.get('data', 'No data')}")
                 
         print("✅ Test data created successfully")
         

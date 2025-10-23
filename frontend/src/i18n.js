@@ -62,6 +62,7 @@ const resources = {
       'export.pdf': 'PDF',
       'export.xlsx': 'Excel',
       'export.selectDate': 'Select Date',
+      'export.purchaseOrders': 'Export Purchase Orders',
       'dashboard.clickToView': 'Click to view',
       
       // Ingredients

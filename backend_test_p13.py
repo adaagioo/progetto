@@ -496,7 +496,7 @@ class SmallQuantityCostingTester:
                     expected_total = expected_per_portion * 4  # 12 cents
                     
                     self.log_result("Recipe Unit Conversion Created", True, f"Recipe created successfully")
-                    self.log_result("Recipe Cost Calculation", True, f"Expected total cost: €{expected_total:.4f}")
+                    self.log_result("Recipe Cost Calculation", True, f"Expected total cost: {expected_total:.4f} cents")
                     
                     # Clean up
                     await self.session.delete(f"{BASE_URL}/recipes/{recipe['id']}", headers=self.get_auth_headers())

@@ -293,7 +293,7 @@ function Ingredients() {
                   type="number"
                   step="0.01"
                   value={formData.minStockQty}
-                  onChange={(e) => setFormData({ ...formData, minStockQty: e.target.value })}
+                  onChange={(e) => handleInputChange('minStockQty', e.target.value)}
                   required
                   data-testid="ingredient-minstock-input"
                   className="input-focus"

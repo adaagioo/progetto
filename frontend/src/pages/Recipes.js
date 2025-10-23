@@ -834,12 +834,9 @@ function RecipesEnhanced() {
                     </span>
                   </CardTitle>
                   <div className="flex items-center gap-4 mt-2 text-sm">
-                    <div className="flex items-center gap-1">
-                      <DollarSign className="h-4 w-4 text-emerald-600" />
-                      <span className="font-semibold text-emerald-600">
-                        {formatMinor(recipe.price)}
-                      </span>
-                    </div>
+                    <span className="font-semibold text-emerald-600">
+                      {formatMinor(recipe.price)}
+                    </span>
                     <span className="text-muted-foreground">{recipe.category}</span>
                   </div>
                 </div>

@@ -120,6 +120,39 @@ user_problem_statement: |
   - Allergen propagation chain verification
 
 backend:
+  - task: "P2 Batch 2: Preparation Dependencies & Bulk Delete Backend"
+    implemented: true
+    working: "NA"
+    file: "backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: |
+          BATCH 2 BACKEND IMPLEMENTATION COMPLETED:
+          
+          ✅ NEW ENDPOINT ADDED:
+          - GET /api/preparations/{prep_id}/dependencies
+            - Checks if preparation is referenced in recipes
+            - Returns: { hasReferences: bool, references: { recipes: count } }
+            - Tenant-scoped query
+          
+          ✅ DELETE ENDPOINT UPDATED:
+          - DELETE /api/preparations/{prep_id}
+            - Enhanced RBAC: Only admin/manager can delete
+            - Added dependency checking before deletion
+            - Returns 400 error if preparation referenced in recipes with clear message
+            - Audit logging already present (no changes needed)
+            - Tenant isolation enforced
+          
+          PENDING TESTING:
+          - Verify dependency check endpoint returns correct recipe counts
+          - Verify bulk delete fails when preparations have recipe references
+          - Verify RBAC allows admin/manager but denies staff
+          - Test with multiple preparations (bulk scenario)
+
   - task: "P2: Recipe Dependencies & Bulk Delete Backend"
     implemented: true
     working: true

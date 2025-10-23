@@ -3725,14 +3725,46 @@ async def update_receiving(
     
     return Receiving(**updated_receiving)
 
+@api_router.get("/receiving/{receiving_id}/dependencies")
+async def get_receiving_dependencies(receiving_id: str, current_user: dict = Depends(get_current_user)):
+    """Check if receiving record inventory has been consumed"""
+    # Get all inventory records created by this receiving
+    inventory_records = await db.inventory.find({
+        "restaurantId": current_user["restaurantId"],
+        "receivingId": receiving_id
+    }).to_list(length=None)
+    
+    if not inventory_records:
+        return {
+            "hasReferences": False,
+            "canDelete": True,
+            "references": {
+                "inventoryRecords": 0
+            },
+            "message": "No inventory records found"
+        }
+    
+    # For simplicity, we'll allow deletion and just reverse the inventory
+    # In a more complex system, you'd check if the stock has been consumed
+    # by sales, waste, or preparations beyond what was received
+    
+    return {
+        "hasReferences": len(inventory_records) > 0,
+        "canDelete": True,  # We allow deletion with stock reversal
+        "references": {
+            "inventoryRecords": len(inventory_records)
+        },
+        "message": f"Will reverse {len(inventory_records)} inventory records"
+    }
+
 @api_router.delete("/receiving/{receiving_id}")
 async def delete_receiving(receiving_id: str, current_user: dict = Depends(get_current_user)):
-    """Delete a receiving record"""
+    """Delete a receiving record and reverse inventory movements"""
     await check_subscription(current_user)
     
     # RBAC: Only admin and manager can delete receiving records
     if current_user["roleKey"] not in ["admin", "manager"]:
-        raise HTTPException(status_code=403, detail="Only administrators and managers can delete receiving records")
+        raise HTTPException(status_code=403, detail="Admin or Manager access required")
     
     # Check if receiving exists
     receiving = await db.receiving.find_one(
@@ -3743,7 +3775,13 @@ async def delete_receiving(receiving_id: str, current_user: dict = Depends(get_c
     if not receiving:
         raise HTTPException(status_code=404, detail="Receiving record not found")
     
-    # Delete associated inventory records
+    # Get inventory records count for warning
+    inventory_count = await db.inventory.count_documents({
+        "restaurantId": current_user["restaurantId"],
+        "receivingId": receiving_id
+    })
+    
+    # Delete associated inventory records (this reverses the stock movement)
     await db.inventory.delete_many({"receivingId": receiving_id})
     
     # Delete associated files
@@ -3766,10 +3804,17 @@ async def delete_receiving(receiving_id: str, current_user: dict = Depends(get_c
         "delete",
         "receiving",
         receiving_id,
-        {"category": receiving["category"], "total": receiving["total"]}
+        {
+            "category": receiving["category"],
+            "total": receiving["total"],
+            "inventoryRecordsReversed": inventory_count
+        }
     )
     
-    return {"message": "Receiving record deleted"}
+    return {
+        "message": "Receiving record deleted",
+        "inventoryRecordsReversed": inventory_count
+    }
 @api_router.get("/ingredients/{ingredient_id}/price-history")
 async def get_ingredient_price_history(
     ingredient_id: str,

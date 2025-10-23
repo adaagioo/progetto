@@ -23,8 +23,8 @@
 ## 🌐 Staging Environment
 
 ### URLs
-- **Application**: https://allergen-taxonomy.preview.emergentagent.com
-- **API Base**: https://allergen-taxonomy.preview.emergentagent.com/api
+- **Application**: https://resto-doc-scan.preview.emergentagent.com
+- **API Base**: https://resto-doc-scan.preview.emergentagent.com/api
 
 ### Test Credentials
 

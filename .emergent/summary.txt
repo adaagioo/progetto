@@ -1,24 +1,27 @@
 <analysis>
-The AI engineer's work focused on three main areas: Allergen Taxonomy implementation, Phase 6 (Suppliers+) Receiving UI enhancements, and Phase 8 (Document Ingestion / OCR). Initial efforts centered on allergen integration, involving backend updates for uppercase code storage, comprehensive i18n translations, and frontend component development (). The engineer successfully integrated the  into , , and , added filtering capabilities, and resolved critical i18n and data consistency issues where raw keys or legacy allergen names were displayed.
+The AI engineer's work spanned multiple critical phases of the RistoBrain application, primarily focusing on **Phase 8 (Document Ingestion / OCR)** and **Phase 7 (RBAC Matrix)**, interspersed with significant bug fixes. Initial efforts successfully integrated OCR into the Suppliers and Receiving pages, including backend services (Tesseract, ) and frontend components. A recurring and challenging  import error, causing backend crashes and authentication failures, was extensively debugged and ultimately resolved by making the  import optional in .
 
-Following this, Phase 6 saw the development of Receiving UI enhancements, specifically a price history popover and price list viewer, alongside a backend endpoint for historical prices. The final major thrust was Phase 8, where Tesseract OCR was installed, an OCR service wrapper and a sophisticated document parser were created. The parser was significantly refined to accurately extract line items, dates, and invoice numbers from complex Italian PDF invoices. At the end of the trajectory, the engineer initiated OCR integration into core modules, starting with the Receiving page, and was in the process of adding an OCR upload button to the Suppliers page. Throughout, iterative debugging, testing, and user feedback were crucial in addressing issues like CORS, missing backend dependencies, data inconsistencies, and parsing accuracy.
+Following this, the engineer tackled a comprehensive list of P0, P1, P2, and P3 bugs/features. Key P1 fixes included implementing  and ensuring  persistence for Preparations and Recipes, fixing small quantity costing precision, and debouncing UI inputs to prevent freezes. The engineer also initiated P2 tasks, adding Target Inventory selection with memory to Receiving, clickable totals for Inventory drill-down, and global search bars to Suppliers and Receiving. The trajectory concludes with the engineer addressing the user's request to extend Select All + Bulk Delete and add search bars to other modules. Throughout, extensive i18n translations were maintained, and backend Pydantic models were adjusted for data consistency.
 </analysis>
 
 <product_requirements>
-RistoBrain is a multi-tenant PWA for restaurant cost control, built using React, FastAPI, and MongoDB, featuring authentication, RBAC (admin/manager/waiter), multi-currency (EUR/USD, minor units), password reset, and EN/IT internationalization.
+RistoBrain is a multi-tenant PWA for restaurant cost control, using React, FastAPI, and MongoDB, with features like authentication, RBAC (admin/manager/waiter), multi-currency (EUR/USD, minor units), password reset, and EN/IT internationalization.
 
-**Implemented Phases:**
-*   **Phase 1:** Suppliers (CRUD, attachments), Receiving (CRUD, inventory write-through), Inventory Valuation (WAC, audit), interactive Dashboard.
-*   **Phase 2:** Enhanced Ingredients (waste %, allergens, shelf life, category), Preparations (sub-recipes, computed cost/allergens, instructions), Enhanced Recipe Editor (mixed items, in-place editing, keyboard UX, live cost, allergen badges, instructions). Allergen taxonomy normalized to EU-14.
-*   **Phase 3:** Sales & Wastage with WAC stock deductions, and Admin-only Users & Access management.
-
-**Current & Future Work (as per user requests and previous work):**
-*   **Phase 4 (Implemented, closing gaps):** Prep List (available/to make, forecast, shelf-life, manual overrides, expiry alerts, UI/UX, i18n/currency) and Order List (suggested qty, drivers, pack rounding, supplier switch, expiry alerts, RBAC).
-*   **Allergen Integration (P0):** Integrate  (codes in DB, localized labels, fixed checklist + free-text Other input) across Ingredients, Preparations, Recipes (forms, badges, filters). Ensure propagation, handle legacy string migration.
+**Core Implemented Phases:**
+*   **Phase 1-3:** Suppliers (CRUD, attachments), Receiving (CRUD, inventory write-through), Inventory Valuation (WAC), Dashboard, Enhanced Ingredients (waste %, allergens, shelf life, category), Preparations (sub-recipes, computed cost/allergens), Enhanced Recipe Editor (mixed items, in-place editing, live cost, allergen badges), Sales & Wastage, Admin Users & Access.
+*   **Phase 4 (Closing Gaps):** Prep List (forecast, expiry alerts), Order List (suggested qty, drivers).
+*   **Allergen Integration (P0):**  (codes in DB, localized labels, fixed checklist + free-text Other input) integrated across Ingredients, Preparations, Recipes (forms, badges, filters).
 *   **Phase 5 (Backend Complete, Frontend Implemented):** Enhanced P&L template (weekly Mon–Sun, multi-currency/locale, detailed calculations, manual lines).
 *   **Phase 6 (Suppliers+):** Item mapping, price lists, Ingredients UI, Receiving UI enhancements (preferred supplier pre-fill, last price/pack auto-fill, price history popover, pack rounding tooltip, price-list viewer/download).
-*   **Phase 8 (Document Ingestion / OCR):** OCR integration (JPG/PNG/PDF) into Suppliers, Receiving, Sales, and P&L modules. Provider adapter (Tesseract MVP), parsing pipeline, mandatory Review & Mapping UI (no silent imports, confidence coloring, editable fields, mapping memory), Receiving/Sales integration, error handling, audit trail, RBAC/tenant checks, i18n.
+*   **Phase 8 (Document Ingestion / OCR):** Tesseract OCR integrated for JPG/PNG/PDF into Suppliers, Receiving, Sales, P&L. Provider adapter, parsing pipeline, Review & Mapping UI, error handling, audit trail, RBAC/tenant checks, i18n.
 *   **Phase 7 (RBAC Matrix):** Customizable permission schema, APIs, admin-only matrix UI, enforcement, tests.
+
+**Recent User-Reported Issues & Feature Requests (P0, P1, P2, P3):**
+*   **P0 Blockers (Fixed):** Authentication broken (login/registration failures), Receiving list failing.
+*   **P1 Data Integrity/Calculation (Partially Fixed):** Receiving → Inventory sync (fixed backend), Preparations persistence (portions/instructions, fixed), Recipes persistence (instructions, fixed), small quantity costing (€0.00 issue, fixed), Ingredient form inputs freeze (fixed).
+*   **P2 Feature Completeness/Navigation (In Progress):** Inventory header totals clickable (fixed), Receiving target inventory (fixed), Recipes split into Kitchen/Bar (pending), Global search & filters (started, pending), Bulk select + delete (started, pending), Export to PDF/Excel (pending), OCR (Tesseract) availability (fixed).
+*   **P3 UI Correctness/Housekeeping (Pending):** Allergens list overlaps (EN locale), remove empty dashboard card, currency symbol hygiene, sidebar order.
+*   **New Section (Post-fix feature):** Current Menu tab.
 </product_requirements>
 
 <key_technical_concepts>
@@ -27,110 +30,108 @@ RistoBrain is a multi-tenant PWA for restaurant cost control, built using React,
 -   **MongoDB**: NoSQL database (UUIDs for IDs).
 -   **JWT/RBAC**: Authentication and Role-Based Access Control.
 -   **i18n**: Internationalization (, EN/IT).
--   **Minor Units**: Monetary value storage.
--   **Weighted Average Cost (WAC)**: Inventory valuation.
--   **Playwright**: Frontend E2E testing framework.
--   **EU-14 Allergens**: Standardized allergen taxonomy.
+-   **Pydantic**: Data validation and settings management.
 -   **Tesseract OCR**: OCR engine for document ingestion.
 -   **Pytesseract**: Python wrapper for Tesseract.
--   **Poppler-utils**: PDF to image conversion for OCR.
+-   **Debian/APT**: Linux package management (for , ).
+-   **useCallback/useMemo/debounce**: React performance optimization.
 </key_technical_concepts>
 
 <code_architecture>
 
--   : Core FastAPI application.
-    -   **Importance**: Defines API routes and business logic.
-    -   **Changes**: Updated  CRUD to uppercase allergen codes. Added GET endpoint for individual ingredients. Added  endpoint for Receiving. Implemented OCR endpoints (, , ). Added mapping memory endpoints (). RBAC checks were added to receiving endpoints. Removed import from .
--   : Python dependencies.
-    -   **Importance**: Environment consistency.
+-   :
+    -   **Importance**: Core FastAPI application, defines API routes and business logic.
+    -   **Changes**: Updated  CRUD. Added , OCR endpoints (, , , ), and RBAC endpoints (, ). Health check endpoint enhanced. Pydantic models for  and  updated with  to handle legacy fields.  model updated to include .  model updated to ensure  persistence. Unit conversion logic added for costing. Temporarily added debug logging, then removed.  body filled.
+-   :
+    -   **Importance**: Python dependencies.
     -   **Changes**: Added , , .
--   : Renamed from .
-    -   **Importance**: Contained deprecated allergen normalization logic.
-    -   **Changes**: Renamed to prevent usage, dependency removed from .
--   : New script.
-    -   **Importance**: Migrates legacy lowercase allergen codes in MongoDB to uppercase, ensuring consistency.
-    -   **Changes**: Created, and updated to correctly connect to .
--   : New script.
-    -   **Importance**: Seeds UAT data with ingredients, preparations, and recipes including allergens.
-    -   **Changes**: Created, then fixed recipe item  field.
--   : New script.
-    -   **Importance**: Provides a wrapper for Tesseract OCR functionality.
+-   :
+    -   **Importance**: Handles file storage operations.
+    -   **Changes**: Modified  to be optional (inside a  block) and made file type validation conditional, resolving persistent  import errors.
+-   :
+    -   **Importance**: Wrapper for Tesseract OCR.
     -   **Changes**: Created to handle image/PDF to text conversion.
--   : New script.
-    -   **Importance**: Parses raw OCR text into structured data (invoice number, date, line items).
-    -   **Changes**: Significantly enhanced with Italian-specific regex patterns for line item, date, and invoice number detection to handle complex invoice layouts.
--   : Internationalization configuration.
-    -   **Importance**: Multi-language support.
-    -   **Changes**: Expanded with comprehensive translations for allergen filters, badges, Other/Altro input, Receiving UI (price history, price lists), and new OCR features (DocumentImport page, upload buttons, common labels).
--   : Main React entry and routing.
-    -   **Importance**: Defines application routes.
+-   :
+    -   **Importance**: Parses raw OCR text into structured data.
+    -   **Changes**: Significantly enhanced with Italian-specific regex patterns for line item, date, and invoice number detection.
+-   :
+    -   **Importance**: Defines the permission schema for RBAC.
+    -   **Changes**: New file created.
+-   :
+    -   **Importance**: Implements RBAC enforcement.
+    -   **Changes**: New file created.
+-   :
+    -   **Importance**: Frontend environment variables.
+    -   **Changes**: Added  to hide the Document Import page.
+-   :
+    -   **Importance**: Internationalization configuration.
+    -   **Changes**: Expanded with comprehensive translations for OCR features, Receiving UI, new RBAC features, bulk delete, and fixed  placeholder.
+-   :
+    -   **Importance**: Main React entry and routing.
     -   **Changes**: Added route for .
--   : Global layout and navigation.
-    -   **Importance**: Consistent UI structure.
-    -   **Changes**: Added navigation link for , added  icon import.
--   : Reusable component.
-    -   **Importance**: Standardizes allergen input.
-    -   **Changes**: No structural changes, but central to the allergen integration.
--   : New reusable component.
-    -   **Importance**: Provides a standardized button for initiating OCR document uploads.
-    -   **Changes**: Created to encapsulate OCR upload logic.
--   : Ingredients management page.
-    -   **Importance**: CRUD for ingredients.
-    -   **Changes**: Updated allergen badge display to use i18n and uppercase codes. Added allergen filter UI.
--   : Preparations page.
-    -   **Importance**: CRUD for preparations.
-    -   **Changes**: Updated allergen badge display to use i18n and uppercase codes.
--   : Recipes page.
-    -   **Importance**: CRUD for recipes.
-    -   **Changes**: Updated allergen badge display to use i18n and uppercase codes. Added allergen filter UI.
--   : Receiving records page.
-    -   **Importance**: Manages incoming inventory.
-    -   **Changes**: Integrated price history popover, price list viewer, OCR upload button and handler for parsed data, and an indicator for OCR-imported records.
--   : Suppliers management page.
-    -   **Importance**: CRUD for suppliers.
-    -   **Changes**: Enhanced file upload for  (previously), now integrating OCR upload button.
--   : New page.
-    -   **Importance**: Provides UI for document upload, OCR processing, review, and mapping.
-    -   **Changes**: Created with file upload, processing, and review steps.
+-   :
+    -   **Importance**: Global layout and navigation.
+    -   **Changes**: Conditionally renders the navigation link for  based on the  flag. Added  icon import.
+-   :
+    -   **Importance**: Reusable OCR upload button.
+    -   **Changes**: Created.
+-   :
+    -   **Importance**: Frontend hook to fetch and use user permissions.
+    -   **Changes**: New file created.
+-   :
+    -   **Importance**: Ingredients management page.
+    -   **Changes**: Added allergen filter UI, updated badge display, added debounced search input, and wrapped form input handlers with  for performance. Implemented bulk select/delete functionality with UI elements and state.
+-   :
+    -   **Importance**: Preparations page.
+    -   **Changes**: Updated allergen badge display. (Further changes for  UI and  persistence are pending frontend implementation).
+-   :
+    -   **Importance**: Recipes page.
+    -   **Changes**: Updated allergen badge display, added allergen filter UI. (Changes for  persistence are pending frontend UI implementation).
+-   :
+    -   **Importance**: Receiving records page.
+    -   **Changes**: Integrated price history popover, price list viewer, OCR upload button and handler, indicator for OCR-imported records. Added Target Inventory selector per line item with local storage memory. Added search bar and filtering.
+-   :
+    -   **Importance**: Suppliers management page.
+    -   **Changes**: Integrated OCR upload button and a review dialog for parsed price list items. Added ingredient mapping functionality for OCR-parsed items. Added search bar and filtering.
+-   :
+    -   **Importance**: UI for OCR document import, review, and mapping.
+    -   **Changes**: Created, then hidden via feature flag.
+-   :
+    -   **Importance**: UI for RBAC Matrix within Settings.
+    -   **Changes**: New file created and integrated into .
+-   :
+    -   **Importance**: Application settings.
+    -   **Changes**: Added the  to the settings page.
+-   :
+    -   **Importance**: Inventory management page.
+    -   **Changes**: Made header totals (Food/Non-food/Drink) clickable to apply category filters, with URL-driven state and active filter chips.
 </code_architecture>
 
 <pending_tasks>
--   **Phase 4 (Prep List & Order List):**
-    -   Verify expiry alerts with real seeded data.
-    -   Refine pack rounding display for Order List UI (tooltip for drivers).
-    -   Verify Staff RBAC limitations.
-    -   Re-run comprehensive Playwright tests (with longer timeouts) to achieve 100% pass rate.
--   **Phase 6 (Suppliers+):**
-    -   Receiving UI enhancement: Remaining Playwright smoke tests, RBAC checks, and UAT package.
--   **Phase 8 (Document Ingestion / OCR):**
-    -   Integrate OCR into Suppliers, Sales, and P&L modules.
-    -   Implement mapping memory, review/mapping UI details (confidence coloring, editable fields).
-    -   Finalize RBAC/tenant checks and audit trail.
-    -   Complete full testing and UAT package.
--   **Phase 7 (RBAC Matrix):** Full implementation.
+-   **P2 Feature Completeness/Navigation (Remaining)**
+    -   Extend Select All + Bulk Delete to Recipes, Preparations, Suppliers, Receiving, Inventory (items list).
+    -   Add search bars to Preparations, Inventory, Sales, Wastage.
+    -   Implement Export to PDF/XLSX for daily preparations, purchase orders, and from Dashboard.
+    -   Implement Recipes split into Kitchen and Bar categories.
+-   **P3 UI Correctness/Housekeeping**
+    -   Fix allergen chip layout (EN locale) for long names.
+    -   Remove the empty Dashboard card.
+    -   Ensure currency symbol hygiene (EUR only).
+    -   Update sidebar order (Ingredients before Recipes).
+-   **New Section (Post-fix feature)**
+    -   Implement Current Menu tab.
 </pending_tasks>
 
 <current_work>
-Immediately prior to this summary, the AI engineer was working on **Phase 8 (Document Ingestion / OCR)**, specifically integrating the OCR functionality into the core application modules as requested by the user.
+Immediately prior to this summary, the AI engineer was actively working on **P2.4: Bulk Select + Delete** and **P2.3: Global Search & Filters** based on the user's latest detailed instructions.
 
-The trajectory concludes with the engineer in the process of **integrating the OCR upload button into the Suppliers page ()**. This is part of Phase 2 of the OCR integration, focusing on Price List Management with OCR.
+Specifically:
+1.  **Fixed  placeholder i18n:** The missing i18n key for the search placeholder on the Ingredients page was added to  in both English and Italian.
+2.  **Started extending Select All + Bulk Delete:** The engineer began replicating the bulk delete functionality for other modules, starting with the **Recipes page ()**. The initial step was to add bulk select state and handler functions to .
 
-Earlier in Phase 8, significant work was done to:
-1.  **Install OCR infrastructure**: , , ,  were installed. Python libraries , ,  were added to .
-2.  **Develop backend OCR services**:
-    *    was created to wrap Tesseract.
-    *    was developed and extensively refined to parse complex Italian invoice PDFs, successfully extracting invoice numbers, dates, and especially line items, resolving previous parsing failures.
-3.  **Create backend OCR API endpoints**: Endpoints for document upload, parsing, and creating receiving records from OCR data were added to . Mapping memory endpoints were also added.
-4.  **Develop frontend OCR UI**:
-    *   A new page, , was created for general document import and review.
-    *    was created as a reusable component for triggering OCR uploads.
-    *   i18n translations for OCR features were added to .
-    *   The  route was added to  and a navigation link in .
-5.  **Integrate OCR into Receiving**: The OCR upload button and handler for parsed data were added to , along with an indicator for OCR-imported records.
-
-The last message shows the engineer adding state and handler functions for OCR functionality in  and is about to add the OCR button to the supplier card.
+The overall goal for this batch of work, as per the user, is to apply these patterns to Recipes, Preparations, Suppliers, Receiving, and Inventory for bulk delete, and to Preparations, Inventory, Sales, and Wastage for search bars.
 </current_work>
 
 <optional_next_step>
-Continue integrating the OCR upload button and its functionality into the  page.
+Extend Select All + Bulk Delete functionality to the Recipes page by adding the necessary UI elements (checkboxes, bulk actions bar, confirmation dialog) and integrating the state and handler functions already added.
 </optional_next_step>

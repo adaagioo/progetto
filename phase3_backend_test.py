@@ -12,7 +12,7 @@ import secrets
 from typing import Dict, Any, Optional, List
 
 # Configuration
-BACKEND_URL = "https://allergen-taxonomy.preview.emergentagent.com/api"
+BACKEND_URL = "https://resto-doc-scan.preview.emergentagent.com/api"
 TEST_CREDENTIALS = {
     "admin": {"email": "admin@test.com", "password": "admin123"},
     "manager": {"email": "manager@test.com", "password": "manager123"},

@@ -13,7 +13,7 @@ import os
 from datetime import datetime, timedelta
 
 # Test Configuration
-BASE_URL = "https://allergen-taxonomy.preview.emergentagent.com/api"
+BASE_URL = "https://resto-doc-scan.preview.emergentagent.com/api"
 
 # Test Credentials
 TEST_USERS = {

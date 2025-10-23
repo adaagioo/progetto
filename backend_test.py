@@ -1,25 +1,21 @@
 #!/usr/bin/env python3
 """
-P1.3: Small Quantity Costing Fix Backend Testing
-Testing that small quantities with unit conversion calculate correctly and never display €0.00 when cost > 0
+Backend Testing for P2 Batch 2: Preparation Dependencies & Bulk Delete
+Tests the preparation dependencies endpoint and enhanced delete functionality with RBAC.
 """
 
 import requests
 import json
-import asyncio
-import aiohttp
-from typing import Dict, Any, List
+import uuid
 from datetime import datetime, timezone
 
-# Test Configuration
-BASE_URL = "https://resto-doc-scan.preview.emergentagent.com/api"
+# Configuration
+BACKEND_URL = "https://resto-doc-scan.preview.emergentagent.com/api"
 
-# Test Credentials
-TEST_USERS = {
-    "admin": {"email": "admin@test.com", "password": "admin123"},
-    "manager": {"email": "manager@test.com", "password": "manager123"},
-    "staff": {"email": "staff@test.com", "password": "staff123"}
-}
+# Test credentials
+ADMIN_CREDENTIALS = {"email": "admin@test.com", "password": "admin123"}
+MANAGER_CREDENTIALS = {"email": "manager@test.com", "password": "manager123"}
+STAFF_CREDENTIALS = {"email": "staff@test.com", "password": "staff123"}
 
 class SmallQuantityCostingTester:
     def __init__(self):

@@ -428,8 +428,8 @@ class SmallQuantityCostingTester:
                 if response.status == 200:
                     preparation = await response.json()
                     
-                    # Expected: 0.5g = 0.0005kg, €10/kg * 0.0005kg = €0.005
-                    expected_cost = 10.0 * (0.5 / 1000)
+                    # Expected: 0.5g = 0.0005kg, 1000 cents/kg * 0.0005kg = 0.5 cents = €0.005
+                    expected_cost = 0.5
                     
                     if preparation["cost"] > 0:
                         self.log_result("4-Decimal Precision > 0", True, f"Cost €{preparation['cost']:.4f} > 0")

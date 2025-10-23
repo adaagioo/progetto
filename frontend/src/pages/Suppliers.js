@@ -24,6 +24,7 @@ function Suppliers() {
   const [ocrSupplierId, setOCRSupplierId] = useState(null);
   const [ocrParsedItems, setOCRParsedItems] = useState([]);
   const [itemMappings, setItemMappings] = useState({});
+  const [searchQuery, setSearchQuery] = useState('');
   const [formData, setFormData] = useState({
     name: '',
     contactName: '',

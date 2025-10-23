@@ -270,6 +270,13 @@ function Receiving() {
           newLines[index].packFormat = `${selectedIngredient.packSize} ${selectedIngredient.unit}`;
         }
         
+        // Auto-fill target inventory from memory or ingredient category
+        if (ingredientTargetMemory[value]) {
+          newLines[index].targetInventory = ingredientTargetMemory[value];
+        } else if (selectedIngredient.category) {
+          newLines[index].targetInventory = selectedIngredient.category;
+        }
+        
         // Auto-fill supplier if ingredient has preferred supplier
         if (selectedIngredient.preferredSupplierId && !formData.supplierId) {
           setFormData(prev => ({ 

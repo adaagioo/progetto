@@ -105,6 +105,67 @@ function RecipesEnhanced() {
   // RBAC: Check if user can edit
   const canEdit = user?.roleKey === 'admin' || user?.roleKey === 'manager';
 
+  // Bulk select handlers
+  const toggleSelectAll = () => {
+    if (selectedItems.length === filteredRecipes.length && filteredRecipes.length > 0) {
+      setSelectedItems([]);
+    } else {
+      setSelectedItems(filteredRecipes.map(r => r.id));
+    }
+  };
+
+  const toggleSelectItem = (id) => {
+    setSelectedItems(prev =>
+      prev.includes(id) ? prev.filter(i => i !== id) : [...prev, id]
+    );
+  };
+
+  // Bulk delete with dependency checking
+  const handleBulkDelete = async () => {
+    if (selectedItems.length === 0) return;
+
+    try {
+      // Check dependencies for all selected recipes
+      const dependencyChecks = await Promise.all(
+        selectedItems.map(async (id) => {
+          try {
+            const response = await axios.get(`${API}/recipes/${id}/dependencies`);
+            return { id, ...response.data };
+          } catch (error) {
+            return { id, hasReferences: false, references: {} };
+          }
+        })
+      );
+
+      // Find recipes with dependencies
+      const recipesWithDeps = dependencyChecks.filter(d => d.hasReferences);
+      
+      if (recipesWithDeps.length > 0) {
+        const totalSales = recipesWithDeps.reduce((sum, d) => sum + (d.references?.sales || 0), 0);
+        toast.error(
+          t('recipes.error.hasDependencies', { count: recipesWithDeps.length }) ||
+          `Cannot delete: ${recipesWithDeps.length} recipes are referenced in sales records`
+        );
+        setShowBulkDeleteDialog(false);
+        return;
+      }
+
+      // Delete all selected recipes
+      await Promise.all(selectedItems.map(id => axios.delete(`${API}/recipes/${id}`)));
+      
+      toast.success(
+        t('recipes.success.bulkDelete', { count: selectedItems.length }) ||
+        `${selectedItems.length} recipes deleted successfully`
+      );
+      setSelectedItems([]);
+      setShowBulkDeleteDialog(false);
+      fetchRecipes();
+    } catch (error) {
+      const errorMsg = error.response?.data?.detail || t('recipes.error.bulkDelete') || 'Failed to delete recipes';
+      toast.error(errorMsg);
+    }
+  };
+
   // Get unique allergens from all recipes for filter
   const uniqueAllergens = React.useMemo(() => {
     const allergenSet = new Set();

@@ -4215,7 +4215,145 @@ agent_communication:
           
           PENDING: Backend implementation + frontend date picker integration
 
+frontend:
+  - task: "ISSUE 1: Dashboard Total Inventory Value Card Missing"
+    implemented: true
+    working: false
+    file: "frontend/src/pages/Dashboard.js"
+    stuck_count: 1
+    priority: "high"
+    needs_retesting: false
+    status_history:
+      - working: false
+        agent: "testing"
+        comment: |
+          CRITICAL ISSUE CONFIRMED: TOTAL INVENTORY VALUE CARD IS MISSING FROM DASHBOARD
+          
+          DETAILED INVESTIGATION RESULTS:
+          - Dashboard loads successfully with all other cards visible
+          - API calls to /api/inventory/valuation/total return 200 status
+          - API calls to /api/inventory/valuation/summary return 200 status
+          - Other inventory cards (Food, Beverage, Non-Food) display correctly
+          - Total Inventory Value card is completely missing from the grid
+          
+          ROOT CAUSE ANALYSIS:
+          - The card is defined in Dashboard.js lines 268-332 with proper emerald gradient styling
+          - Card should be "ALWAYS VISIBLE" according to code comment
+          - API endpoints are working and returning data
+          - Issue appears to be in frontend rendering logic or conditional display
+          
+          EXPECTED vs ACTUAL:
+          - Expected: 4 cards in inventory valuation grid (Food, Beverage, Non-Food, Total)
+          - Actual: Only 3 cards visible (missing Total Inventory Value card)
+          
+          IMPACT: Users cannot see total inventory value or navigate to unfiltered inventory view
+
+  - task: "ISSUE 2: PrepList Filter Logic - Rows Not Rendering"
+    implemented: true
+    working: false
+    file: "frontend/src/pages/PrepList.js"
+    stuck_count: 1
+    priority: "high"
+    needs_retesting: false
+    status_history:
+      - working: false
+        agent: "testing"
+        comment: |
+          FILTER LOGIC ISSUE CONFIRMED: PREPLIST SHOWS TOTALS BUT NO ROWS
+          
+          DETAILED INVESTIGATION RESULTS:
+          - PrepList generates successfully with API data
+          - Summary shows "Total Preparations: 3, To Make: 0"
+          - Default filter is set to "To Make"
+          - No rows display when filter is "To Make"
+          - All 3 rows appear when filter is switched to "All"
+          
+          ROOT CAUSE ANALYSIS:
+          - All preparation items have toMakeQty = 0 (zero)
+          - Filter logic: "To Make" shows items where toMakeQty > 0
+          - Since all items have toMakeQty = 0, "To Make" filter hides all rows
+          - Summary counts unfiltered data, table shows filtered data
+          
+          DATA ANALYSIS:
+          - Row 1: crema tiramisu - toMakeQty = 0
+          - Row 2: Test Pizza Dough - toMakeQty = 0  
+          - Row 3: Bulk Test Prep 2 - toMakeQty = 0
+          
+          IMPACT: Users see misleading summary suggesting preparations exist but cannot see them
+          
+          SOLUTION NEEDED: Either fix forecast logic to generate non-zero toMakeQty values, or adjust UI to show appropriate message when filter results in empty table
+
+  - task: "ISSUE 3: Export Authentication - PDF/XLSX Downloads"
+    implemented: true
+    working: false
+    file: "frontend/src/pages/PrepList.js, OrderList.js"
+    stuck_count: 1
+    priority: "high"
+    needs_retesting: false
+    status_history:
+      - working: false
+        agent: "testing"
+        comment: |
+          EXPORT FUNCTIONALITY PARTIALLY WORKING - SERVER ERROR DETECTED
+          
+          DETAILED INVESTIGATION RESULTS:
+          - Authentication headers are being sent correctly
+          - PrepList has data available for export (3 rows)
+          - Export buttons are visible and clickable
+          - Server returns 500 error for export requests
+          
+          CRITICAL ERROR FOUND:
+          - API endpoint: /api/prep-list/export?date=2025-10-24&format=pdf&locale=en
+          - HTTP Status: 500 Internal Server Error
+          - Browser error: "Failed to execute 'clone' on 'Response': Response body is already used"
+          
+          ROOT CAUSE ANALYSIS:
+          - Authentication is working (no 401/403 errors)
+          - Export endpoints exist and are reachable
+          - Server-side error in export generation logic
+          - Response body handling issue in backend
+          
+          EXPORT STATUS:
+          - PrepList PDF Export: 500 Server Error
+          - PrepList XLSX Export: Not tested due to PDF failure
+          - OrderList PDF Export: Not tested due to PrepList failure
+          - OrderList XLSX Export: Not tested due to PrepList failure
+          
+          IMPACT: Users cannot export any prep lists or order lists
+          
+          BACKEND INVESTIGATION NEEDED: Check export endpoint implementation for response handling issues
+
 agent_communication:
+  - agent: "testing"
+    message: |
+      🧪 CRITICAL STAGING ISSUES FRONTEND E2E TESTING COMPLETED - 3 MAJOR ISSUES FOUND ❌
+      
+      📊 COMPREHENSIVE TESTING RESULTS (0/3 issues working - Critical failures detected):
+      
+      ❌ ISSUE 1 - DASHBOARD TOTAL INVENTORY VALUE CARD: MISSING
+      - Card completely absent from dashboard despite API data being available
+      - Other inventory cards render correctly (Food, Beverage, Non-Food)
+      - Frontend rendering logic issue - card should be "ALWAYS VISIBLE"
+      
+      ❌ ISSUE 2 - PREPLIST FILTER LOGIC: BROKEN
+      - Summary shows "Total Preparations: 3" but no rows visible
+      - All items have toMakeQty = 0, so "To Make" filter hides everything
+      - Misleading UX - users see totals but cannot see actual data
+      - Rows appear when switching to "All" filter
+      
+      ❌ ISSUE 3 - EXPORT FUNCTIONALITY: SERVER ERROR
+      - Authentication headers working correctly (no 401/403 errors)
+      - Export endpoints return 500 Internal Server Error
+      - Backend response handling issue: "Response body is already used"
+      - All export formats affected (PDF/XLSX for both PrepList/OrderList)
+      
+      🚨 CRITICAL IMPACT: All 3 reported user issues confirmed as blocking problems
+      
+      NEXT STEPS FOR MAIN AGENT:
+      1. Fix Dashboard card rendering (check conditional logic in Dashboard.js)
+      2. Investigate PrepList forecast algorithm or improve filter UX
+      3. Debug backend export response handling (likely in export_utils.py)
+
   - agent: "testing"
     message: |
       🧪 CRITICAL STAGING ISSUES BACKEND TESTING COMPLETED - ALL BACKEND SYSTEMS WORKING ✅

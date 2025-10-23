@@ -53,6 +53,22 @@ function Receiving() {
     }]
   });
 
+  // Debounce search input (200ms)
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setDebouncedSearch(searchQuery);
+      // Update URL
+      const newParams = new URLSearchParams(searchParams);
+      if (searchQuery) {
+        newParams.set('search', searchQuery);
+      } else {
+        newParams.delete('search');
+      }
+      setSearchParams(newParams, { replace: true });
+    }, 200);
+    return () => clearTimeout(timer);
+  }, [searchQuery]);
+
   useEffect(() => {
     fetchReceivings();
     fetchSuppliers();

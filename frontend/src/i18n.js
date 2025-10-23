@@ -896,13 +896,18 @@ const resources = {
       'preparations.form.instructionsPlaceholder': 'Istruzioni di preparazione passo dopo passo...',
       'preparations.form.notes': 'Note',
       'preparations.form.notesPlaceholder': 'Note aggiuntive...',
+      'preparations.search': 'Cerca preparazioni...',
       'preparations.confirm.delete': 'Sei sicuro di voler eliminare questa preparazione?',
+      'preparations.confirmBulkDelete': 'Sei sicuro di voler eliminare {{count}} preparazioni selezionate? Questa azione non può essere annullata.',
       'preparations.success.created': 'Preparazione creata con successo',
       'preparations.success.updated': 'Preparazione aggiornata con successo',
       'preparations.success.deleted': 'Preparazione eliminata',
+      'preparations.success.bulkDelete': '{{count}} preparazioni eliminate con successo',
       'preparations.error.load': 'Impossibile caricare preparazioni',
       'preparations.error.save': 'Impossibile salvare preparazione',
       'preparations.error.delete': 'Impossibile eliminare preparazione',
+      'preparations.error.bulkDelete': 'Impossibile eliminare preparazioni',
+      'preparations.error.hasDependencies': 'Impossibile eliminare: {{count}} preparazioni sono referenziate nelle ricette',
       'preparations.error.noItems': 'Aggiungi almeno un ingrediente',
       
       // Recipes

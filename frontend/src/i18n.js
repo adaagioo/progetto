@@ -790,6 +790,10 @@ const resources = {
       'dashboard.negativeStockWarning': '{{count}} articolo/i con stock negativo',
       'dashboard.couldNotLoadTotal': 'Impossibile caricare il totale',
       'dashboard.retry': 'Riprova',
+      'export.dailyPrep': 'Esporta Prep. Giornaliere',
+      'export.pdf': 'PDF',
+      'export.xlsx': 'Excel',
+      'export.selectDate': 'Seleziona Data',
       'dashboard.clickToView': 'Clicca per visualizzare',
       
       // Ingredients

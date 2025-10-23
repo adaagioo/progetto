@@ -11,7 +11,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/card'
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogDescription, DialogFooter } from '../components/ui/dialog';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../components/ui/select';
 import { Checkbox } from '../components/ui/checkbox';
-import { Plus, Trash2, Edit, AlertCircle, DollarSign, Package, X } from 'lucide-react';
+import { Plus, Trash2, Edit, AlertCircle, Package, X } from 'lucide-react';
 import { toast } from 'sonner';
 
 function Preparations() {

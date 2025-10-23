@@ -4182,7 +4182,13 @@ async def get_dashboard_kpis(current_user: dict = Depends(get_current_user)):
                         ingredient = ingredients_map.get(item_id)
                         if ingredient:
                             effective_cost = ingredient.get("effectiveUnitCost", ingredient["unitCost"])
-                            recipe_cost += effective_cost * item["qtyPerPortion"]
+                            ingredient_unit = ingredient.get("unit", "kg")
+                            item_qty = item["qtyPerPortion"]
+                            item_unit = item.get("unit", ingredient_unit)
+                            
+                            # Normalize quantity to ingredient's unit
+                            normalized_qty = normalize_quantity_to_base_unit(item_qty, item_unit, ingredient_unit)
+                            recipe_cost += round(effective_cost * normalized_qty, 4)
                     elif item.get("type") == "preparation":
                         # Preparation cost (already includes ingredient costs with waste)
                         prep = await db.preparations.find_one({"id": item["itemId"]}, {"_id": 0})

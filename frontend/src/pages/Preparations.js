@@ -517,6 +517,14 @@ function Preparations() {
           <Card key={prep.id}>
             <CardHeader>
               <div className="flex justify-between items-start">
+                {canEdit && (
+                  <div className="flex items-center mr-4">
+                    <Checkbox
+                      checked={selectedItems.includes(prep.id)}
+                      onCheckedChange={() => toggleSelectItem(prep.id)}
+                    />
+                  </div>
+                )}
                 <div className="flex-1">
                   <CardTitle className="flex items-center gap-2">
                     {prep.name}

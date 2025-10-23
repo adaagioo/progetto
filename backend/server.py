@@ -2115,10 +2115,43 @@ async def update_preparation(
     
     return Preparation(**updated_prep)
 
+@api_router.get("/preparations/{prep_id}/dependencies")
+async def get_preparation_dependencies(prep_id: str, current_user: dict = Depends(get_current_user)):
+    """Check if preparation is used in recipes"""
+    # Check recipes
+    recipes_count = await db.recipes.count_documents({
+        "restaurantId": current_user["restaurantId"],
+        "items": {
+            "$elemMatch": {
+                "type": "preparation",
+                "itemId": prep_id
+            }
+        }
+    })
+    
+    return {
+        "hasReferences": recipes_count > 0,
+        "references": {
+            "recipes": recipes_count
+        }
+    }
+
 @api_router.delete("/preparations/{prep_id}")
 async def delete_preparation(prep_id: str, current_user: dict = Depends(get_current_user)):
     """Delete a preparation"""
     await check_subscription(current_user)
+    
+    # RBAC: Only admin/manager can delete
+    if current_user["role"] not in ["admin", "manager"]:
+        raise HTTPException(status_code=403, detail="Admin or Manager access required")
+    
+    # Check dependencies before deleting
+    deps = await get_preparation_dependencies(prep_id, current_user)
+    if deps["hasReferences"]:
+        raise HTTPException(
+            status_code=400,
+            detail=f"Cannot delete preparation: referenced in {deps['references']['recipes']} recipes"
+        )
     
     # Check if preparation exists
     preparation = await db.preparations.find_one(

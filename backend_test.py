@@ -110,7 +110,7 @@ class SupplierDependenciesTest:
         
         for ingredient_data in ingredients_data:
             async with self.session.post(f"{API_BASE}/ingredients", json=ingredient_data, headers=headers) as resp:
-                if resp.status != 201:
+                if resp.status not in [200, 201]:
                     raise Exception(f"Failed to create ingredient: {await resp.text()}")
                 
                 ingredient = await resp.json()

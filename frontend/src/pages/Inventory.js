@@ -743,6 +743,24 @@ function Inventory() {
         ))}
       </div>
 
+      {filteredInventory.length === 0 && inventory.length > 0 && (
+        <Card className="glass-morphism border-0">
+          <CardContent className="flex flex-col items-center justify-center py-12">
+            <p className="text-gray-500 mb-4">{t('common.noResults') || 'No inventory records match your filters'}</p>
+            <Button
+              variant="outline"
+              onClick={() => {
+                setSearchQuery('');
+                setDebouncedSearch('');
+                setSearchParams(new URLSearchParams());
+              }}
+            >
+              {t('common.clearFilters') || 'Clear Filters'}
+            </Button>
+          </CardContent>
+        </Card>
+      )}
+
       {inventory.length === 0 && (
         <Card className="glass-morphism border-0">
           <CardContent className="flex flex-col items-center justify-center py-12">
@@ -754,6 +772,27 @@ function Inventory() {
           </CardContent>
         </Card>
       )}
+
+      {/* Bulk Delete Confirmation Dialog */}
+      <Dialog open={showBulkDeleteDialog} onOpenChange={setShowBulkDeleteDialog}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>{t('common.confirmDelete') || 'Confirm Delete'}</DialogTitle>
+            <DialogDescription>
+              {t('inventory.confirmBulkDelete', { count: selectedItems.length }) ||
+                `Are you sure you want to delete ${selectedItems.length} selected inventory records? This will not delete master ingredients. This action cannot be undone.`}
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setShowBulkDeleteDialog(false)}>
+              {t('common.cancel') || 'Cancel'}
+            </Button>
+            <Button variant="destructive" onClick={handleBulkDelete}>
+              {t('common.delete') || 'Delete'}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

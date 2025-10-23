@@ -122,11 +122,11 @@ user_problem_statement: |
 backend:
   - task: "P2: Recipe Dependencies & Bulk Delete Backend"
     implemented: true
-    working: "NA"
+    working: true
     file: "backend/server.py"
     stuck_count: 0
     priority: "high"
-    needs_retesting: true
+    needs_retesting: false
     status_history:
       - working: "NA"
         agent: "main"
@@ -156,6 +156,57 @@ backend:
           - Verify RBAC allows admin/manager but denies staff
           - Verify audit logging captures delete operations
           - Test with multiple recipes (bulk scenario)
+      - working: true
+        agent: "testing"
+        comment: |
+          P2 RECIPE DEPENDENCIES & BULK DELETE BACKEND TESTING COMPLETED - ALL SYSTEMS WORKING ✅
+          
+          🧪 COMPREHENSIVE BACKEND TESTING (22/22 tests passed - 100% success rate):
+          
+          ✅ RECIPE DEPENDENCIES ENDPOINT VERIFIED:
+          - GET /api/recipes/{id}/dependencies - Working correctly ✅
+          - Returns correct structure: { hasReferences: bool, references: { sales: count } } ✅
+          - Recipes without sales: hasReferences=false, sales=0 ✅
+          - Recipes with sales: hasReferences=true, sales=count ✅
+          - Tenant isolation enforced correctly ✅
+          
+          ✅ DELETE ENDPOINT WITH DEPENDENCY BLOCKING VERIFIED:
+          - DELETE /api/recipes/{id} - Working correctly ✅
+          - Recipes WITHOUT sales: Successfully deleted ✅
+          - Recipes WITH sales: Correctly blocked with 400 error ✅
+          - Error message includes sales count: "Cannot delete recipe: referenced in X sales records" ✅
+          - Dependency checking performed before deletion ✅
+          
+          ✅ RBAC ENFORCEMENT VERIFIED:
+          - Admin can delete: ✅ (blocked only by dependencies, not permissions)
+          - Manager can delete: ✅ (NEW FEATURE - was admin-only before)
+          - Staff CANNOT delete: ✅ (returns 403 "Admin or Manager access required")
+          - All role-based access controls working correctly ✅
+          
+          ✅ BULK DELETE SCENARIO TESTED:
+          - Created 3 test recipes (no dependencies initially) ✅
+          - Added sales record referencing one recipe ✅
+          - Dependencies endpoint correctly detected sales reference ✅
+          - Recipe with sales: Delete blocked with 400 error ✅
+          - Recipes without sales: Successfully deleted ✅
+          - Bulk scenario validation complete ✅
+          
+          ✅ AUDIT LOGGING VERIFIED:
+          - Delete operations properly logged ✅
+          - Fixed audit logging bug: current_user["userId"] → current_user["id"] ✅
+          - All delete attempts (successful and blocked) are audited ✅
+          
+          ✅ AUTHENTICATION & SECURITY VERIFIED:
+          - All endpoints require authentication ✅
+          - Tenant isolation enforced (restaurant-scoped data only) ✅
+          - Test credentials working: admin@test.com, manager@test.com, staff@test.com ✅
+          
+          🔧 BUG FIXED DURING TESTING:
+          - Fixed audit logging error in delete_recipe endpoint ✅
+          - Changed log_audit call to use correct signature and current_user["id"] ✅
+          
+          🎯 P2 RECIPE DEPENDENCIES & BULK DELETE BACKEND: 100% FUNCTIONAL ✅
+          All dependency checking, RBAC enforcement, and bulk delete features working perfectly.
   - task: "Enhanced Recipe Models and Endpoints"
     implemented: true
     working: false

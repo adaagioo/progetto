@@ -430,27 +430,23 @@ function Ingredients() {
         </Dialog>
       </div>
 
-      {/* Search and Filter Bar */}
-      <div className="flex flex-col sm:flex-row gap-4 mb-6">
-        <div className="flex-1">
+      {/* Search and Filters */}
+      <div className="flex flex-col md:flex-row gap-4 items-start md:items-center justify-between mb-6">
+        <div className="flex-1 flex gap-4 items-center w-full md:w-auto">
           <Input
             type="text"
-            placeholder={t('common.search') || 'Search ingredients...'}
+            placeholder={t('ingredients.search') || 'Search ingredients...'}
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full"
+            className="max-w-md"
+            data-testid="ingredients-search-input"
           />
-        </div>
-        <div className="sm:w-64">
-          <Select
-            value={selectedAllergenFilter}
-            onValueChange={setSelectedAllergenFilter}
-          >
-            <SelectTrigger>
+          <Select value={selectedAllergenFilter} onValueChange={setSelectedAllergenFilter}>
+            <SelectTrigger className="w-[200px]">
               <SelectValue placeholder={t('ingredients.filterByAllergen') || 'Filter by allergen'} />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="all">{t('common.all') || 'All Ingredients'}</SelectItem>
+              <SelectItem value="all">{t('common.all') || 'All'}</SelectItem>
               {uniqueAllergens.map(allergen => (
                 <SelectItem key={allergen} value={allergen}>
                   {t(`allergens.${allergen}`) || allergen}
@@ -461,12 +457,62 @@ function Ingredients() {
         </div>
       </div>
 
+      {/* Bulk Actions Bar */}
+      {selectedItems.length > 0 && (
+        <div className="mb-4 p-4 bg-blue-50 border border-blue-200 rounded-lg flex items-center justify-between">
+          <span className="text-sm font-medium text-blue-900">
+            {selectedItems.length} {t('common.selected') || 'selected'}
+          </span>
+          <div className="flex gap-2">
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={() => setSelectedItems([])}
+            >
+              {t('common.clearSelection') || 'Clear Selection'}
+            </Button>
+            <Button
+              size="sm"
+              variant="destructive"
+              onClick={() => setShowBulkDeleteDialog(true)}
+            >
+              <Trash2 className="w-4 h-4 mr-2" />
+              {t('common.deleteSelected') || 'Delete Selected'}
+            </Button>
+          </div>
+        </div>
+      )}
+
+      {/* Select All Checkbox */}
+      {filteredIngredients.length > 0 && (
+        <div className="mb-4 flex items-center gap-2">
+          <input
+            type="checkbox"
+            checked={selectedItems.length === filteredIngredients.length && filteredIngredients.length > 0}
+            onChange={toggleSelectAll}
+            className="w-4 h-4 rounded border-gray-300"
+          />
+          <label className="text-sm text-gray-600">
+            {t('common.selectAll') || 'Select All'} ({filteredIngredients.length})
+          </label>
+        </div>
+      )}
+
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
         {filteredIngredients.map((ingredient) => (
           <Card key={ingredient.id} className="glass-morphism border-0 card-hover" data-testid="ingredient-card">
             <CardHeader>
               <CardTitle className="flex items-center justify-between">
-                <span className="text-lg">{ingredient.name}</span>
+                <div className="flex items-center gap-2">
+                  <input
+                    type="checkbox"
+                    checked={selectedItems.includes(ingredient.id)}
+                    onChange={() => toggleSelectItem(ingredient.id)}
+                    className="w-4 h-4 rounded border-gray-300"
+                    onClick={(e) => e.stopPropagation()}
+                  />
+                  <span className="text-lg">{ingredient.name}</span>
+                </div>
                 <div className="flex gap-2">
                   <Button
                     size="sm"

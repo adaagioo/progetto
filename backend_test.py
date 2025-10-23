@@ -111,13 +111,103 @@ class SmallQuantityCostingTester:
         """Get authorization headers"""
         return {"Authorization": f"Bearer {self.auth_token}"}
     
-    def create_test_file(self, filename: str, content: bytes, mime_type: str) -> str:
-        """Create a temporary test file"""
-        temp_dir = Path(tempfile.gettempdir())
-        file_path = temp_dir / filename
-        with open(file_path, "wb") as f:
-            f.write(content)
-        return str(file_path)
+    async def create_cocoa_powder_ingredient(self) -> Dict[str, Any]:
+        """Create Cocoa Powder ingredient for testing small quantities"""
+        ingredient_data = {
+            "name": "Cocoa Powder",
+            "unit": "kg",
+            "packSize": 1.0,
+            "packCost": 1000,  # €10.00 in minor units
+            "wastePct": 0,
+            "allergens": [],
+            "category": "food"
+        }
+        
+        try:
+            async with self.session.post(
+                f"{BASE_URL}/ingredients",
+                json=ingredient_data,
+                headers={**self.get_auth_headers(), "Content-Type": "application/json"}
+            ) as response:
+                if response.status == 200:
+                    ingredient = await response.json()
+                    
+                    # Verify unitCost calculation
+                    expected_unit_cost = 1000 / 1.0  # €10/kg = €10 per kg
+                    if abs(ingredient["unitCost"] - expected_unit_cost) < 0.001:
+                        self.log_result("Create Cocoa Powder", True, f"Created with unitCost: €{ingredient['unitCost']:.3f}/kg")
+                    else:
+                        self.log_result("Create Cocoa Powder", False, f"Wrong unitCost: expected €{expected_unit_cost}, got €{ingredient['unitCost']}")
+                    
+                    return ingredient
+                else:
+                    error_text = await response.text()
+                    self.log_result("Create Cocoa Powder", False, f"Failed: {response.status}", error_text)
+                    return None
+        except Exception as e:
+            self.log_result("Create Cocoa Powder", False, f"Error: {str(e)}")
+            return None
+    
+    async def create_test_liquid_ingredient(self) -> Dict[str, Any]:
+        """Create a liquid ingredient for ml→L conversion testing"""
+        ingredient_data = {
+            "name": "Vanilla Extract",
+            "unit": "L",
+            "packSize": 1.0,
+            "packCost": 400,  # €4.00 per liter
+            "wastePct": 0,
+            "allergens": [],
+            "category": "food"
+        }
+        
+        try:
+            async with self.session.post(
+                f"{BASE_URL}/ingredients",
+                json=ingredient_data,
+                headers={**self.get_auth_headers(), "Content-Type": "application/json"}
+            ) as response:
+                if response.status == 200:
+                    ingredient = await response.json()
+                    self.log_result("Create Vanilla Extract", True, f"Created with unitCost: €{ingredient['unitCost']:.3f}/L")
+                    return ingredient
+                else:
+                    error_text = await response.text()
+                    self.log_result("Create Vanilla Extract", False, f"Failed: {response.status}", error_text)
+                    return None
+        except Exception as e:
+            self.log_result("Create Vanilla Extract", False, f"Error: {str(e)}")
+            return None
+    
+    async def create_expensive_spice_ingredient(self) -> Dict[str, Any]:
+        """Create an expensive spice for mg→kg conversion testing"""
+        ingredient_data = {
+            "name": "Saffron",
+            "unit": "kg",
+            "packSize": 0.001,  # 1g pack
+            "packCost": 5000,  # €50.00 for 1g = €50,000/kg
+            "wastePct": 0,
+            "allergens": [],
+            "category": "food"
+        }
+        
+        try:
+            async with self.session.post(
+                f"{BASE_URL}/ingredients",
+                json=ingredient_data,
+                headers={**self.get_auth_headers(), "Content-Type": "application/json"}
+            ) as response:
+                if response.status == 200:
+                    ingredient = await response.json()
+                    expected_unit_cost = 5000 / 0.001  # €50,000/kg
+                    self.log_result("Create Saffron", True, f"Created with unitCost: €{ingredient['unitCost']:.0f}/kg")
+                    return ingredient
+                else:
+                    error_text = await response.text()
+                    self.log_result("Create Saffron", False, f"Failed: {response.status}", error_text)
+                    return None
+        except Exception as e:
+            self.log_result("Create Saffron", False, f"Error: {str(e)}")
+            return None
     
     async def test_file_upload_valid(self):
         """Test valid file upload"""

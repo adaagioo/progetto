@@ -231,10 +231,11 @@ class BackendTester:
         )
         
         is_xlsx = result['success'] and 'spreadsheet' in result['headers'].get('content-type', '')
+        content_type = result['headers'].get('content-type', 'N/A')
         self.log_test(
             "PrepList Export - XLSX Format", 
             is_xlsx,
-            f"Status: {result['status']}, Content-Type: {result['headers'].get('content-type', 'N/A')}"
+            f"Status: {result['status']}, Content-Type: {content_type}, Data: {result['data']}"
         )
         
     async def test_order_list_export_auth(self):

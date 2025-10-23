@@ -173,7 +173,8 @@ function Receiving() {
         unit: line.unit,
         unitPrice: (line.unitPrice / 100).toFixed(2), // Convert from cents to dollars
         packFormat: line.packFormat || '',
-        expiryDate: line.expiryDate || ''
+        expiryDate: line.expiryDate || '',
+        targetInventory: line.targetInventory || 'food'
       }))
     });
     setIsDialogOpen(true);

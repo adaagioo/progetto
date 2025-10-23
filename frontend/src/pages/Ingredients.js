@@ -70,9 +70,20 @@ function Ingredients() {
       const response = await axios.get(`${API}/suppliers`);
       setSuppliers(response.data);
     } catch (error) {
-      console.error('Failed to load suppliers:', error);
+      toast.error(t('ingredients.error.loadSuppliers') || 'Failed to load suppliers');
     }
   };
+
+  const handleInputChange = useCallback((field, value) => {
+    setFormData(prev => ({ ...prev, [field]: value }));
+  }, []);
+
+  const handleNestedInputChange = useCallback((field, subfield, value) => {
+    setFormData(prev => ({
+      ...prev,
+      [field]: { ...prev[field], [subfield]: value }
+    }));
+  }, []);
 
   const fetchIngredients = async () => {
     try {

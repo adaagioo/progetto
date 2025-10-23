@@ -17,7 +17,7 @@ ADMIN_CREDENTIALS = {"email": "admin@test.com", "password": "admin123"}
 MANAGER_CREDENTIALS = {"email": "manager@test.com", "password": "manager123"}
 STAFF_CREDENTIALS = {"email": "staff@test.com", "password": "staff123"}
 
-class SmallQuantityCostingTester:
+class TestRunner:
     def __init__(self):
         self.session = None
         self.auth_token = None

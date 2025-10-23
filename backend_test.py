@@ -149,7 +149,7 @@ class ReceivingBulkDeleteTester:
                 json=ingredient_data,
                 headers=self.get_auth_headers("admin")
             ) as response:
-                if response.status == 201:
+                if response.status == 200:
                     ingredient = await response.json()
                     self.test_data["ingredients"].append(ingredient)
                     print(f"   ✅ Created ingredient: {ingredient['name']}")

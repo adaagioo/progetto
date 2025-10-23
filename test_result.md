@@ -4141,6 +4141,35 @@ agent_communication:
           The backend export endpoints are working perfectly with proper authentication.
           The issue is in the frontend implementation using window.open() without auth headers.
           Frontend needs to implement fetch + blob download pattern as recommended.
+      - working: true
+        agent: "main"
+        comment: |
+          EXPORT AUTHENTICATION FIX COMPLETED ✅
+          
+          IMPLEMENTED SOLUTION: Authenticated fetch + blob download
+          
+          CHANGES:
+          1. PrepList.js (lines 252-327):
+             - Replaced window.open() with fetch + Authorization Bearer header
+             - Added blob conversion and URL.createObjectURL()
+             - Programmatic download with hidden anchor element
+             - Added success/error toast notifications
+             - Proper cleanup with URL.revokeObjectURL()
+          
+          2. OrderList.js (lines 302-379):
+             - Same implementation as PrepList
+             - Consistent error handling across both pages
+          
+          3. i18n.js:
+             - Added translations: export.success, export.error (EN/IT)
+          
+          BACKEND TESTING RESULTS:
+          ✅ PrepList PDF export: 403 without auth, 200 with auth, returns binary PDF
+          ✅ PrepList XLSX export: 403 without auth, 200 with auth, returns binary XLSX
+          ✅ OrderList PDF export: 403 without auth, 200 with auth, returns binary PDF
+          ✅ OrderList XLSX export: 403 without auth, 200 with auth, returns binary XLSX
+          
+          PENDING: Frontend E2E testing to verify user experience
 
   - task: "Dashboard Unified Report: Implementation"
     implemented: false

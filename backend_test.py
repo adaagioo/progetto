@@ -1,16 +1,15 @@
 #!/usr/bin/env python3
 """
-Phase 8 OCR Document Ingestion Backend Testing
-Comprehensive testing for OCR processing and receiving integration
+P1.3: Small Quantity Costing Fix Backend Testing
+Testing that small quantities with unit conversion calculate correctly and never display €0.00 when cost > 0
 """
 
 import requests
 import json
-import io
-from PIL import Image, ImageDraw, ImageFont
-import tempfile
-import os
-from datetime import datetime, timedelta
+import asyncio
+import aiohttp
+from typing import Dict, Any, List
+from datetime import datetime, timezone
 
 # Test Configuration
 BASE_URL = "https://allergen-taxonomy.preview.emergentagent.com/api"

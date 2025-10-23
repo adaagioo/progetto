@@ -53,6 +53,11 @@ const resources = {
       'dashboard.previousMonth': 'Previous month',
       'dashboard.tips': 'Quick Tips',
       'dashboard.inventoryValuation': 'Inventory Valuation',
+      'dashboard.totalInventoryValue': 'Total Inventory Value',
+      'dashboard.asOfNow': 'as of now',
+      'dashboard.negativeStockWarning': '{{count}} item(s) with negative stock',
+      'dashboard.couldNotLoadTotal': 'Couldn\'t load total',
+      'dashboard.retry': 'Retry',
       'dashboard.clickToView': 'Click to view',
       
       // Ingredients

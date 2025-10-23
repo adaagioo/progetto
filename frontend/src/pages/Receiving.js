@@ -600,8 +600,26 @@ function Receiving() {
                             onChange={(e) => updateLine(index, 'unit', e.target.value)}
                           />
                         </div>
-                        <div className="col-span-2">
-                          <Label className="text-xs flex items-center gap-1">
+                        <div className="col-span-3">
+                          <Label htmlFor={`line-${index}-target`} className="text-xs">
+                            {t('receiving.targetInventory') || 'Target Inventory'} *
+                          </Label>
+                          <Select
+                            value={line.targetInventory || 'food'}
+                            onValueChange={(value) => updateLine(index, 'targetInventory', value)}
+                          >
+                            <SelectTrigger className="h-9">
+                              <SelectValue placeholder={t('receiving.selectTarget') || 'Select target'} />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="food">{t('receiving.category.food') || 'Food'}</SelectItem>
+                              <SelectItem value="beverage">{t('receiving.category.beverage') || 'Beverage'}</SelectItem>
+                              <SelectItem value="nofood">{t('receiving.category.nofood') || 'Non-Food'}</SelectItem>
+                            </SelectContent>
+                          </Select>
+                        </div>
+                        <div className="col-span-3">
+                          <Label htmlFor={`line-${index}-price`} className="text-xs flex items-center gap-1">
                             {t('receiving.form.unitPrice') || 'Price'} *
                             {line.ingredientId && (
                               <Popover>

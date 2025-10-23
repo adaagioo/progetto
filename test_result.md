@@ -120,6 +120,47 @@ user_problem_statement: |
   - Allergen propagation chain verification
 
 backend:
+  - task: "P2 Batch 4: Receiving Bulk Delete with Stock Reversal Backend"
+    implemented: true
+    working: "NA"
+    file: "backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: |
+          BATCH 4 BACKEND IMPLEMENTATION COMPLETED:
+          
+          ✅ NEW ENDPOINT ADDED:
+          - GET /api/receiving/{receiving_id}/dependencies
+            - Checks if receiving has created inventory records
+            - Returns: { hasReferences: bool, canDelete: bool, references: { inventoryRecords: count }, message: string }
+            - Always returns canDelete: true (allows deletion with stock reversal)
+            - Tenant-scoped query
+          
+          ✅ DELETE ENDPOINT ENHANCED:
+          - DELETE /api/receiving/{receiving_id}
+            - RBAC updated: Only admin/manager can delete (was checking roleKey)
+            - Automatically reverses stock movements by deleting associated inventory records
+            - Returns inventoryRecordsReversed count in response
+            - File cleanup preserved (deletes associated files)
+            - Audit logging enhanced with inventory reversal count
+            - Tenant isolation enforced
+          
+          ✅ STOCK REVERSAL LOGIC:
+          - Deletes all inventory records with matching receivingId
+          - This effectively reverses the stock movement
+          - No blocking for consumed stock (simplified approach)
+          - Clear message in audit log about reversed records
+          
+          PENDING TESTING:
+          - Verify dependencies check endpoint returns correct inventory counts
+          - Verify delete reverses inventory (inventory records deleted)
+          - Verify RBAC allows admin/manager but denies staff
+          - Test with multiple receiving records (bulk scenario)
+
   - task: "P2 Batch 3: Supplier Dependencies & Bulk Delete Backend"
     implemented: true
     working: true

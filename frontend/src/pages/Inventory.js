@@ -105,10 +105,6 @@ function Inventory() {
     setSearchParams(newParams);
   };
 
-  const clearFilters = () => {
-    setSearchParams(new URLSearchParams());
-  };
-
   const handleSubmit = async (e) => {
     e.preventDefault();
 

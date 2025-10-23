@@ -386,12 +386,37 @@ class ReceivingBulkDeleteTester:
         """Test that inventory records are actually deleted when receiving is deleted"""
         print("\n🔄 Testing Stock Reversal Verification...")
         
-        if len(self.test_data["receiving_records"]) == 0:
-            print("   ⚠️  No receiving records left to test stock reversal")
-            return
-
-        receiving = self.test_data["receiving_records"][0]
-        receiving_id = receiving["id"]
+        # Create a new receiving record specifically for this test
+        receiving_data = {
+            "supplierId": self.test_data["suppliers"][0]["id"],
+            "category": "food",
+            "arrivedAt": "2024-01-18T12:00:00Z",
+            "lines": [
+                {
+                    "ingredientId": self.test_data["ingredients"][0]["id"],
+                    "description": "Test Flour for Stock Reversal",
+                    "qty": 30.0,
+                    "unit": "kg",
+                    "unitPrice": 65,  # €0.65 per kg in cents
+                    "packFormat": "25kg bags",
+                    "expiryDate": "2024-08-15"
+                }
+            ],
+            "notes": "Test receiving record for stock reversal verification"
+        }
+        
+        async with self.session.post(
+            f"{API_BASE}/receiving",
+            json=receiving_data,
+            headers=self.get_auth_headers("admin")
+        ) as response:
+            if response.status != 200:
+                print("   ❌ Failed to create receiving for stock reversal test")
+                return
+            
+            receiving = await response.json()
+            receiving_id = receiving["id"]
+            print(f"   📦 Created test receiving for stock reversal: {receiving_id}")
         
         # First, check how many inventory records exist for this receiving
         async with self.session.get(

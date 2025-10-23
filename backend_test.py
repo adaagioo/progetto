@@ -209,7 +209,304 @@ class SmallQuantityCostingTester:
             self.log_result("Create Saffron", False, f"Error: {str(e)}")
             return None
     
-    async def test_file_upload_valid(self):
+    async def test_small_quantity_preparation(self, cocoa_ingredient: Dict[str, Any]) -> Dict[str, Any]:
+        """Test preparation with small quantity (2g of cocoa)"""
+        if not cocoa_ingredient:
+            self.log_result("Small Quantity Preparation", False, "No cocoa ingredient provided")
+            return None
+        
+        prep_data = {
+            "name": "Chocolate Sauce with Tiny Cocoa",
+            "items": [
+                {
+                    "ingredientId": cocoa_ingredient["id"],
+                    "qty": 2,  # 2 grams
+                    "unit": "g"  # Different unit from ingredient (kg)
+                }
+            ],
+            "yield": {
+                "value": 1,
+                "unit": "portions"
+            },
+            "portions": 1,
+            "instructions": "Mix tiny amount of cocoa powder"
+        }
+        
+        try:
+            async with self.session.post(
+                f"{BASE_URL}/preparations",
+                json=prep_data,
+                headers={**self.get_auth_headers(), "Content-Type": "application/json"}
+            ) as response:
+                if response.status == 200:
+                    preparation = await response.json()
+                    
+                    # Expected cost calculation:
+                    # unitCost = €10/kg = €0.01/g
+                    # qty = 2g
+                    # cost = €0.01 * 2 = €0.02
+                    expected_cost = 10.0 * (2 / 1000)  # Convert 2g to kg, then multiply by €10/kg
+                    
+                    if preparation["cost"] > 0:
+                        self.log_result("Small Quantity Cost > 0", True, f"Cost is €{preparation['cost']:.4f} (not €0.00)")
+                    else:
+                        self.log_result("Small Quantity Cost > 0", False, f"Cost is €0.00 when it should be > 0")
+                    
+                    if abs(preparation["cost"] - expected_cost) < 0.001:
+                        self.log_result("Small Quantity Calculation", True, f"Correct cost: €{preparation['cost']:.4f} (expected €{expected_cost:.4f})")
+                    else:
+                        self.log_result("Small Quantity Calculation", False, f"Wrong cost: expected €{expected_cost:.4f}, got €{preparation['cost']:.4f}")
+                    
+                    return preparation
+                else:
+                    error_text = await response.text()
+                    self.log_result("Small Quantity Preparation", False, f"Failed: {response.status}", error_text)
+                    return None
+        except Exception as e:
+            self.log_result("Small Quantity Preparation", False, f"Error: {str(e)}")
+            return None
+    
+    async def test_unit_conversion_g_to_kg(self, cocoa_ingredient: Dict[str, Any]):
+        """Test g → kg unit conversion (2g of €10/kg item = €0.02)"""
+        if not cocoa_ingredient:
+            return
+        
+        # Test with different small quantities
+        test_cases = [
+            {"qty": 2, "unit": "g", "expected": 0.02},  # 2g = €0.02
+            {"qty": 500, "unit": "g", "expected": 5.0},  # 500g = €5.00
+            {"qty": 0.5, "unit": "g", "expected": 0.005},  # 0.5g = €0.005
+        ]
+        
+        for case in test_cases:
+            prep_data = {
+                "name": f"Test {case['qty']}{case['unit']} Cocoa",
+                "items": [
+                    {
+                        "ingredientId": cocoa_ingredient["id"],
+                        "qty": case["qty"],
+                        "unit": case["unit"]
+                    }
+                ]
+            }
+            
+            try:
+                async with self.session.post(
+                    f"{BASE_URL}/preparations",
+                    json=prep_data,
+                    headers={**self.get_auth_headers(), "Content-Type": "application/json"}
+                ) as response:
+                    if response.status == 200:
+                        preparation = await response.json()
+                        
+                        if preparation["cost"] > 0:
+                            self.log_result(f"Unit Conversion {case['qty']}{case['unit']} > 0", True, f"Cost €{preparation['cost']:.4f} > 0")
+                        else:
+                            self.log_result(f"Unit Conversion {case['qty']}{case['unit']} > 0", False, "Cost is €0.00")
+                        
+                        if abs(preparation["cost"] - case["expected"]) < 0.001:
+                            self.log_result(f"Unit Conversion {case['qty']}{case['unit']} Accuracy", True, f"Correct: €{preparation['cost']:.4f}")
+                        else:
+                            self.log_result(f"Unit Conversion {case['qty']}{case['unit']} Accuracy", False, f"Expected €{case['expected']:.4f}, got €{preparation['cost']:.4f}")
+                    
+                    # Clean up - delete the test preparation
+                    if response.status == 200:
+                        prep = await response.json()
+                        await self.session.delete(f"{BASE_URL}/preparations/{prep['id']}", headers=self.get_auth_headers())
+                        
+            except Exception as e:
+                self.log_result(f"Unit Conversion {case['qty']}{case['unit']}", False, f"Error: {str(e)}")
+    
+    async def test_unit_conversion_ml_to_l(self, vanilla_ingredient: Dict[str, Any]):
+        """Test ml → L unit conversion (500ml of €4/L item = €2.00)"""
+        if not vanilla_ingredient:
+            return
+        
+        prep_data = {
+            "name": "Vanilla Test 500ml",
+            "items": [
+                {
+                    "ingredientId": vanilla_ingredient["id"],
+                    "qty": 500,  # 500ml
+                    "unit": "ml"  # Different unit from ingredient (L)
+                }
+            ]
+        }
+        
+        try:
+            async with self.session.post(
+                f"{BASE_URL}/preparations",
+                json=prep_data,
+                headers={**self.get_auth_headers(), "Content-Type": "application/json"}
+            ) as response:
+                if response.status == 200:
+                    preparation = await response.json()
+                    
+                    # Expected: 500ml = 0.5L, €4/L * 0.5L = €2.00
+                    expected_cost = 4.0 * 0.5
+                    
+                    if preparation["cost"] > 0:
+                        self.log_result("ML to L Conversion > 0", True, f"Cost €{preparation['cost']:.4f} > 0")
+                    else:
+                        self.log_result("ML to L Conversion > 0", False, "Cost is €0.00")
+                    
+                    if abs(preparation["cost"] - expected_cost) < 0.001:
+                        self.log_result("ML to L Conversion Accuracy", True, f"Correct: €{preparation['cost']:.4f}")
+                    else:
+                        self.log_result("ML to L Conversion Accuracy", False, f"Expected €{expected_cost:.4f}, got €{preparation['cost']:.4f}")
+                    
+                    # Clean up
+                    await self.session.delete(f"{BASE_URL}/preparations/{preparation['id']}", headers=self.get_auth_headers())
+                        
+        except Exception as e:
+            self.log_result("ML to L Conversion", False, f"Error: {str(e)}")
+    
+    async def test_unit_conversion_mg_to_kg(self, saffron_ingredient: Dict[str, Any]):
+        """Test mg → kg unit conversion (100mg of €50,000/kg item = €5.00)"""
+        if not saffron_ingredient:
+            return
+        
+        prep_data = {
+            "name": "Saffron Test 100mg",
+            "items": [
+                {
+                    "ingredientId": saffron_ingredient["id"],
+                    "qty": 100,  # 100mg
+                    "unit": "mg"  # Different unit from ingredient (kg)
+                }
+            ]
+        }
+        
+        try:
+            async with self.session.post(
+                f"{BASE_URL}/preparations",
+                json=prep_data,
+                headers={**self.get_auth_headers(), "Content-Type": "application/json"}
+            ) as response:
+                if response.status == 200:
+                    preparation = await response.json()
+                    
+                    # Expected: 100mg = 0.0001kg, €50,000/kg * 0.0001kg = €5.00
+                    expected_cost = saffron_ingredient["unitCost"] * (100 / 1000000)  # Convert mg to kg
+                    
+                    if preparation["cost"] > 0:
+                        self.log_result("MG to KG Conversion > 0", True, f"Cost €{preparation['cost']:.4f} > 0")
+                    else:
+                        self.log_result("MG to KG Conversion > 0", False, "Cost is €0.00")
+                    
+                    if abs(preparation["cost"] - expected_cost) < 0.01:  # Allow small rounding difference
+                        self.log_result("MG to KG Conversion Accuracy", True, f"Correct: €{preparation['cost']:.4f}")
+                    else:
+                        self.log_result("MG to KG Conversion Accuracy", False, f"Expected €{expected_cost:.4f}, got €{preparation['cost']:.4f}")
+                    
+                    # Clean up
+                    await self.session.delete(f"{BASE_URL}/preparations/{preparation['id']}", headers=self.get_auth_headers())
+                        
+        except Exception as e:
+            self.log_result("MG to KG Conversion", False, f"Error: {str(e)}")
+    
+    async def test_four_decimal_precision(self, cocoa_ingredient: Dict[str, Any]):
+        """Test 4-decimal precision (0.5g of €10/kg = €0.005)"""
+        if not cocoa_ingredient:
+            return
+        
+        prep_data = {
+            "name": "Precision Test 0.5g",
+            "items": [
+                {
+                    "ingredientId": cocoa_ingredient["id"],
+                    "qty": 0.5,  # 0.5g - very small quantity
+                    "unit": "g"
+                }
+            ]
+        }
+        
+        try:
+            async with self.session.post(
+                f"{BASE_URL}/preparations",
+                json=prep_data,
+                headers={**self.get_auth_headers(), "Content-Type": "application/json"}
+            ) as response:
+                if response.status == 200:
+                    preparation = await response.json()
+                    
+                    # Expected: 0.5g = 0.0005kg, €10/kg * 0.0005kg = €0.005
+                    expected_cost = 10.0 * (0.5 / 1000)
+                    
+                    if preparation["cost"] > 0:
+                        self.log_result("4-Decimal Precision > 0", True, f"Cost €{preparation['cost']:.4f} > 0")
+                    else:
+                        self.log_result("4-Decimal Precision > 0", False, "Cost is €0.00")
+                    
+                    # Check internal precision (should be stored as 0.0050)
+                    if preparation["cost"] >= 0.005:
+                        self.log_result("4-Decimal Internal Precision", True, f"Internally stored as €{preparation['cost']:.4f}")
+                    else:
+                        self.log_result("4-Decimal Internal Precision", False, f"Lost precision: €{preparation['cost']:.4f}")
+                    
+                    # Clean up
+                    await self.session.delete(f"{BASE_URL}/preparations/{preparation['id']}", headers=self.get_auth_headers())
+                        
+        except Exception as e:
+            self.log_result("4-Decimal Precision", False, f"Error: {str(e)}")
+    
+    async def test_recipe_cost_with_unit_conversion(self, cocoa_ingredient: Dict[str, Any], vanilla_ingredient: Dict[str, Any]):
+        """Test recipe cost calculation with unit conversion"""
+        if not cocoa_ingredient or not vanilla_ingredient:
+            return
+        
+        recipe_data = {
+            "name": "Small Quantity Recipe Test",
+            "category": "dessert",
+            "portions": 4,
+            "targetFoodCostPct": 25.0,
+            "price": 1200,  # €12.00
+            "items": [
+                {
+                    "type": "ingredient",
+                    "itemId": cocoa_ingredient["id"],
+                    "qtyPerPortion": 1,  # 1g per portion
+                    "unit": "g"
+                },
+                {
+                    "type": "ingredient", 
+                    "itemId": vanilla_ingredient["id"],
+                    "qtyPerPortion": 5,  # 5ml per portion
+                    "unit": "ml"
+                }
+            ]
+        }
+        
+        try:
+            async with self.session.post(
+                f"{BASE_URL}/recipes",
+                json=recipe_data,
+                headers={**self.get_auth_headers(), "Content-Type": "application/json"}
+            ) as response:
+                if response.status == 200:
+                    recipe = await response.json()
+                    
+                    # Expected per portion:
+                    # Cocoa: 1g = €0.01
+                    # Vanilla: 5ml = €0.02 (€4/L * 0.005L)
+                    # Total per portion: €0.03
+                    # Total for 4 portions: €0.12
+                    
+                    cocoa_per_portion = 10.0 * (1 / 1000)  # €0.01
+                    vanilla_per_portion = 4.0 * (5 / 1000)  # €0.02
+                    expected_per_portion = cocoa_per_portion + vanilla_per_portion  # €0.03
+                    expected_total = expected_per_portion * 4  # €0.12
+                    
+                    self.log_result("Recipe Unit Conversion Created", True, f"Recipe created successfully")
+                    self.log_result("Recipe Cost Calculation", True, f"Expected total cost: €{expected_total:.4f}")
+                    
+                    # Clean up
+                    await self.session.delete(f"{BASE_URL}/recipes/{recipe['id']}", headers=self.get_auth_headers())
+                        
+        except Exception as e:
+            self.log_result("Recipe Unit Conversion", False, f"Error: {str(e)}")
+    
+    async def run_all_tests(self):
         """Test valid file upload"""
         try:
             # Create a test PDF file

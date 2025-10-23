@@ -185,13 +185,18 @@ const resources = {
       'preparations.form.instructionsPlaceholder': 'Step-by-step preparation instructions...',
       'preparations.form.notes': 'Notes',
       'preparations.form.notesPlaceholder': 'Additional notes...',
+      'preparations.search': 'Search preparations...',
       'preparations.confirm.delete': 'Are you sure you want to delete this preparation?',
+      'preparations.confirmBulkDelete': 'Are you sure you want to delete {{count}} selected preparations? This action cannot be undone.',
       'preparations.success.created': 'Preparation created successfully',
       'preparations.success.updated': 'Preparation updated successfully',
       'preparations.success.deleted': 'Preparation deleted',
+      'preparations.success.bulkDelete': '{{count}} preparations deleted successfully',
       'preparations.error.load': 'Failed to load preparations',
       'preparations.error.save': 'Failed to save preparation',
       'preparations.error.delete': 'Failed to delete preparation',
+      'preparations.error.bulkDelete': 'Failed to delete preparations',
+      'preparations.error.hasDependencies': 'Cannot delete: {{count}} preparations are referenced in recipes',
       'preparations.error.noItems': 'Please add at least one ingredient',
       
       // Recipes

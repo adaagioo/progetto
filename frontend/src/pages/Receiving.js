@@ -27,6 +27,7 @@ function Receiving() {
   const [showMappingDialog, setShowMappingDialog] = useState(false);
   const [parsedRows, setParsedRows] = useState([]);
   const [priceHistory, setPriceHistory] = useState({});  // { ingredientId: { loading, data } }
+  const [ingredientTargetMemory, setIngredientTargetMemory] = useState({});  // { ingredientId: 'food'|'beverage'|'nofood' }
   
   const [formData, setFormData] = useState({
     supplierId: '',

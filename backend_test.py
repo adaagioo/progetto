@@ -507,49 +507,81 @@ class SmallQuantityCostingTester:
             self.log_result("Recipe Unit Conversion", False, f"Error: {str(e)}")
     
     async def run_all_tests(self):
-        """Test valid file upload"""
-        try:
-            # Create a test PDF file
-            pdf_content = b"%PDF-1.4\n1 0 obj\n<<\n/Type /Catalog\n/Pages 2 0 R\n>>\nendobj\n2 0 obj\n<<\n/Type /Pages\n/Kids [3 0 R]\n/Count 1\n>>\nendobj\n3 0 obj\n<<\n/Type /Page\n/Parent 2 0 R\n/MediaBox [0 0 612 792]\n>>\nendobj\nxref\n0 4\n0000000000 65535 f \n0000000009 00000 n \n0000000074 00000 n \n0000000120 00000 n \ntrailer\n<<\n/Size 4\n/Root 1 0 R\n>>\nstartxref\n179\n%%EOF"
-            
-            file_path = self.create_test_file("test_document.pdf", pdf_content, "application/pdf")
-            
-            # Upload file
-            data = aiohttp.FormData()
-            data.add_field('file', open(file_path, 'rb'), filename='test_document.pdf', content_type='application/pdf')
-            data.add_field('subfolder', 'general')
-            
-            async with self.session.post(
-                f"{BACKEND_URL}/files/upload",
-                data=data,
-                headers=self.get_auth_headers()
-            ) as response:
-                if response.status == 200:
-                    file_data = await response.json()
-                    required_fields = ["id", "filename", "path", "size", "mimeType", "hash", "uploadedBy", "uploadedAt"]
-                    
-                    missing_fields = [field for field in required_fields if field not in file_data]
-                    if missing_fields:
-                        self.log_result("File Upload Valid", False, f"Missing fields: {missing_fields}", file_data)
-                        return None
-                    
-                    if file_data["mimeType"] != "application/pdf":
-                        self.log_result("File Upload Valid", False, f"Wrong MIME type: {file_data['mimeType']}")
-                        return None
-                    
-                    self.log_result("File Upload Valid", True, "PDF file uploaded successfully")
-                    return file_data
-                else:
-                    error_text = await response.text()
-                    self.log_result("File Upload Valid", False, f"Upload failed: {response.status}", error_text)
-                    return None
-            
-            # Clean up
-            os.unlink(file_path)
-            
-        except Exception as e:
-            self.log_result("File Upload Valid", False, f"Upload error: {str(e)}")
-            return None
+        """Run all P1.3 Small Quantity Costing Fix tests"""
+        print("🚀 Starting P1.3: Small Quantity Costing Fix Backend Testing")
+        print("=" * 70)
+        
+        # Authenticate as admin
+        if not await self.authenticate("admin"):
+            if not await self.register_test_user():
+                print("❌ Authentication failed - cannot continue tests")
+                return
+        
+        print("\n🧪 Test Scenario 1: Create Ingredient - Cocoa Powder")
+        print("-" * 50)
+        cocoa_ingredient = await self.create_cocoa_powder_ingredient()
+        
+        print("\n🧪 Test Scenario 2: Create Preparation with Small Quantity")
+        print("-" * 50)
+        if cocoa_ingredient:
+            await self.test_small_quantity_preparation(cocoa_ingredient)
+        
+        print("\n🧪 Test Scenario 3: Multiple Unit Conversions")
+        print("-" * 50)
+        
+        # Create additional test ingredients
+        vanilla_ingredient = await self.create_test_liquid_ingredient()
+        saffron_ingredient = await self.create_expensive_spice_ingredient()
+        
+        if cocoa_ingredient:
+            await self.test_unit_conversion_g_to_kg(cocoa_ingredient)
+        
+        if vanilla_ingredient:
+            await self.test_unit_conversion_ml_to_l(vanilla_ingredient)
+        
+        if saffron_ingredient:
+            await self.test_unit_conversion_mg_to_kg(saffron_ingredient)
+        
+        print("\n🧪 Test Scenario 4: 4-Decimal Precision")
+        print("-" * 50)
+        if cocoa_ingredient:
+            await self.test_four_decimal_precision(cocoa_ingredient)
+        
+        print("\n🧪 Test Scenario 5: Recipe Cost with Unit Conversion")
+        print("-" * 50)
+        if cocoa_ingredient and vanilla_ingredient:
+            await self.test_recipe_cost_with_unit_conversion(cocoa_ingredient, vanilla_ingredient)
+        
+        # Print summary
+        print("\n" + "=" * 70)
+        print("📊 TEST SUMMARY")
+        print("=" * 70)
+        
+        passed = sum(1 for result in self.test_results if result["success"])
+        total = len(self.test_results)
+        
+        print(f"Total Tests: {total}")
+        print(f"Passed: {passed}")
+        print(f"Failed: {total - passed}")
+        print(f"Success Rate: {(passed/total*100):.1f}%")
+        
+        if total - passed > 0:
+            print("\n❌ FAILED TESTS:")
+            for result in self.test_results:
+                if not result["success"]:
+                    print(f"  - {result['test']}: {result['message']}")
+        
+        return self.test_results
+
+
+async def main():
+    """Main test runner"""
+    async with SmallQuantityCostingTester() as tester:
+        await tester.run_all_tests()
+
+
+if __name__ == "__main__":
+    asyncio.run(main())
     
     async def test_file_upload_invalid_mime(self):
         """Test file upload with invalid MIME type"""

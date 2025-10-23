@@ -491,8 +491,6 @@ async def main():
 
 if __name__ == "__main__":
     asyncio.run(main())
-    
-    async def create_cocoa_powder_ingredient(self) -> Dict[str, Any]:
         """Create Cocoa Powder ingredient for testing small quantities"""
         ingredient_data = {
             "name": "Cocoa Powder",

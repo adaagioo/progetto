@@ -718,8 +718,33 @@ function Receiving() {
         </Dialog>
       </div>
 
+      {/* Search Bar */}
+      <div className="mb-6">
+        <Input
+          type="text"
+          placeholder={t('common.search') || 'Search receiving records...'}
+          value={searchQuery}
+          onChange={(e) => setSearchQuery(e.target.value)}
+          className="max-w-md"
+        />
+      </div>
+
       <div className="grid gap-4">
-        {receivings.map((receiving) => {
+        {receivings
+          .filter(receiving => {
+            if (searchQuery === '') return true;
+            const supplier = suppliers.find(s => s.id === receiving.supplierId);
+            const query = searchQuery.toLowerCase();
+            return (
+              (supplier?.name && supplier.name.toLowerCase().includes(query)) ||
+              (receiving.notes && receiving.notes.toLowerCase().includes(query)) ||
+              receiving.category.toLowerCase().includes(query) ||
+              receiving.lines.some(line => 
+                line.description && line.description.toLowerCase().includes(query)
+              )
+            );
+          })
+          .map((receiving) => {
           const supplier = suppliers.find(s => s.id === receiving.supplierId);
           return (
             <Card key={receiving.id}>

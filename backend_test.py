@@ -62,7 +62,7 @@ class SmallQuantityCostingTester:
             }
             
             async with self.session.post(
-                f"{BACKEND_URL}/auth/register",
+                f"{BASE_URL}/auth/register",
                 json=register_data,
                 headers={"Content-Type": "application/json"}
             ) as response:
@@ -86,10 +86,10 @@ class SmallQuantityCostingTester:
     async def authenticate(self, user_type: str = "admin") -> bool:
         """Authenticate with the backend"""
         try:
-            credentials = TEST_CREDENTIALS[user_type]
+            credentials = TEST_USERS[user_type]
             
             async with self.session.post(
-                f"{BACKEND_URL}/auth/login",
+                f"{BASE_URL}/auth/login",
                 json=credentials,
                 headers={"Content-Type": "application/json"}
             ) as response:

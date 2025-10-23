@@ -2959,6 +2959,77 @@ async def create_prep_list(prep_data: PrepListCreate, current_user: dict = Depen
     result = await db.prep_lists.find_one({"id": prep_list_id}, {"_id": 0})
     return PrepList(**result)
 
+@api_router.get("/prep-list/export")
+async def export_daily_preparations(
+    date: str,
+    format: str = "pdf",  # pdf or xlsx
+    locale: str = "en",
+    current_user: dict = Depends(get_current_user)
+):
+    """Export daily preparations to PDF or XLSX"""
+    from fastapi.responses import StreamingResponse
+    await check_subscription(current_user)
+    
+    # Get prep list for date
+    prep_list = await db.prep_lists.find_one({
+        "restaurantId": current_user["restaurantId"],
+        "date": date
+    })
+    
+    if not prep_list:
+        raise HTTPException(status_code=404, detail="No prep list found for this date")
+    
+    # Get preparations details
+    prep_ids = [item["preparationId"] for item in prep_list.get("items", [])]
+    preparations = await db.preparations.find({
+        "id": {"$in": prep_ids},
+        "restaurantId": current_user["restaurantId"]
+    }).to_list(1000)
+    
+    prep_map = {p["id"]: p for p in preparations}
+    
+    # Build export data
+    export_data = []
+    for item in prep_list.get("items", []):
+        prep = prep_map.get(item["preparationId"], {})
+        cost_per_portion = prep.get("cost", 0) / max(prep.get("yield", {}).get("value", 1), 1)
+        to_prepare = item.get("toMakeQty", 0)
+        
+        shelf_life_str = "-"
+        if prep.get("shelfLife"):
+            shelf_life_str = f"{prep['shelfLife'].get('value', '-')} {prep['shelfLife'].get('unit', '')}"
+        
+        export_data.append({
+            "name": item.get("preparationName", prep.get("name", "Unknown")),
+            "plannedPortions": item.get("forecastQty", 0),
+            "toPrepare": to_prepare,
+            "unit": item.get("unit", "portions"),
+            "shelfLife": shelf_life_str,
+            "costPerPortion": cost_per_portion,
+            "totalCost": cost_per_portion * to_prepare,
+            "notes": item.get("notes", "")
+        })
+    
+    # Get restaurant name
+    restaurant = await db.users.find_one({"id": current_user["id"]})
+    restaurant_name = restaurant.get("restaurantName", "Restaurant")
+    
+    # Generate export
+    if format == "xlsx":
+        content = generate_daily_prep_xlsx(export_data, date, restaurant_name, locale)
+        filename = f"DailyPreparations_{restaurant_name.replace(' ', '_')}_{date}.xlsx"
+        media_type = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+    else:  # pdf
+        content = generate_daily_prep_pdf(export_data, date, restaurant_name, locale)
+        filename = f"DailyPreparations_{restaurant_name.replace(' ', '_')}_{date}.pdf"
+        media_type = "application/pdf"
+    
+    return StreamingResponse(
+        BytesIO(content),
+        media_type=media_type,
+        headers={"Content-Disposition": f"attachment; filename={filename}"}
+    )
+
 # ============ PHASE 4: ORDER LIST ROUTES ============
 
 @api_router.get("/order-list/forecast")

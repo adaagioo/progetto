@@ -555,7 +555,7 @@ function Receiving() {
                 <div className="space-y-3">
                   {formData.lines.map((line, index) => (
                     <Card key={index} className="p-3">
-                      <div className="grid grid-cols-12 gap-2">
+                      <div className="grid grid-cols-16 gap-2">
                         <div className="col-span-3">
                           <Label className="text-xs">{t('receiving.form.ingredient') || 'Ingredient'}</Label>
                           <Select 

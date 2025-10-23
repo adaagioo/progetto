@@ -21,91 +21,154 @@ TEST_USERS = {
     "staff": {"email": "staff@test.com", "password": "staff123"}
 }
 
-class TestRunner:
+class SupplierDependenciesTest:
     def __init__(self):
         self.session = None
-        self.auth_token = None
-        self.user_data = None
-        self.test_results = []
+        self.tokens = {}
+        self.test_data = {
+            "suppliers": [],
+            "ingredients": [],
+            "receiving": []
+        }
         
-    async def __aenter__(self):
+    async def setup_session(self):
+        """Initialize HTTP session"""
         self.session = aiohttp.ClientSession()
-        return self
         
-    async def __aexit__(self, exc_type, exc_val, exc_tb):
+    async def cleanup_session(self):
+        """Close HTTP session"""
         if self.session:
             await self.session.close()
-    
-    def log_result(self, test_name: str, success: bool, message: str, details: Any = None):
-        """Log test result"""
-        result = {
-            "test": test_name,
-            "success": success,
-            "message": message,
-            "details": details
-        }
-        self.test_results.append(result)
-        status = "✅ PASS" if success else "❌ FAIL"
-        print(f"{status}: {test_name} - {message}")
-        if details and not success:
-            print(f"   Details: {details}")
-    
-    async def register_test_user(self) -> bool:
-        """Register test user if not exists"""
-        try:
-            register_data = {
-                "email": "admin@test.com",
-                "password": "admin123",
-                "displayName": "Test Admin",
-                "restaurantName": "Test Restaurant",
-                "locale": "en-US"
+            
+    async def login_user(self, role):
+        """Login and get token for a specific role"""
+        user_creds = TEST_USERS[role]
+        
+        async with self.session.post(f"{API_BASE}/auth/login", json=user_creds) as resp:
+            if resp.status != 200:
+                raise Exception(f"Login failed for {role}: {await resp.text()}")
+            
+            data = await resp.json()
+            self.tokens[role] = data["access_token"]
+            return data["access_token"]
+            
+    def get_headers(self, role):
+        """Get authorization headers for a role"""
+        return {"Authorization": f"Bearer {self.tokens[role]}"}
+        
+    async def create_test_suppliers(self):
+        """Create test suppliers for dependency testing"""
+        print("📦 Creating test suppliers...")
+        
+        suppliers_data = [
+            {"name": "Supplier A - No Dependencies", "notes": "Test supplier without any references"},
+            {"name": "Supplier B - Ingredient Refs", "notes": "Test supplier with ingredient references"},
+            {"name": "Supplier C - Receiving Refs", "notes": "Test supplier with receiving references"},
+            {"name": "Supplier D - Both Refs", "notes": "Test supplier with both ingredient and receiving references"}
+        ]
+        
+        headers = self.get_headers("admin")
+        
+        for supplier_data in suppliers_data:
+            async with self.session.post(f"{API_BASE}/suppliers", json=supplier_data, headers=headers) as resp:
+                if resp.status != 201:
+                    raise Exception(f"Failed to create supplier: {await resp.text()}")
+                
+                supplier = await resp.json()
+                self.test_data["suppliers"].append(supplier)
+                print(f"  ✅ Created supplier: {supplier['name']} (ID: {supplier['id']})")
+                
+        return self.test_data["suppliers"]
+        
+    async def create_test_ingredients(self):
+        """Create test ingredients with supplier references"""
+        print("🥬 Creating test ingredients with supplier references...")
+        
+        # Create ingredients referencing different suppliers
+        ingredients_data = [
+            {
+                "name": "Test Flour - Supplier B",
+                "unit": "kg",
+                "packSize": 25.0,
+                "packCost": 15.50,
+                "preferredSupplierId": self.test_data["suppliers"][1]["id"],  # Supplier B
+                "category": "food",
+                "wastePct": 5.0
+            },
+            {
+                "name": "Test Tomatoes - Supplier D",
+                "unit": "kg", 
+                "packSize": 10.0,
+                "packCost": 32.00,
+                "preferredSupplierId": self.test_data["suppliers"][3]["id"],  # Supplier D
+                "category": "food",
+                "wastePct": 15.0
             }
-            
-            async with self.session.post(
-                f"{BASE_URL}/auth/register",
-                json=register_data,
-                headers={"Content-Type": "application/json"}
-            ) as response:
-                if response.status == 200:
-                    data = await response.json()
-                    self.auth_token = data["access_token"]
-                    self.user_data = data["user"]
-                    self.log_result("User Registration", True, "Test user registered successfully")
-                    return True
-                elif response.status == 400:
-                    # User already exists, try to login
-                    return await self.authenticate("admin")
-                else:
-                    error_text = await response.text()
-                    self.log_result("User Registration", False, f"Registration failed: {response.status}", error_text)
-                    return False
-        except Exception as e:
-            self.log_result("User Registration", False, f"Registration error: {str(e)}")
-            return False
-
-    async def authenticate(self, user_type: str = "admin") -> bool:
-        """Authenticate with the backend"""
-        try:
-            credentials = TEST_USERS[user_type]
-            
-            async with self.session.post(
-                f"{BASE_URL}/auth/login",
-                json=credentials,
-                headers={"Content-Type": "application/json"}
-            ) as response:
-                if response.status == 200:
-                    data = await response.json()
-                    self.auth_token = data["access_token"]
-                    self.user_data = data["user"]
-                    self.log_result("Authentication", True, f"Logged in as {user_type}")
-                    return True
-                else:
-                    error_text = await response.text()
-                    self.log_result("Authentication", False, f"Login failed: {response.status}", error_text)
-                    return False
-        except Exception as e:
-            self.log_result("Authentication", False, f"Login error: {str(e)}")
-            return False
+        ]
+        
+        headers = self.get_headers("admin")
+        
+        for ingredient_data in ingredients_data:
+            async with self.session.post(f"{API_BASE}/ingredients", json=ingredient_data, headers=headers) as resp:
+                if resp.status != 201:
+                    raise Exception(f"Failed to create ingredient: {await resp.text()}")
+                
+                ingredient = await resp.json()
+                self.test_data["ingredients"].append(ingredient)
+                print(f"  ✅ Created ingredient: {ingredient['name']} → Supplier {ingredient.get('preferredSupplierName', 'Unknown')}")
+                
+        return self.test_data["ingredients"]
+        
+    async def create_test_receiving(self):
+        """Create test receiving records with supplier references"""
+        print("📋 Creating test receiving records with supplier references...")
+        
+        # Create receiving records for different suppliers
+        receiving_data = [
+            {
+                "supplierId": self.test_data["suppliers"][2]["id"],  # Supplier C
+                "category": "food",
+                "arrivedAt": "2024-01-15T10:00:00Z",
+                "lines": [
+                    {
+                        "description": "Test Olive Oil Delivery",
+                        "qty": 12.0,
+                        "unit": "bottles",
+                        "unitPrice": 850,  # €8.50 in cents
+                        "packFormat": "500ml bottle"
+                    }
+                ],
+                "notes": "Test receiving for Supplier C"
+            },
+            {
+                "supplierId": self.test_data["suppliers"][3]["id"],  # Supplier D
+                "category": "food", 
+                "arrivedAt": "2024-01-16T14:30:00Z",
+                "lines": [
+                    {
+                        "description": "Test Cheese Delivery",
+                        "qty": 5.0,
+                        "unit": "kg",
+                        "unitPrice": 1200,  # €12.00 in cents
+                        "packFormat": "wheel"
+                    }
+                ],
+                "notes": "Test receiving for Supplier D"
+            }
+        ]
+        
+        headers = self.get_headers("admin")
+        
+        for receiving_item in receiving_data:
+            async with self.session.post(f"{API_BASE}/receiving", json=receiving_item, headers=headers) as resp:
+                if resp.status != 201:
+                    raise Exception(f"Failed to create receiving: {await resp.text()}")
+                
+                receiving = await resp.json()
+                self.test_data["receiving"].append(receiving)
+                print(f"  ✅ Created receiving: {receiving['lines'][0]['description']} → Supplier ID {receiving['supplierId']}")
+                
+        return self.test_data["receiving"]
     
     def get_auth_headers(self) -> Dict[str, str]:
         """Get authorization headers"""

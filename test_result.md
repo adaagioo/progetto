@@ -2220,7 +2220,7 @@ metadata:
 
 test_plan:
   current_focus:
-    - "P2 Batch 3: Suppliers Bulk Delete - Backend dependencies endpoint (ingredients + receiving), frontend UI with checkboxes"
+    - "P2 Batch 4: Receiving Bulk Delete with Stock Reversal - Backend inventory reversal, frontend UI with checkboxes"
   stuck_tasks:
     - "Enhanced Recipe Editor with Keyboard UX"
   test_all: false
@@ -2229,7 +2229,55 @@ test_plan:
 agent_communication:
   - agent: "main"
     message: |
-      📋 BATCH 3 (SUPPLIERS) IMPLEMENTATION COMPLETED - READY FOR TESTING
+      📋 BATCH 4 (RECEIVING) IMPLEMENTATION COMPLETED - READY FOR TESTING
+      
+      IMPLEMENTED FEATURES:
+      
+      Backend (server.py):
+      - GET /api/receiving/{receiving_id}/dependencies endpoint
+      - Enhanced DELETE /api/receiving/{receiving_id} with automatic stock reversal
+      - Deletes associated inventory records (reverses stock movement)
+      - Returns inventoryRecordsReversed count in response
+      
+      Frontend (Receiving.js):
+      - Enhanced existing search to be URL-driven with 200ms debounce
+      - Bulk select functionality (same pattern as previous batches)
+      - Bulk delete with stock reversal warning in confirmation
+      - Complete UI: checkboxes, bulk action bar, confirmation dialog
+      - i18n translations (EN/IT) with stock reversal warning
+      - Added canEdit check
+      
+      TESTING REQUIREMENTS:
+      
+      Authentication: admin@test.com / admin123
+      
+      Backend Tests:
+      1. GET /api/receiving/{valid_id}/dependencies
+         - Should return canDelete: true and inventory records count
+         - Test with receiving that HAS inventory records
+         - Test with receiving that has NO inventory records (deleted)
+      
+      2. DELETE /api/receiving/{id} - Stock reversal
+         - Create receiving record → Should create inventory records
+         - Verify inventory records exist
+         - Delete receiving record → Should delete inventory records (stock reversal)
+         - Verify inventory records no longer exist
+         - Response should include inventoryRecordsReversed count
+      
+      3. DELETE /api/receiving/{id} - RBAC enforcement
+         - Admin can delete ✅
+         - Manager can delete ✅
+         - Staff CANNOT delete (should return 403) ✅
+      
+      4. Bulk delete scenario:
+         - Create 3 test receiving records
+         - Verify inventory records created for each
+         - Bulk delete all 3 → Should succeed
+         - Verify all inventory records reversed (deleted)
+
+  - agent: "main"
+    message: |
+      📋 BATCH 3 (SUPPLIERS) IMPLEMENTATION COMPLETED - USER VALIDATED ✅
       
       IMPLEMENTED FEATURES:
       

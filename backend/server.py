@@ -1964,6 +1964,12 @@ async def update_preparation(
     if prep_update.shelfLife is not None:
         update_data["shelfLife"] = prep_update.shelfLife.dict()
     
+    if prep_update.portions is not None:
+        update_data["portions"] = prep_update.portions
+    
+    if prep_update.instructions is not None:
+        update_data["instructions"] = prep_update.instructions
+    
     if prep_update.notes is not None:
         update_data["notes"] = prep_update.notes
     

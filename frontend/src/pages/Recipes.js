@@ -758,6 +758,30 @@ function RecipesEnhanced() {
         )}
       </div>
 
+      {/* Recipe Type Tabs */}
+      <div className="flex gap-2 mb-6 border-b">
+        <button
+          className={`px-4 py-2 font-medium transition-colors ${
+            recipeTypeTab === 'kitchen'
+              ? 'border-b-2 border-emerald-500 text-emerald-600'
+              : 'text-gray-500 hover:text-gray-700'
+          }`}
+          onClick={() => setRecipeTypeTab('kitchen')}
+        >
+          {t('recipes.kitchen') || 'Kitchen'} ({recipes.filter(r => (r.recipeType || 'kitchen') === 'kitchen').length})
+        </button>
+        <button
+          className={`px-4 py-2 font-medium transition-colors ${
+            recipeTypeTab === 'bar'
+              ? 'border-b-2 border-emerald-500 text-emerald-600'
+              : 'text-gray-500 hover:text-gray-700'
+          }`}
+          onClick={() => setRecipeTypeTab('bar')}
+        >
+          {t('recipes.bar') || 'Bar'} ({recipes.filter(r => (r.recipeType || 'kitchen') === 'bar').length})
+        </button>
+      </div>
+
       {/* Search and Filter Bar */}
       <div className="flex flex-col sm:flex-row gap-4 mb-6">
         <div className="flex-1">

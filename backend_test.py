@@ -21,11 +21,12 @@ TEST_USERS = {
     "staff": {"email": "staff@test.com", "password": "staff123"}
 }
 
-class OCRTester:
+class SmallQuantityCostingTester:
     def __init__(self):
-        self.tokens = {}
-        self.test_data = {}
-        self.results = []
+        self.session = None
+        self.auth_token = None
+        self.user_data = None
+        self.test_results = []
         
     async def __aenter__(self):
         self.session = aiohttp.ClientSession()

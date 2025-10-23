@@ -1340,6 +1340,11 @@ const resources = {
       'common.notes': 'Note',
       'common.total': 'Totale',
       'common.unknown': 'Sconosciuto',
+      'common.selectAll': 'Seleziona Tutto',
+      'common.selected': 'selezionati',
+      'common.clearSelection': 'Cancella Selezione',
+      'common.deleteSelected': 'Elimina Selezionati',
+      'common.confirmDelete': 'Conferma Eliminazione',
       
       // Settings
       'settings.title': 'Impostazioni',

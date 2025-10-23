@@ -1303,6 +1303,60 @@ async def health_check():
     
     return health_status
 
+
+@api_router.get("/health/ocr")
+async def health_check_ocr():
+    """
+    OCR-specific health check endpoint
+    Returns OCR service availability and supported languages
+    """
+    import subprocess
+    
+    ocr_health = {
+        "ok": False,
+        "service": "tesseract",
+        "version": None,
+        "langs": [],
+        "timestamp": datetime.now(timezone.utc).isoformat(),
+        "error": None
+    }
+    
+    try:
+        # Check tesseract version
+        version_result = subprocess.run(
+            ['tesseract', '--version'],
+            capture_output=True,
+            text=True,
+            timeout=5
+        )
+        if version_result.returncode == 0:
+            version_line = version_result.stdout.split('\n')[0]
+            ocr_health["version"] = version_line.strip()
+        
+        # Check available languages
+        langs_result = subprocess.run(
+            ['tesseract', '--list-langs'],
+            capture_output=True,
+            text=True,
+            timeout=5
+        )
+        if langs_result.returncode == 0:
+            lines = langs_result.stdout.strip().split('\n')
+            # Skip the first line (header)
+            ocr_health["langs"] = [lang.strip() for lang in lines[1:] if lang.strip()]
+            ocr_health["ok"] = True
+        else:
+            ocr_health["error"] = "Failed to list languages"
+    
+    except FileNotFoundError:
+        ocr_health["error"] = "Tesseract binary not found in PATH"
+    except subprocess.TimeoutExpired:
+        ocr_health["error"] = "Tesseract command timed out"
+    except Exception as e:
+        ocr_health["error"] = str(e)
+    
+    return ocr_health
+
 @api_router.post("/auth/register", response_model=TokenResponse)
 async def register(user_data: UserRegister):
     # Check if user exists

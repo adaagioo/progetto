@@ -796,6 +796,8 @@ const resources = {
       'export.dailyPrep': 'Esporta Prep. Giornaliere',
       'export.pdf': 'PDF',
       'export.xlsx': 'Excel',
+      'export.success': 'Esportazione riuscita',
+      'export.error': 'Esportazione fallita',
       'export.selectDate': 'Seleziona Data',
       'export.purchaseOrders': 'Esporta Ordini di Acquisto',
       'dashboard.clickToView': 'Clicca per visualizzare',

@@ -423,7 +423,10 @@ function Inventory() {
       {/* Valuation Summary Cards */}
       {valuationSummary && (
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-          <Card className="glass-morphism border-0">
+          <Card 
+            className="glass-morphism border-0 cursor-pointer hover:shadow-lg transition-shadow"
+            onClick={() => handleCategoryFilter('food')}
+          >
             <CardHeader className="pb-2">
               <CardTitle className="text-sm font-medium text-muted-foreground">
                 {t('inventory.valuation.food') || 'Food Inventory'}
@@ -433,10 +436,16 @@ function Inventory() {
               <div className="text-2xl font-bold text-green-600">
                 {formatMinor(valuationSummary.categories.food)}
               </div>
+              <p className="text-xs text-muted-foreground mt-1">
+                {t('inventory.clickToFilter') || 'Click to filter'}
+              </p>
             </CardContent>
           </Card>
           
-          <Card className="glass-morphism border-0">
+          <Card 
+            className="glass-morphism border-0 cursor-pointer hover:shadow-lg transition-shadow"
+            onClick={() => handleCategoryFilter('beverage')}
+          >
             <CardHeader className="pb-2">
               <CardTitle className="text-sm font-medium text-muted-foreground">
                 {t('inventory.valuation.beverage') || 'Beverage Inventory'}
@@ -446,10 +455,16 @@ function Inventory() {
               <div className="text-2xl font-bold text-blue-600">
                 {formatMinor(valuationSummary.categories.beverage)}
               </div>
+              <p className="text-xs text-muted-foreground mt-1">
+                {t('inventory.clickToFilter') || 'Click to filter'}
+              </p>
             </CardContent>
           </Card>
           
-          <Card className="glass-morphism border-0">
+          <Card 
+            className="glass-morphism border-0 cursor-pointer hover:shadow-lg transition-shadow"
+            onClick={() => handleCategoryFilter('nofood')}
+          >
             <CardHeader className="pb-2">
               <CardTitle className="text-sm font-medium text-muted-foreground">
                 {t('inventory.valuation.nofood') || 'Non-Food Inventory'}
@@ -459,6 +474,9 @@ function Inventory() {
               <div className="text-2xl font-bold text-gray-600">
                 {formatMinor(valuationSummary.categories.nofood)}
               </div>
+              <p className="text-xs text-muted-foreground mt-1">
+                {t('inventory.clickToFilter') || 'Click to filter'}
+              </p>
             </CardContent>
           </Card>
           

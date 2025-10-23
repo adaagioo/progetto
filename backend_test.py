@@ -228,7 +228,7 @@ class ReceivingBulkDeleteTester:
                 json=receiving_data,
                 headers=self.get_auth_headers("admin")
             ) as response:
-                if response.status == 201:
+                if response.status == 200:
                     receiving = await response.json()
                     self.test_data["receiving_records"].append(receiving)
                     print(f"   ✅ Created receiving record {i}: {len(receiving['lines'])} line(s)")

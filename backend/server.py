@@ -2388,6 +2388,33 @@ async def get_inventory_valuation_summary(current_user: dict = Depends(get_curre
         "itemCount": len(valuation)
     }
 
+@api_router.get("/inventory/valuation/total")
+async def get_inventory_total_value(current_user: dict = Depends(get_current_user)):
+    """Get total inventory value with negative stock count for dashboard card"""
+    await check_subscription(current_user)
+    
+    # Get per-item valuation
+    valuation = await get_inventory_valuation(current_user)
+    
+    # Calculate total value (only items with positive stock)
+    total_value = 0
+    negative_count = 0
+    
+    for item in valuation:
+        qty_on_hand = item.get("qtyOnHand", 0)
+        total_val = item.get("totalValue", 0)
+        
+        if qty_on_hand > 0 and total_val > 0:
+            total_value += total_val
+        elif qty_on_hand < 0:
+            negative_count += 1
+    
+    return {
+        "totalValue": round(total_value, 2),
+        "negativeCount": negative_count,
+        "timestamp": datetime.now(timezone.utc).isoformat()
+    }
+
 @api_router.post("/inventory/adjustments")
 async def create_inventory_adjustment(
     adjustment: dict,

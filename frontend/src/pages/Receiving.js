@@ -28,6 +28,7 @@ function Receiving() {
   const [parsedRows, setParsedRows] = useState([]);
   const [priceHistory, setPriceHistory] = useState({});  // { ingredientId: { loading, data } }
   const [ingredientTargetMemory, setIngredientTargetMemory] = useState({});  // { ingredientId: 'food'|'beverage'|'nofood' }
+  const [searchQuery, setSearchQuery] = useState('');
   
   const [formData, setFormData] = useState({
     supplierId: '',

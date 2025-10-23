@@ -270,9 +270,20 @@ function Inventory() {
     setSearchParams({});
   };
 
-  // Filter inventory based on URL params
+  // Filter inventory based on URL params and search
   const getFilteredInventory = () => {
     let filtered = [...inventory];
+
+    // Search filter
+    if (debouncedSearch) {
+      filtered = filtered.filter(inv => {
+        const ingredient = getIngredient(inv.ingredientId);
+        return (
+          (ingredient?.name && ingredient.name.toLowerCase().includes(debouncedSearch.toLowerCase())) ||
+          (inv.location && inv.location.toLowerCase().includes(debouncedSearch.toLowerCase()))
+        );
+      });
+    }
 
     // Category filter (from valuation cards)
     if (categoryFilter) {

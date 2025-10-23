@@ -33,20 +33,71 @@ client = AsyncIOMotorClient(mongo_url)
 db = client[os.environ['DB_NAME']]
 
 # Allergen taxonomy - authoritative list (EU-14 standard)
-ALLERGEN_CODES = [
-    "GLUTEN",
-    "CRUSTACEANS",
-    "MOLLUSCS",
-    "EGGS",
-    "FISH",
-    "TREE_NUTS",
-    "SOY",
-    "DAIRY",
-    "SESAME",
-    "CELERY",
-    "MUSTARD",
-    "SULPHITES"
-]
+ALLERGEN_CODES = {
+    "GLUTEN", "CRUSTACEANS", "EGGS", "FISH", "PEANUTS",
+    "SOYBEANS", "MILK", "NUTS", "CELERY", "MUSTARD",
+    "SESAME", "SULPHITES", "LUPIN", "MOLLUSCS"
+}
+
+# Unit conversion factors (to base unit)
+UNIT_CONVERSIONS = {
+    # Weight conversions to kg
+    "g": 0.001,
+    "kg": 1.0,
+    "mg": 0.000001,
+    "lb": 0.453592,
+    "oz": 0.0283495,
+    
+    # Volume conversions to L
+    "ml": 0.001,
+    "l": 1.0,
+    "cl": 0.01,
+    "dl": 0.1,
+    "cup": 0.236588,
+    "tbsp": 0.0147868,
+    "tsp": 0.00492892,
+    
+    # Count/pieces (no conversion)
+    "pcs": 1.0,
+    "unit": 1.0,
+    "piece": 1.0,
+}
+
+def normalize_quantity_to_base_unit(qty: float, from_unit: str, to_unit: str) -> float:
+    """
+    Normalize quantity from one unit to another using base unit conversion.
+    
+    Args:
+        qty: Quantity in from_unit
+        from_unit: Source unit (e.g., 'g', 'ml')
+        to_unit: Target unit (e.g., 'kg', 'l')
+    
+    Returns:
+        Normalized quantity in to_unit
+        
+    Example:
+        normalize_quantity_to_base_unit(2, 'g', 'kg') -> 0.002
+        normalize_quantity_to_base_unit(500, 'ml', 'l') -> 0.5
+    """
+    from_unit_lower = from_unit.lower()
+    to_unit_lower = to_unit.lower()
+    
+    # Same unit, no conversion needed
+    if from_unit_lower == to_unit_lower:
+        return qty
+    
+    # Get conversion factors
+    from_factor = UNIT_CONVERSIONS.get(from_unit_lower)
+    to_factor = UNIT_CONVERSIONS.get(to_unit_lower)
+    
+    # If either unit is unknown, return original (no conversion)
+    if from_factor is None or to_factor is None:
+        return qty
+    
+    # Convert: from_unit -> base_unit -> to_unit
+    # qty_in_base = qty * from_factor
+    # qty_in_to_unit = qty_in_base / to_factor
+    return qty * from_factor / to_factor
 
 # Locale-specific allergen labels
 ALLERGEN_LABELS = {

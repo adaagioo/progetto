@@ -2220,16 +2220,70 @@ async def get_inventory(current_user: dict = Depends(get_current_user)):
         logger.error(f"Error in get_inventory: {e}", exc_info=True)
         raise HTTPException(status_code=500, detail=str(e))
 
+@api_router.get("/inventory/{inventory_id}/dependencies")
+async def get_inventory_dependencies(inventory_id: str, current_user: dict = Depends(get_current_user)):
+    """Check if inventory record has dependencies (none expected for inventory records)"""
+    # Inventory records are ledger entries, not master data
+    # They don't have dependencies like ingredients do
+    # Safe to delete as they're just quantity records
+    
+    inventory = await db.inventory.find_one({
+        "id": inventory_id,
+        "restaurantId": current_user["restaurantId"]
+    })
+    
+    if not inventory:
+        return {
+            "hasReferences": False,
+            "canDelete": False,
+            "references": {},
+            "message": "Inventory record not found"
+        }
+    
+    return {
+        "hasReferences": False,
+        "canDelete": True,
+        "references": {},
+        "message": "Inventory record can be safely deleted"
+    }
+
 @api_router.delete("/inventory/{inventory_id}")
 async def delete_inventory(inventory_id: str, current_user: dict = Depends(get_current_user)):
-    if current_user["role"] != "admin":
-        raise HTTPException(status_code=403, detail="Admin access required")
+    """Delete an inventory record (does NOT delete the master Ingredient)"""
+    # RBAC: Only admin/manager can delete
+    if current_user["role"] not in ["admin", "manager"]:
+        raise HTTPException(status_code=403, detail="Admin or Manager access required")
     
+    # Get inventory record for audit
+    inventory = await db.inventory.find_one({
+        "id": inventory_id,
+        "restaurantId": current_user["restaurantId"]
+    })
+    
+    if not inventory:
+        raise HTTPException(status_code=404, detail="Inventory record not found")
+    
+    # Delete ONLY the inventory record, NOT the master ingredient
     result = await db.inventory.delete_one({"id": inventory_id, "restaurantId": current_user["restaurantId"]})
     if result.deleted_count == 0:
         raise HTTPException(status_code=404, detail="Inventory record not found")
     
-    return {"message": "Inventory deleted"}
+    # Log audit
+    await log_audit(
+        db,
+        current_user["restaurantId"],
+        current_user["id"],
+        "delete",
+        "inventory",
+        inventory_id,
+        {
+            "ingredientId": inventory.get("ingredientId"),
+            "qty": inventory.get("qty"),
+            "category": inventory.get("category")
+        }
+    )
+    
+    return {"message": "Inventory record deleted"}
 
 # ============ INVENTORY VALUATION & ADJUSTMENTS ============
 

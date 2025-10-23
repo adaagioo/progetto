@@ -234,7 +234,8 @@ function Receiving() {
         unit: item.unit || 'kg',
         unitPrice: item.price?.toString() || '',
         packFormat: '',
-        expiryDate: ''
+        expiryDate: '',
+        targetInventory: 'food'
       }));
       setFormData(prev => ({ ...prev, lines }));
       

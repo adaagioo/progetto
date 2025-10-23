@@ -795,6 +795,7 @@ const resources = {
       'export.pdf': 'PDF',
       'export.xlsx': 'Excel',
       'export.selectDate': 'Seleziona Data',
+      'export.purchaseOrders': 'Esporta Ordini di Acquisto',
       'dashboard.clickToView': 'Clicca per visualizzare',
       
       // Ingredients

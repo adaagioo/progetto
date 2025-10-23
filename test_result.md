@@ -1201,6 +1201,82 @@ backend:
           All unit conversion and small quantity costing features working perfectly.
 
 frontend:
+  - task: "P2 Batch 1: Recipes Bulk Delete & Search UI"
+    implemented: true
+    working: "NA"
+    file: "frontend/src/pages/Recipes.js"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: |
+          BATCH 1 FRONTEND IMPLEMENTATION COMPLETED:
+          
+          ✅ IMPORTS & DEPENDENCIES:
+          - Added useSearchParams from react-router-dom for URL state
+          - Added useCallback for performance optimization
+          - Added Checkbox, DialogDescription, DialogFooter, X icon
+          
+          ✅ URL-DRIVEN SEARCH STATE:
+          - Search query synced with URL parameter (?search=...)
+          - Allergen filter synced with URL parameter (?allergen=...)
+          - 200ms debounce on search input (meets requirement ≥200ms)
+          - URL state persists on page refresh
+          - filteredRecipes uses debouncedSearch for performance
+          
+          ✅ BULK SELECT FUNCTIONALITY:
+          - toggleSelectAll(): Selects/deselects all filtered recipes
+          - toggleSelectItem(id): Individual recipe selection toggle
+          - selectedItems state tracks selected recipe IDs
+          
+          ✅ BULK DELETE WITH DEPENDENCY CHECKING:
+          - handleBulkDelete() function:
+            - Checks dependencies for ALL selected recipes in parallel
+            - Blocks deletion if ANY recipe has sales references
+            - Shows clear error with count of recipes with dependencies
+            - Deletes all selected recipes if no dependencies
+            - Shows success toast with count
+            - Clears selection and refreshes list after success
+          
+          ✅ UI COMPONENTS ADDED:
+          - "Select All" checkbox above recipe list (only shown for admin/manager)
+          - Individual checkboxes on each recipe card
+          - Bulk action bar (blue background) when items selected:
+            - Shows count of selected items
+            - Clear selection button (X icon)
+            - "Delete Selected" button (destructive variant)
+          - Bulk delete confirmation dialog:
+            - Shows count of recipes to be deleted
+            - Warning message about irreversible action
+            - Cancel and Delete buttons
+          
+          ✅ I18N TRANSLATIONS ADDED:
+          - recipes.confirmBulkDelete (EN/IT)
+          - recipes.success.bulkDelete (EN/IT)
+          - recipes.error.bulkDelete (EN/IT)
+          - recipes.error.hasDependencies (EN/IT)
+          - Uses existing common translations: selected, deleteSelected, confirmDelete
+          
+          ✅ RBAC ENFORCEMENT:
+          - Checkboxes only shown when canEdit (admin/manager)
+          - Bulk action bar only shown when canEdit
+          - "Select All" checkbox only shown when canEdit
+          
+          ✅ FRONTEND COMPILATION:
+          - Build successful, no errors
+          - Screenshots captured showing UI with checkboxes visible
+          
+          PENDING TESTING:
+          - E2E test: Select recipes → Verify bulk action bar appears
+          - E2E test: Click "Select All" → All visible recipes selected
+          - E2E test: Attempt delete with recipes that have sales → Should show dependency error
+          - E2E test: Delete recipes without dependencies → Should succeed
+          - E2E test: Search functionality → URL updates, debounce works
+          - E2E test: URL state persistence → Refresh page, filters maintained
+          - E2E test: RBAC → Staff user should NOT see checkboxes/bulk delete UI
+
   - task: "Phase 7: RBAC Matrix UI"
     implemented: true
     working: "NA"

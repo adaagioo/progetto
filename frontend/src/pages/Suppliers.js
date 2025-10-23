@@ -78,6 +78,79 @@ function Suppliers() {
     }
   };
 
+  // RBAC: Check if user can edit
+  const canEdit = user?.roleKey === 'admin' || user?.roleKey === 'manager';
+
+  // Filter suppliers based on search
+  const filteredSuppliers = React.useMemo(() => {
+    return suppliers.filter(supplier =>
+      debouncedSearch === '' ||
+      supplier.name.toLowerCase().includes(debouncedSearch.toLowerCase()) ||
+      (supplier.contactName && supplier.contactName.toLowerCase().includes(debouncedSearch.toLowerCase())) ||
+      (supplier.contactEmail && supplier.contactEmail.toLowerCase().includes(debouncedSearch.toLowerCase()))
+    );
+  }, [suppliers, debouncedSearch]);
+
+  // Bulk select handlers
+  const toggleSelectAll = () => {
+    if (selectedItems.length === filteredSuppliers.length && filteredSuppliers.length > 0) {
+      setSelectedItems([]);
+    } else {
+      setSelectedItems(filteredSuppliers.map(s => s.id));
+    }
+  };
+
+  const toggleSelectItem = (id) => {
+    setSelectedItems(prev =>
+      prev.includes(id) ? prev.filter(i => i !== id) : [...prev, id]
+    );
+  };
+
+  // Bulk delete with dependency checking
+  const handleBulkDelete = async () => {
+    if (selectedItems.length === 0) return;
+
+    try {
+      // Check dependencies for all selected suppliers
+      const dependencyChecks = await Promise.all(
+        selectedItems.map(async (id) => {
+          try {
+            const response = await axios.get(`${API}/suppliers/${id}/dependencies`);
+            return { id, ...response.data };
+          } catch (error) {
+            return { id, hasReferences: false, references: {} };
+          }
+        })
+      );
+
+      // Find suppliers with dependencies
+      const suppliersWithDeps = dependencyChecks.filter(d => d.hasReferences);
+
+      if (suppliersWithDeps.length > 0) {
+        toast.error(
+          t('suppliers.error.hasDependencies', { count: suppliersWithDeps.length }) ||
+          `Cannot delete: ${suppliersWithDeps.length} suppliers are referenced`
+        );
+        setShowBulkDeleteDialog(false);
+        return;
+      }
+
+      // Delete all selected suppliers
+      await Promise.all(selectedItems.map(id => axios.delete(`${API}/suppliers/${id}`)));
+
+      toast.success(
+        t('suppliers.success.bulkDelete', { count: selectedItems.length }) ||
+        `${selectedItems.length} suppliers deleted successfully`
+      );
+      setSelectedItems([]);
+      setShowBulkDeleteDialog(false);
+      fetchSuppliers();
+    } catch (error) {
+      const errorMsg = error.response?.data?.detail || t('suppliers.error.bulkDelete') || 'Failed to delete suppliers';
+      toast.error(errorMsg);
+    }
+  };
+
   const handleOCRParsed = (data) => {
     setOCRParsedItems(data.items || []);
     setShowOCRPriceList(true);

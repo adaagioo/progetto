@@ -1335,6 +1335,7 @@ const resources = {
       'common.cancel': 'Annulla',
       'common.delete': 'Elimina',
       'common.edit': 'Modifica',
+      'common.allergens': 'Allergeni',
       'common.clearFilters': 'Cancella Filtri',
       'common.all': 'Tutto',
       'common.noResults': 'Nessun risultato trovato',

@@ -180,9 +180,9 @@ function RecipesEnhanced() {
   // Filter recipes based on search and allergen filter
   const filteredRecipes = React.useMemo(() => {
     return recipes.filter(recipe => {
-      // Search filter
-      const matchesSearch = searchQuery === '' || 
-        recipe.name.toLowerCase().includes(searchQuery.toLowerCase());
+      // Search filter (using debounced search)
+      const matchesSearch = debouncedSearch === '' || 
+        recipe.name.toLowerCase().includes(debouncedSearch.toLowerCase());
       
       // Allergen filter
       const matchesAllergen = selectedAllergenFilter === 'all' ||
@@ -190,7 +190,7 @@ function RecipesEnhanced() {
       
       return matchesSearch && matchesAllergen;
     });
-  }, [recipes, searchQuery, selectedAllergenFilter]);
+  }, [recipes, debouncedSearch, selectedAllergenFilter]);
 
   // Keyboard event handler
   const handleKeyDown = (e, index, field) => {

@@ -253,8 +253,16 @@ class PreparationCreate(BaseModel):
     items: List[PreparationItem]
     yield_: Optional[Yield] = None
     shelfLife: Optional[ShelfLife] = None
-    instructions: Optional[str] = None  # Preparation steps
+    portions: Optional[int] = None  # Number of portions this preparation yields
+    instructions: Optional[str] = None  # Preparation steps (procedure/method)
     notes: Optional[str] = None
+    
+    @field_validator('portions')
+    @classmethod
+    def validate_portions(cls, v):
+        if v is not None and v < 1:
+            raise ValueError('Portions must be at least 1')
+        return v
 
 class PreparationUpdate(BaseModel):
     """Update preparation request"""
@@ -262,8 +270,16 @@ class PreparationUpdate(BaseModel):
     items: Optional[List[PreparationItem]] = None
     yield_: Optional[Yield] = None
     shelfLife: Optional[ShelfLife] = None
-    instructions: Optional[str] = None  # Preparation steps
+    portions: Optional[int] = None  # Number of portions this preparation yields
+    instructions: Optional[str] = None  # Preparation steps (procedure/method)
     notes: Optional[str] = None
+    
+    @field_validator('portions')
+    @classmethod
+    def validate_portions(cls, v):
+        if v is not None and v < 1:
+            raise ValueError('Portions must be at least 1')
+        return v
 
 class Preparation(BaseModel):
     """Preparation model"""
@@ -274,7 +290,8 @@ class Preparation(BaseModel):
     items: List[PreparationItem]
     yield_: Optional[Yield] = None
     shelfLife: Optional[ShelfLife] = None
-    instructions: Optional[str] = None  # Preparation steps
+    portions: Optional[int] = None  # Number of portions this preparation yields
+    instructions: Optional[str] = None  # Preparation steps (procedure/method)
     notes: Optional[str] = None
     cost: float  # Computed from ingredients with waste
     allergens: List[str]  # Computed allergen codes from ingredients

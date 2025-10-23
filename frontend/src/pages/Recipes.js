@@ -881,7 +881,11 @@ function RecipesEnhanced() {
                       <span className="text-xs font-medium text-red-600">{t('common.allergens') || 'Allergens'}:</span>
                       <div className="flex flex-wrap gap-1 mt-1">
                         {recipe.allergens.map(allergen => (
-                          <span key={allergen} className="text-xs bg-red-100 text-red-800 px-2 py-0.5 rounded">
+                          <span 
+                            key={allergen} 
+                            className="inline-block text-xs bg-red-100 text-red-800 px-2 py-0.5 rounded max-w-[120px] truncate"
+                            title={t(`allergens.${allergen.toUpperCase()}`) || allergen}
+                          >
                             {t(`allergens.${allergen.toUpperCase()}`) || allergen}
                           </span>
                         ))}

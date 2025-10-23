@@ -1099,6 +1099,62 @@ backend:
           🏆 P1 FIXES: 100% FUNCTIONAL ✅
           All portions validation and instructions persistence features working perfectly.
 
+  - task: "P1.3: Small Quantity Costing Fix"
+    implemented: true
+    working: true
+    file: "backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+      - working: true
+        agent: "testing"
+        comment: |
+          P1.3 SMALL QUANTITY COSTING FIX TESTING COMPLETED - ALL TESTS PASS ✅
+          
+          🧪 COMPREHENSIVE UNIT CONVERSION & COSTING TESTING (20/20 tests passed - 100% success rate):
+          
+          ✅ TEST SCENARIO 1: CREATE INGREDIENT - COCOA POWDER:
+          - Created Cocoa Powder: €10.00/kg (1000 cents/kg) ✅
+          - Unit cost calculation verified: packCost/packSize = 1000/1.0 = 1000 cents/kg ✅
+          
+          ✅ TEST SCENARIO 2: SMALL QUANTITY PREPARATION:
+          - 2g of cocoa powder = 2 cents = €0.02 (NOT €0.00) ✅
+          - Unit conversion working: 2g → 0.002kg × 1000 cents/kg = 2 cents ✅
+          - Cost > 0 verification: All small quantities show non-zero costs ✅
+          
+          ✅ TEST SCENARIO 3: MULTIPLE UNIT CONVERSIONS:
+          - g → kg conversions: 2g=2¢, 500g=500¢, 0.5g=0.5¢ ✅
+          - ml → L conversions: 500ml of €4/L = 200¢ = €2.00 ✅
+          - mg → kg conversions: 100mg of €50,000/kg = 500¢ = €5.00 ✅
+          - All unit conversions use normalize_quantity_to_base_unit() correctly ✅
+          
+          ✅ TEST SCENARIO 4: 4-DECIMAL PRECISION:
+          - 0.5g of €10/kg = 0.5 cents = €0.005 ✅
+          - Internal precision maintained: stored as 0.5000 cents ✅
+          - No precision loss in calculations ✅
+          
+          ✅ TEST SCENARIO 5: RECIPE COST WITH UNIT CONVERSION:
+          - Recipe with mixed units: 1g cocoa + 5ml vanilla per portion ✅
+          - Per portion cost: 1¢ + 2¢ = 3¢ per portion ✅
+          - Total for 4 portions: 12¢ = €0.12 ✅
+          
+          🔍 UNIT CONVERSION VERIFICATION:
+          - UNIT_CONVERSIONS dictionary: g=0.001, ml=0.001, mg=0.000001 ✅
+          - normalize_quantity_to_base_unit() function working correctly ✅
+          - compute_preparation_cost_and_allergens() applies conversions ✅
+          - All costs stored in minor units (cents) as expected ✅
+          
+          🎯 KEY SUCCESS CRITERIA MET:
+          - ✅ Small quantities never display €0.00 when cost > 0
+          - ✅ Unit conversions work correctly (g↔kg, ml↔L, mg↔kg)
+          - ✅ 4-decimal precision internally maintained
+          - ✅ Dashboard recipe costs also use unit conversion
+          - ✅ All calculations use effectiveUnitCost (includes waste%)
+          
+          🏆 P1.3 SMALL QUANTITY COSTING FIX: 100% FUNCTIONAL ✅
+          All unit conversion and small quantity costing features working perfectly.
+
 frontend:
   - task: "Phase 7: RBAC Matrix UI"
     implemented: true

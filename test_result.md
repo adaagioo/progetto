@@ -103,21 +103,22 @@
 #====================================================================================================
 
 user_problem_statement: |
-  P2 Feature Completeness: Bulk Select + Delete and Global Search & Filters
+  CRITICAL STAGING ISSUES - E2E Testing for 3 Production Issues
   
-  BATCH 1: Recipes Page (In Progress)
-  - Backend: Add recipe dependencies check endpoint (sales records)
-  - Backend: Update delete endpoint with dependency validation and RBAC (admin/manager only)
-  - Frontend: Complete bulk delete UI (checkboxes, bulk action bar, confirmation dialog)
-  - Frontend: Add URL-driven search with 200ms debounce
-  - Frontend: Add "Select All" functionality
-  - i18n: Add bulk delete translations (EN/IT)
-  - Testing: Verify dependency blocking, RBAC enforcement, and URL state persistence
+  ISSUE 1: Dashboard Total Inventory Value Card Missing/Faded
+  - User reports card appears empty or faded on dashboard
+  - Need to verify card visibility, styling, and data loading
+  - Test click navigation to inventory page
   
-  Previous Context (P0):
-  - Allergen Taxonomy Frontend Integration with EU-14 codes
-  - AllergenSelector integration across Ingredients, Preparations, Recipes
-  - Allergen propagation chain verification
+  ISSUE 2: PrepList Shows Totals But No Rows Render
+  - Summary shows "Total Preparations: 3" but table is empty
+  - Filter logic may be hiding all rows when set to "To Make"
+  - Need to verify filter behavior and data consistency
+  
+  ISSUE 3: Export Authentication Fix Verification
+  - Previously fixed authentication issues with PDF/XLSX exports
+  - Need to verify exports work with proper auth headers
+  - Test both PrepList and OrderList export functionality
 
 backend:
   - task: "P2 Batch 5: Inventory Bulk Delete Backend (Final Batch)"

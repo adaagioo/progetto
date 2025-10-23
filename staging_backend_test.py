@@ -90,6 +90,7 @@ class BackendTester:
                 'status': resp.status,
                 'data': data,
                 'headers': dict(resp.headers),
+                'content_type': content_type,
                 'expected_status': expected_status,
                 'success': resp.status == expected_status
             }

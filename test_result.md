@@ -120,6 +120,40 @@ user_problem_statement: |
   - Allergen propagation chain verification
 
 backend:
+  - task: "P2 Batch 3: Supplier Dependencies & Bulk Delete Backend"
+    implemented: true
+    working: "NA"
+    file: "backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: |
+          BATCH 3 BACKEND IMPLEMENTATION COMPLETED:
+          
+          ✅ NEW ENDPOINT ADDED:
+          - GET /api/suppliers/{supplier_id}/dependencies
+            - Checks if supplier is referenced in ingredients or receiving records
+            - Returns: { hasReferences: bool, references: { ingredients: count, receiving: count } }
+            - Tenant-scoped query
+          
+          ✅ DELETE ENDPOINT UPDATED:
+          - DELETE /api/suppliers/{supplier_id}
+            - Enhanced RBAC: Only admin/manager can delete
+            - Added dependency checking before deletion
+            - Returns 400 error if supplier referenced with clear message listing both dependencies
+            - File cleanup preserved (deletes associated files)
+            - Audit logging preserved
+            - Tenant isolation enforced
+          
+          PENDING TESTING:
+          - Verify dependency check endpoint returns correct counts for ingredients and receiving
+          - Verify bulk delete fails when suppliers have references
+          - Verify RBAC allows admin/manager but denies staff
+          - Test with multiple suppliers (bulk scenario)
+
   - task: "P2 Batch 2: Preparation Dependencies & Bulk Delete Backend"
     implemented: true
     working: true

@@ -47,6 +47,27 @@ function Inventory() {
     reason: ''
   });
 
+  const [searchQuery, setSearchQuery] = useState(searchParams.get('search') || '');
+  const [debouncedSearch, setDebouncedSearch] = useState(searchParams.get('search') || '');
+  const [selectedItems, setSelectedItems] = useState([]);
+  const [showBulkDeleteDialog, setShowBulkDeleteDialog] = useState(false);
+
+  // Debounce search input (200ms)
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setDebouncedSearch(searchQuery);
+      // Update URL
+      const newParams = new URLSearchParams(searchParams);
+      if (searchQuery) {
+        newParams.set('search', searchQuery);
+      } else {
+        newParams.delete('search');
+      }
+      setSearchParams(newParams, { replace: true });
+    }, 200);
+    return () => clearTimeout(timer);
+  }, [searchQuery]);
+
   useEffect(() => {
     fetchInventory();
     fetchIngredients();

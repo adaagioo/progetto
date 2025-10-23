@@ -279,7 +279,7 @@ function Ingredients() {
                   type="number"
                   step="0.01"
                   value={formData.packCost}
-                  onChange={(e) => setFormData({ ...formData, packCost: e.target.value })}
+                  onChange={(e) => handleInputChange('packCost', e.target.value)}
                   required
                   data-testid="ingredient-packcost-input"
                   className="input-focus"

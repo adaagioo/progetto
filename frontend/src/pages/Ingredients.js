@@ -368,10 +368,7 @@ function Ingredients() {
                     type="number"
                     placeholder={t('common.value') || 'Value'}
                     value={formData.shelfLife.value}
-                    onChange={(e) => setFormData({ 
-                      ...formData, 
-                      shelfLife: { ...formData.shelfLife, value: e.target.value }
-                    })}
+                    onChange={(e) => handleNestedInputChange('shelfLife', 'value', e.target.value)}
                     className="input-focus"
                   />
                   <Select

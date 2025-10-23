@@ -346,7 +346,7 @@ function Ingredients() {
                   max="100"
                   step="1"
                   value={formData.wastePct}
-                  onChange={(e) => setFormData({ ...formData, wastePct: e.target.value })}
+                  onChange={(e) => handleInputChange('wastePct', e.target.value)}
                   className="w-full"
                 />
                 <p className="text-xs text-muted-foreground">

@@ -1363,6 +1363,65 @@ backend:
           All unit conversion and small quantity costing features working perfectly.
 
 frontend:
+  - task: "P2 Batch 3: Suppliers Bulk Delete UI (Search Already Exists)"
+    implemented: true
+    working: "NA"
+    file: "frontend/src/pages/Suppliers.js"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: |
+          BATCH 3 FRONTEND IMPLEMENTATION COMPLETED:
+          
+          NOTE: Suppliers already had search from Phase 6, only added bulk delete
+          
+          ✅ ENHANCED EXISTING SEARCH:
+          - Converted existing searchQuery to URL-driven state
+          - Added 200ms debounce
+          - Created filteredSuppliers useMemo for performance
+          - URL state persists on page refresh
+          
+          ✅ BULK SELECT FUNCTIONALITY:
+          - toggleSelectAll(): Selects/deselects all filtered suppliers
+          - toggleSelectItem(id): Individual selection toggle
+          - selectedItems state tracks IDs
+          
+          ✅ BULK DELETE WITH DEPENDENCY CHECKING:
+          - handleBulkDelete() checks dependencies in parallel
+          - Blocks deletion if ANY supplier has ingredient/receiving references
+          - Shows error with count of suppliers with dependencies
+          - Deletes all selected if no dependencies
+          - Success toast with count
+          
+          ✅ UI COMPONENTS ADDED:
+          - "Select All" checkbox above list (admin/manager only)
+          - Individual checkboxes on each card
+          - Bulk action bar when items selected
+          - Bulk delete confirmation dialog
+          
+          ✅ I18N TRANSLATIONS ADDED:
+          - suppliers.confirmBulkDelete (EN/IT)
+          - suppliers.success.bulkDelete (EN/IT)
+          - suppliers.error.bulkDelete (EN/IT)
+          - suppliers.error.hasDependencies (EN/IT)
+          
+          ✅ RBAC ENFORCEMENT:
+          - Checkboxes only shown when canEdit (admin/manager)
+          - Bulk action bar only shown when canEdit
+          - canEdit check added (was missing)
+          
+          ✅ FRONTEND COMPILATION:
+          - Build successful, no errors
+          
+          PENDING TESTING:
+          - E2E test: Bulk select and delete suppliers
+          - E2E test: Dependency blocking with ingredients/receiving
+          - E2E test: Search with URL state persistence
+          - E2E test: RBAC UI hiding for staff
+
   - task: "P2 Batch 2: Preparations Bulk Delete & Search UI"
     implemented: true
     working: "NA"

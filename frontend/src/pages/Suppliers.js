@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useContext } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import axios from 'axios';
 import { API, AuthContext } from '../App';
@@ -6,15 +7,17 @@ import { Button } from '../components/ui/button';
 import { Input } from '../components/ui/input';
 import { Label } from '../components/ui/label';
 import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/card';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '../components/ui/dialog';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogDescription, DialogFooter } from '../components/ui/dialog';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../components/ui/select';
-import { Plus, Trash2, Edit, Upload, Download, FileText } from 'lucide-react';
+import { Checkbox } from '../components/ui/checkbox';
+import { Plus, Trash2, Edit, Upload, Download, FileText, X } from 'lucide-react';
 import { toast } from 'sonner';
 import OCRUploadButton from '../components/OCRUploadButton';
 
 function Suppliers() {
   const { t } = useTranslation();
   const { user } = useContext(AuthContext);
+  const [searchParams, setSearchParams] = useSearchParams();
   const [suppliers, setSuppliers] = useState([]);
   const [ingredients, setIngredients] = useState([]);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
@@ -24,7 +27,10 @@ function Suppliers() {
   const [ocrSupplierId, setOCRSupplierId] = useState(null);
   const [ocrParsedItems, setOCRParsedItems] = useState([]);
   const [itemMappings, setItemMappings] = useState({});
-  const [searchQuery, setSearchQuery] = useState('');
+  const [searchQuery, setSearchQuery] = useState(searchParams.get('search') || '');
+  const [debouncedSearch, setDebouncedSearch] = useState(searchParams.get('search') || '');
+  const [selectedItems, setSelectedItems] = useState([]);
+  const [showBulkDeleteDialog, setShowBulkDeleteDialog] = useState(false);
   const [formData, setFormData] = useState({
     name: '',
     contactName: '',
@@ -32,6 +38,22 @@ function Suppliers() {
     contactEmail: '',
     notes: ''
   });
+
+  // Debounce search input (200ms)
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setDebouncedSearch(searchQuery);
+      // Update URL
+      const newParams = new URLSearchParams(searchParams);
+      if (searchQuery) {
+        newParams.set('search', searchQuery);
+      } else {
+        newParams.delete('search');
+      }
+      setSearchParams(newParams, { replace: true });
+    }, 200);
+    return () => clearTimeout(timer);
+  }, [searchQuery]);
 
   useEffect(() => {
     fetchSuppliers();

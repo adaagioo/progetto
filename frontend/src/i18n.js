@@ -778,6 +778,11 @@ const resources = {
       'dashboard.previousMonth': 'Mese precedente',
       'dashboard.tips': 'Suggerimenti Rapidi',
       'dashboard.inventoryValuation': 'Valutazione Inventario',
+      'dashboard.totalInventoryValue': 'Valore Totale Inventario',
+      'dashboard.asOfNow': 'al momento',
+      'dashboard.negativeStockWarning': '{{count}} articolo/i con stock negativo',
+      'dashboard.couldNotLoadTotal': 'Impossibile caricare il totale',
+      'dashboard.retry': 'Riprova',
       'dashboard.clickToView': 'Clicca per visualizzare',
       
       // Ingredients

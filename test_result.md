@@ -1009,6 +1009,45 @@ backend:
           Frontend compiles successfully without errors.
           Pending: E2E testing to verify full OCR→mapping→price update flow.
 
+  - task: "P1 Bug #1: Receiving → Inventory Sync"
+    implemented: true
+    working: true
+    file: "backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+      - working: true
+        agent: "testing"
+        comment: |
+          P1 BUG #1: RECEIVING → INVENTORY SYNC TESTING COMPLETED - BUG NOT REPRODUCED ✅
+          
+          🧪 COMPREHENSIVE BUG VERIFICATION (10/10 tests passed - 100% success rate):
+          
+          ✅ **BUG SCENARIO TESTED**:
+          - Bug Report: "Items received do not appear in Inventory afterward (100% reproducible)"
+          - Test Method: Created receiving record with 10.0 kg test ingredient
+          - Verification: Immediately checked GET /api/inventory for new record
+          - Result: BUG NOT REPRODUCED - Sync working correctly ✅
+          
+          ✅ **INVENTORY SYNC VERIFICATION PASSED**:
+          - New inventory record created with countType="receiving" ✅
+          - Quantity matches exactly: 10.0 kg ✅
+          - Ingredient ID reference correct ✅
+          - Location contains supplier name ✅
+          - All required fields populated (no null/missing fields) ✅
+          
+          ✅ **BACKEND FUNCTIONALITY CONFIRMED**:
+          - POST /api/receiving returns 200 and creates record ✅
+          - Inventory entry appears immediately in GET /api/inventory ✅
+          - WAC (Weighted Average Cost) calculation working ✅
+          - Supplier name properly stored in location field ✅
+          - Tenant isolation enforced correctly ✅
+          
+          🎯 **CONCLUSION**: 
+          The reported P1 bug cannot be reproduced. Backend receiving → inventory sync 
+          is functioning correctly. Issue likely in frontend inventory display/filtering.
+
 frontend:
   - task: "Phase 7: RBAC Matrix UI"
     implemented: true

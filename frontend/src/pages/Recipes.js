@@ -924,7 +924,7 @@ function RecipesEnhanced() {
       <Dialog open={showBulkDeleteDialog} onOpenChange={setShowBulkDeleteDialog}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>{t('common.confirmAction') || 'Confirm Action'}</DialogTitle>
+            <DialogTitle>{t('common.confirmDelete') || 'Confirm Delete'}</DialogTitle>
             <DialogDescription>
               {t('recipes.confirmBulkDelete', { count: selectedItems.length }) ||
                 `Are you sure you want to delete ${selectedItems.length} selected recipes? This action cannot be undone.`}

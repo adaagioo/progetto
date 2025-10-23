@@ -919,6 +919,27 @@ function RecipesEnhanced() {
           </div>
         )}
       </div>
+
+      {/* Bulk Delete Confirmation Dialog */}
+      <Dialog open={showBulkDeleteDialog} onOpenChange={setShowBulkDeleteDialog}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>{t('common.confirmAction') || 'Confirm Action'}</DialogTitle>
+            <DialogDescription>
+              {t('recipes.confirmBulkDelete', { count: selectedItems.length }) ||
+                `Are you sure you want to delete ${selectedItems.length} selected recipes? This action cannot be undone.`}
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setShowBulkDeleteDialog(false)}>
+              {t('common.cancel') || 'Cancel'}
+            </Button>
+            <Button variant="destructive" onClick={handleBulkDelete}>
+              {t('common.delete') || 'Delete'}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

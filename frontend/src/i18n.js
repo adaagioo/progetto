@@ -59,6 +59,7 @@ const resources = {
       'ingredients.title': 'Ingredients',
       'ingredients.subtitle': 'Manage your ingredient inventory',
       'ingredients.add': 'Add Ingredient',
+      'ingredients.search': 'Search ingredients...',
       'ingredients.new': 'New Ingredient',
       'ingredients.edit': 'Edit Ingredient',
       'ingredients.name': 'Name',

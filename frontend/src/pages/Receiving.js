@@ -804,27 +804,61 @@ function Receiving() {
         />
       </div>
 
+      {/* Bulk Actions Bar */}
+      {canEdit && selectedItems.length > 0 && (
+        <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 mb-4 flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <span className="font-medium text-blue-900">
+              {selectedItems.length} {t('common.selected') || 'selected'}
+            </span>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => setSelectedItems([])}
+            >
+              <X className="h-4 w-4" />
+            </Button>
+          </div>
+          <Button
+            variant="destructive"
+            size="sm"
+            onClick={() => setShowBulkDeleteDialog(true)}
+          >
+            <Trash2 className="h-4 w-4 mr-2" />
+            {t('common.deleteSelected') || 'Delete Selected'}
+          </Button>
+        </div>
+      )}
+
+      {/* Select All Checkbox */}
+      {canEdit && filteredReceivings.length > 0 && (
+        <div className="flex items-center gap-2 mb-4">
+          <Checkbox
+            id="select-all-receiving"
+            checked={selectedItems.length === filteredReceivings.length && filteredReceivings.length > 0}
+            onCheckedChange={toggleSelectAll}
+          />
+          <Label htmlFor="select-all-receiving" className="text-sm font-medium cursor-pointer">
+            {t('common.selectAll') || 'Select All'}
+          </Label>
+        </div>
+      )}
+
       <div className="grid gap-4">
-        {receivings
-          .filter(receiving => {
-            if (searchQuery === '') return true;
-            const supplier = suppliers.find(s => s.id === receiving.supplierId);
-            const query = searchQuery.toLowerCase();
-            return (
-              (supplier?.name && supplier.name.toLowerCase().includes(query)) ||
-              (receiving.notes && receiving.notes.toLowerCase().includes(query)) ||
-              receiving.category.toLowerCase().includes(query) ||
-              receiving.lines.some(line => 
-                line.description && line.description.toLowerCase().includes(query)
-              )
-            );
-          })
-          .map((receiving) => {
+        {filteredReceivings.map((receiving) => {
           const supplier = suppliers.find(s => s.id === receiving.supplierId);
           return (
             <Card key={receiving.id}>
               <CardHeader>
                 <div className="flex justify-between items-start">
+                  {canEdit && (
+                    <div className="flex items-center mr-4">
+                      <Checkbox
+                        checked={selectedItems.includes(receiving.id)}
+                        onCheckedChange={() => toggleSelectItem(receiving.id)}
+                      />
+                    </div>
+                  )}
                   <div className="flex-1">
                     <CardTitle className="flex items-center gap-2">
                       {supplier?.name || t('receiving.unknownSupplier') || 'Unknown Supplier'}

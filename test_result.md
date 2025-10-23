@@ -1932,7 +1932,7 @@ metadata:
 
 test_plan:
   current_focus:
-    - "P2 Batch 1: Recipes Bulk Delete & Search - Backend dependencies endpoint, frontend UI with checkboxes, URL-driven search"
+    - "P2 Batch 2: Preparations Bulk Delete & Search - Backend dependencies endpoint, frontend UI with checkboxes, URL-driven search"
   stuck_tasks:
     - "Enhanced Recipe Editor with Keyboard UX"
   test_all: false
@@ -1941,7 +1941,53 @@ test_plan:
 agent_communication:
   - agent: "main"
     message: |
-      📋 BATCH 1 (RECIPES) IMPLEMENTATION COMPLETED - READY FOR TESTING
+      📋 BATCH 2 (PREPARATIONS) IMPLEMENTATION COMPLETED - READY FOR TESTING
+      
+      IMPLEMENTED FEATURES:
+      
+      Backend (server.py):
+      - GET /api/preparations/{prep_id}/dependencies endpoint
+      - Enhanced DELETE /api/preparations/{prep_id} with dependency checks and RBAC
+      
+      Frontend (Preparations.js):
+      - URL-driven search with 200ms debounce
+      - Bulk select functionality (same pattern as Recipes)
+      - Bulk delete with parallel dependency checking
+      - Complete UI: checkboxes, bulk action bar, confirmation dialog
+      - i18n translations (EN/IT)
+      
+      Additional Fixes:
+      - Changed Recipes.js allergen label from 'ingredients.allergens' to 'common.allergens'
+      - Added common.allergens key (EN/IT) for consistency
+      
+      TESTING REQUIREMENTS:
+      
+      Authentication: admin@test.com / admin123
+      
+      Backend Tests:
+      1. GET /api/preparations/{valid_id}/dependencies
+         - Should return hasReferences and recipe count
+         - Test with preparation that HAS recipe references
+         - Test with preparation that has NO recipe references
+      
+      2. DELETE /api/preparations/{id} - Dependency blocking
+         - Attempt to delete preparation with recipes → Should return 400 with error message
+         - Delete preparation without recipes → Should succeed
+      
+      3. DELETE /api/preparations/{id} - RBAC enforcement
+         - Admin can delete ✅
+         - Manager can delete ✅
+         - Staff CANNOT delete (should return 403) ✅
+      
+      4. Bulk delete scenario:
+         - Create 3 test preparations (A, B, C)
+         - Add recipe using preparation A
+         - Attempt bulk delete A+B+C → Should fail with dependency error
+         - Bulk delete B+C (no dependencies) → Should succeed
+
+  - agent: "main"
+    message: |
+      📋 BATCH 1 (RECIPES) IMPLEMENTATION COMPLETED - USER VALIDATED ✅
       
       IMPLEMENTED FEATURES:
       

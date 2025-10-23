@@ -683,6 +683,27 @@ function Suppliers() {
           </div>
         </DialogContent>
       </Dialog>
+
+      {/* Bulk Delete Confirmation Dialog */}
+      <Dialog open={showBulkDeleteDialog} onOpenChange={setShowBulkDeleteDialog}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>{t('common.confirmDelete') || 'Confirm Delete'}</DialogTitle>
+            <DialogDescription>
+              {t('suppliers.confirmBulkDelete', { count: selectedItems.length }) ||
+                `Are you sure you want to delete ${selectedItems.length} selected suppliers? This action cannot be undone.`}
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setShowBulkDeleteDialog(false)}>
+              {t('common.cancel') || 'Cancel'}
+            </Button>
+            <Button variant="destructive" onClick={handleBulkDelete}>
+              {t('common.delete') || 'Delete'}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

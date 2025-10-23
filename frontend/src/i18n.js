@@ -758,6 +758,7 @@ const resources = {
       'ingredients.title': 'Ingredienti',
       'ingredients.subtitle': 'Gestisci il tuo inventario ingredienti',
       'ingredients.add': 'Aggiungi Ingrediente',
+      'ingredients.search': 'Cerca ingredienti...',
       'ingredients.new': 'Nuovo Ingrediente',
       'ingredients.edit': 'Modifica Ingrediente',
       'ingredients.name': 'Nome',

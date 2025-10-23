@@ -1454,6 +1454,66 @@ backend:
           All unit conversion and small quantity costing features working perfectly.
 
 frontend:
+  - task: "P2 Batch 4: Receiving Bulk Delete UI (Search Already Exists)"
+    implemented: true
+    working: "NA"
+    file: "frontend/src/pages/Receiving.js"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: |
+          BATCH 4 FRONTEND IMPLEMENTATION COMPLETED:
+          
+          NOTE: Receiving already had search from Phase 6, only added bulk delete
+          
+          ✅ ENHANCED EXISTING SEARCH:
+          - Converted existing searchQuery to URL-driven state
+          - Added 200ms debounce
+          - Created filteredReceivings useMemo for performance
+          - URL state persists on page refresh
+          - Filters by supplier name, notes, category
+          
+          ✅ BULK SELECT FUNCTIONALITY:
+          - toggleSelectAll(): Selects/deselects all filtered receivings
+          - toggleSelectItem(id): Individual selection toggle
+          - selectedItems state tracks IDs
+          
+          ✅ BULK DELETE WITH STOCK REVERSAL WARNING:
+          - handleBulkDelete() deletes all selected receiving records
+          - Backend automatically reverses inventory movements
+          - No dependency blocking (simplified approach)
+          - Success toast with count
+          - Confirmation dialog warns about stock reversal
+          
+          ✅ UI COMPONENTS ADDED:
+          - "Select All" checkbox above list (admin/manager only)
+          - Individual checkboxes on each card
+          - Bulk action bar when items selected
+          - Bulk delete confirmation dialog with stock reversal warning
+          - Empty state with "Clear Filters" button
+          
+          ✅ I18N TRANSLATIONS ADDED:
+          - receiving.confirmBulkDelete (EN/IT) - includes stock reversal warning
+          - receiving.success.bulkDelete (EN/IT)
+          - receiving.error.bulkDelete (EN/IT)
+          
+          ✅ RBAC ENFORCEMENT:
+          - Checkboxes only shown when canEdit (admin/manager)
+          - Bulk action bar only shown when canEdit
+          - canEdit check added
+          
+          ✅ FRONTEND COMPILATION:
+          - Build successful, no errors
+          
+          PENDING TESTING:
+          - E2E test: Bulk select and delete receiving records
+          - E2E test: Verify inventory reversal (stock adjusted)
+          - E2E test: Search with URL state persistence
+          - E2E test: RBAC UI hiding for staff
+
   - task: "P2 Batch 3: Suppliers Bulk Delete UI (Search Already Exists)"
     implemented: true
     working: "NA"

@@ -270,8 +270,26 @@ function Suppliers() {
         </Dialog>
       </div>
 
+      {/* Search Bar */}
+      <div className="mb-6">
+        <Input
+          type="text"
+          placeholder={t('common.search') || 'Search suppliers...'}
+          value={searchQuery}
+          onChange={(e) => setSearchQuery(e.target.value)}
+          className="max-w-md"
+        />
+      </div>
+
       <div className="grid gap-4">
-        {suppliers.map((supplier) => (
+        {suppliers
+          .filter(supplier => 
+            searchQuery === '' || 
+            supplier.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+            (supplier.contactName && supplier.contactName.toLowerCase().includes(searchQuery.toLowerCase())) ||
+            (supplier.contactEmail && supplier.contactEmail.toLowerCase().includes(searchQuery.toLowerCase()))
+          )
+          .map((supplier) => (
           <Card key={supplier.id}>
             <CardHeader>
               <div className="flex justify-between items-start">

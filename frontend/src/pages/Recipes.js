@@ -18,13 +18,15 @@ function RecipesEnhanced() {
   const { t } = useTranslation();
   const { user } = useContext(AuthContext);
   const { format, formatMinor } = useCurrency();
+  const [searchParams, setSearchParams] = useSearchParams();
   const [recipes, setRecipes] = useState([]);
   const [ingredients, setIngredients] = useState([]);
   const [preparations, setPreparations] = useState([]);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingId, setEditingId] = useState(null);
-  const [searchQuery, setSearchQuery] = useState('');
-  const [selectedAllergenFilter, setSelectedAllergenFilter] = useState('all');
+  const [searchQuery, setSearchQuery] = useState(searchParams.get('search') || '');
+  const [debouncedSearch, setDebouncedSearch] = useState(searchParams.get('search') || '');
+  const [selectedAllergenFilter, setSelectedAllergenFilter] = useState(searchParams.get('allergen') || 'all');
   const [selectedItems, setSelectedItems] = useState([]);
   const [showBulkDeleteDialog, setShowBulkDeleteDialog] = useState(false);
   const [formData, setFormData] = useState({
@@ -39,6 +41,33 @@ function RecipesEnhanced() {
   });
   const [editingItemIndex, setEditingItemIndex] = useState(null);
   const inputRefs = useRef({});
+
+  // Debounce search input (200ms)
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setDebouncedSearch(searchQuery);
+      // Update URL
+      const newParams = new URLSearchParams(searchParams);
+      if (searchQuery) {
+        newParams.set('search', searchQuery);
+      } else {
+        newParams.delete('search');
+      }
+      setSearchParams(newParams, { replace: true });
+    }, 200);
+    return () => clearTimeout(timer);
+  }, [searchQuery]);
+
+  // Update URL when allergen filter changes
+  useEffect(() => {
+    const newParams = new URLSearchParams(searchParams);
+    if (selectedAllergenFilter && selectedAllergenFilter !== 'all') {
+      newParams.set('allergen', selectedAllergenFilter);
+    } else {
+      newParams.delete('allergen');
+    }
+    setSearchParams(newParams, { replace: true });
+  }, [selectedAllergenFilter]);
 
   useEffect(() => {
     fetchRecipes();

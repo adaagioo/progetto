@@ -295,7 +295,7 @@ class InventoryBulkDeleteTester:
             }
             
             status, data = await self.make_request("POST", "/inventory", json=inventory_data)
-            if status == 201:
+            if status in [200, 201]:
                 additional_inventory.append(data)
         
         # Verify all ingredients exist before bulk delete

@@ -1,4 +1,5 @@
-import React, { useState, useEffect, useContext, useRef } from 'react';
+import React, { useState, useEffect, useContext, useRef, useCallback } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { useCurrency } from '../contexts/CurrencyContext';
 import { useTranslation } from 'react-i18next';
 import axios from 'axios';
@@ -7,9 +8,10 @@ import { Button } from '../components/ui/button';
 import { Input } from '../components/ui/input';
 import { Label } from '../components/ui/label';
 import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/card';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '../components/ui/dialog';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogDescription, DialogFooter } from '../components/ui/dialog';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../components/ui/select';
-import { Plus, Trash2, Calculator, AlertCircle, Edit, Package, DollarSign } from 'lucide-react';
+import { Checkbox } from '../components/ui/checkbox';
+import { Plus, Trash2, Calculator, AlertCircle, Edit, Package, DollarSign, X } from 'lucide-react';
 import { toast } from 'sonner';
 
 function RecipesEnhanced() {

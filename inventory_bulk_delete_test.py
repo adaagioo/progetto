@@ -159,7 +159,7 @@ class InventoryBulkDeleteTester:
             }
             
             status, data = await self.make_request("POST", "/inventory", json=inventory_data)
-            if status == 201:
+            if status in [200, 201]:
                 self.test_data["inventory_records"].append(data)
                 print(f"✅ Created inventory record: {data['qty']} {data['unit']} of {ingredient['name']} (ID: {data['id']})")
             else:

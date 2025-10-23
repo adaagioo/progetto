@@ -384,6 +384,7 @@ class RecipeItem(BaseModel):
 class RecipeCreate(BaseModel):
     name: str
     category: str
+    recipeType: Optional[str] = "kitchen"  # kitchen or bar
     portions: int
     targetFoodCostPct: float
     price: float
@@ -395,6 +396,7 @@ class RecipeUpdate(BaseModel):
     """Update recipe request"""
     name: Optional[str] = None
     category: Optional[str] = None
+    recipeType: Optional[str] = None  # kitchen or bar
     portions: Optional[int] = None
     targetFoodCostPct: Optional[float] = None
     price: Optional[float] = None
@@ -408,6 +410,7 @@ class Recipe(BaseModel):
     restaurantId: str
     name: str
     category: str
+    recipeType: str = "kitchen"  # kitchen or bar
     portions: int
     targetFoodCostPct: float
     price: float

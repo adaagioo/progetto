@@ -2596,6 +2596,9 @@ async def update_recipe(recipe_id: str, recipe_data: RecipeUpdate, current_user:
     if recipe_data.category is not None:
         update_data["category"] = recipe_data.category
     
+    if recipe_data.recipeType is not None:
+        update_data["recipeType"] = recipe_data.recipeType
+    
     if recipe_data.portions is not None:
         update_data["portions"] = recipe_data.portions
     

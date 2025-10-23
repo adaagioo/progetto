@@ -405,7 +405,8 @@ function Receiving() {
         unit: row.unit,
         unitPrice: row.unitPrice.toString(),
         packFormat: '',
-        expiryDate: ''
+        expiryDate: '',
+        targetInventory: 'food'
       }))
     });
     setShowMappingDialog(false);

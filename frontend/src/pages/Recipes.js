@@ -179,7 +179,18 @@ function RecipesEnhanced() {
     return Array.from(allergenSet).sort();
   }, [recipes]);
 
-  // Filter recipes based on search and allergen filter
+  // Update URL when recipe type tab changes
+  useEffect(() => {
+    const newParams = new URLSearchParams(searchParams);
+    if (recipeTypeTab) {
+      newParams.set('type', recipeTypeTab);
+    } else {
+      newParams.delete('type');
+    }
+    setSearchParams(newParams, { replace: true });
+  }, [recipeTypeTab]);
+
+  // Filter recipes based on search, allergen filter, and recipe type
   const filteredRecipes = React.useMemo(() => {
     return recipes.filter(recipe => {
       // Search filter (using debounced search)
@@ -190,9 +201,13 @@ function RecipesEnhanced() {
       const matchesAllergen = selectedAllergenFilter === 'all' ||
         (recipe.allergens && recipe.allergens.includes(selectedAllergenFilter));
       
-      return matchesSearch && matchesAllergen;
+      // Recipe type filter
+      const recipeType = recipe.recipeType || 'kitchen';
+      const matchesType = recipeType === recipeTypeTab;
+      
+      return matchesSearch && matchesAllergen && matchesType;
     });
-  }, [recipes, debouncedSearch, selectedAllergenFilter]);
+  }, [recipes, debouncedSearch, selectedAllergenFilter, recipeTypeTab]);
 
   // Keyboard event handler
   const handleKeyDown = (e, index, field) => {

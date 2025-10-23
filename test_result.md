@@ -2069,7 +2069,7 @@ metadata:
 
 test_plan:
   current_focus:
-    - "P2 Batch 2: Preparations Bulk Delete & Search - Backend dependencies endpoint, frontend UI with checkboxes, URL-driven search"
+    - "P2 Batch 3: Suppliers Bulk Delete - Backend dependencies endpoint (ingredients + receiving), frontend UI with checkboxes"
   stuck_tasks:
     - "Enhanced Recipe Editor with Keyboard UX"
   test_all: false
@@ -2078,7 +2078,55 @@ test_plan:
 agent_communication:
   - agent: "main"
     message: |
-      📋 BATCH 2 (PREPARATIONS) IMPLEMENTATION COMPLETED - READY FOR TESTING
+      📋 BATCH 3 (SUPPLIERS) IMPLEMENTATION COMPLETED - READY FOR TESTING
+      
+      IMPLEMENTED FEATURES:
+      
+      Backend (server.py):
+      - GET /api/suppliers/{supplier_id}/dependencies endpoint
+      - Enhanced DELETE /api/suppliers/{supplier_id} with dependency checks and RBAC
+      - Checks both ingredients AND receiving records for references
+      
+      Frontend (Suppliers.js):
+      - Enhanced existing search to be URL-driven with 200ms debounce
+      - Bulk select functionality (same pattern as Recipes/Preparations)
+      - Bulk delete with parallel dependency checking
+      - Complete UI: checkboxes, bulk action bar, confirmation dialog
+      - i18n translations (EN/IT)
+      - Added canEdit check (was missing)
+      
+      TESTING REQUIREMENTS:
+      
+      Authentication: admin@test.com / admin123
+      
+      Backend Tests:
+      1. GET /api/suppliers/{valid_id}/dependencies
+         - Should return hasReferences and both ingredients + receiving counts
+         - Test with supplier that HAS ingredient references
+         - Test with supplier that HAS receiving records
+         - Test with supplier that has BOTH
+         - Test with supplier that has NEITHER
+      
+      2. DELETE /api/suppliers/{id} - Dependency blocking
+         - Attempt to delete supplier with ingredients → Should return 400
+         - Attempt to delete supplier with receiving records → Should return 400
+         - Delete supplier without dependencies → Should succeed
+      
+      3. DELETE /api/suppliers/{id} - RBAC enforcement
+         - Admin can delete ✅
+         - Manager can delete ✅
+         - Staff CANNOT delete (should return 403) ✅
+      
+      4. Bulk delete scenario:
+         - Create 3 test suppliers (A, B, C)
+         - Add ingredient using supplier A
+         - Add receiving record for supplier B
+         - Attempt bulk delete A+B+C → Should fail with dependency error
+         - Bulk delete C (no dependencies) → Should succeed
+
+  - agent: "main"
+    message: |
+      📋 BATCH 2 (PREPARATIONS) IMPLEMENTATION COMPLETED - USER VALIDATED ✅
       
       IMPLEMENTED FEATURES:
       

@@ -798,12 +798,34 @@ function RecipesEnhanced() {
         </div>
       )}
 
+      {/* Select All Checkbox */}
+      {canEdit && filteredRecipes.length > 0 && (
+        <div className="flex items-center gap-2 mb-4">
+          <Checkbox
+            id="select-all"
+            checked={selectedItems.length === filteredRecipes.length && filteredRecipes.length > 0}
+            onCheckedChange={toggleSelectAll}
+          />
+          <Label htmlFor="select-all" className="text-sm font-medium cursor-pointer">
+            {t('common.selectAll') || 'Select All'}
+          </Label>
+        </div>
+      )}
+
       {/* Recipe Cards */}
       <div className="grid gap-4">
         {filteredRecipes.map((recipe) => (
           <Card key={recipe.id}>
             <CardHeader>
               <div className="flex justify-between items-start">
+                {canEdit && (
+                  <div className="flex items-center mr-4">
+                    <Checkbox
+                      checked={selectedItems.includes(recipe.id)}
+                      onCheckedChange={() => toggleSelectItem(recipe.id)}
+                    />
+                  </div>
+                )}
                 <div className="flex-1">
                   <CardTitle className="flex items-center gap-2">
                     {recipe.name}

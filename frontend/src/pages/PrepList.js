@@ -245,6 +245,31 @@ function PrepList() {
                 {t('prepList.save')}
               </button>
             )}
+            {/* Export Buttons */}
+            {prepList && prepList.items && prepList.items.length > 0 && (
+              <div className="flex gap-2">
+                <button
+                  onClick={async () => {
+                    const token = localStorage.getItem('token');
+                    const locale = localStorage.getItem('i18nextLng') || 'en';
+                    window.open(`${process.env.REACT_APP_BACKEND_URL}/api/prep-list/export?date=${targetDate}&format=pdf&locale=${locale}`, '_blank');
+                  }}
+                  className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 flex items-center gap-2"
+                >
+                  {t('export.pdf')}
+                </button>
+                <button
+                  onClick={async () => {
+                    const token = localStorage.getItem('token');
+                    const locale = localStorage.getItem('i18nextLng') || 'en';
+                    window.open(`${process.env.REACT_APP_BACKEND_URL}/api/prep-list/export?date=${targetDate}&format=xlsx&locale=${locale}`, '_blank');
+                  }}
+                  className="px-4 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 flex items-center gap-2"
+                >
+                  {t('export.xlsx')}
+                </button>
+              </div>
+            )}
           </div>
         </div>
       </div>

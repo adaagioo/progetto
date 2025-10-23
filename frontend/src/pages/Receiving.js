@@ -112,6 +112,59 @@ function Receiving() {
     }
   };
 
+  // RBAC: Check if user can edit
+  const canEdit = user?.roleKey === 'admin' || user?.roleKey === 'manager';
+
+  // Filter receivings based on search
+  const filteredReceivings = React.useMemo(() => {
+    return receivings.filter(rec => {
+      const supplier = suppliers.find(s => s.id === rec.supplierId);
+      const supplierName = supplier?.name || '';
+      const matchesSearch = debouncedSearch === '' ||
+        supplierName.toLowerCase().includes(debouncedSearch.toLowerCase()) ||
+        (rec.notes && rec.notes.toLowerCase().includes(debouncedSearch.toLowerCase())) ||
+        rec.category.toLowerCase().includes(debouncedSearch.toLowerCase());
+      return matchesSearch;
+    });
+  }, [receivings, debouncedSearch, suppliers]);
+
+  // Bulk select handlers
+  const toggleSelectAll = () => {
+    if (selectedItems.length === filteredReceivings.length && filteredReceivings.length > 0) {
+      setSelectedItems([]);
+    } else {
+      setSelectedItems(filteredReceivings.map(r => r.id));
+    }
+  };
+
+  const toggleSelectItem = (id) => {
+    setSelectedItems(prev =>
+      prev.includes(id) ? prev.filter(i => i !== id) : [...prev, id]
+    );
+  };
+
+  // Bulk delete with stock reversal warning
+  const handleBulkDelete = async () => {
+    if (selectedItems.length === 0) return;
+
+    try {
+      // Delete all selected receiving records
+      // The backend will automatically reverse inventory movements
+      await Promise.all(selectedItems.map(id => axios.delete(`${API}/receiving/${id}`)));
+
+      toast.success(
+        t('receiving.success.bulkDelete', { count: selectedItems.length }) ||
+        `${selectedItems.length} receiving records deleted successfully`
+      );
+      setSelectedItems([]);
+      setShowBulkDeleteDialog(false);
+      fetchReceivings();
+    } catch (error) {
+      const errorMsg = error.response?.data?.detail || t('receiving.error.bulkDelete') || 'Failed to delete receiving records';
+      toast.error(errorMsg);
+    }
+  };
+
   const fetchPriceHistory = async (ingredientId) => {
     if (!ingredientId) return;
     

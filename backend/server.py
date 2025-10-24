@@ -1217,7 +1217,7 @@ async def deduct_preparation_stock(prep_id: str, qty: float, restaurant_id: str,
     
     return deductions
 
-async def deduct_ingredient_stock(ingredient_id: str, qty: float, restaurant_id: str, db) -> dict:
+async def deduct_ingredient_stock(ingredient_id: str, qty: float, restaurant_id: str, db, source: str = "consumption", source_id: str = None) -> dict:
     """
     Deduct ingredient stock using WAC (Weighted Average Cost).
     
@@ -1226,6 +1226,8 @@ async def deduct_ingredient_stock(ingredient_id: str, qty: float, restaurant_id:
         qty: Quantity to deduct
         restaurant_id: Restaurant ID
         db: Database connection
+        source: Source of deduction (sale, waste, prep_consumption, etc.)
+        source_id: ID of the source document
         
     Returns:
         Deduction record
@@ -1235,7 +1237,7 @@ async def deduct_ingredient_stock(ingredient_id: str, qty: float, restaurant_id:
     if not ingredient:
         raise HTTPException(status_code=404, detail=f"Ingredient {ingredient_id} not found")
     
-    # Get inventory record
+    # Get inventory record (use qty field, not qtyOnHand)
     inventory = await db.inventory.find_one({
         "ingredientId": ingredient_id,
         "restaurantId": restaurant_id
@@ -1253,14 +1255,29 @@ async def deduct_ingredient_stock(ingredient_id: str, qty: float, restaurant_id:
             "shortage": qty
         }
     
-    current_qty = inventory.get("qtyOnHand", 0)
+    # Use qty field (new schema) with fallback to qtyOnHand (legacy)
+    current_qty = inventory.get("qty", inventory.get("qtyOnHand", 0))
     
     if current_qty < qty:
         # Partial deduction → shortage
         await db.inventory.update_one(
             {"ingredientId": ingredient_id, "restaurantId": restaurant_id},
-            {"$set": {"qtyOnHand": 0, "updatedAt": datetime.now(timezone.utc).isoformat()}}
+            {"$set": {"qty": 0, "updatedAt": datetime.now(timezone.utc).isoformat()}}
         )
+        
+        # Log movement
+        await db.inventory_movements.insert_one({
+            "id": str(uuid.uuid4()),
+            "restaurantId": restaurant_id,
+            "ingredientId": ingredient_id,
+            "type": "outbound",
+            "source": source,
+            "sourceId": source_id,
+            "qty": -current_qty,  # Negative for outbound
+            "unit": ingredient["unit"],
+            "notes": f"Partial deduction (shortage: {qty - current_qty})",
+            "timestamp": datetime.now(timezone.utc).isoformat()
+        })
         
         return {
             "type": "ingredient",
@@ -1276,8 +1293,22 @@ async def deduct_ingredient_stock(ingredient_id: str, qty: float, restaurant_id:
         new_qty = current_qty - qty
         await db.inventory.update_one(
             {"ingredientId": ingredient_id, "restaurantId": restaurant_id},
-            {"$set": {"qtyOnHand": new_qty, "updatedAt": datetime.now(timezone.utc).isoformat()}}
+            {"$set": {"qty": new_qty, "updatedAt": datetime.now(timezone.utc).isoformat()}}
         )
+        
+        # Log movement
+        await db.inventory_movements.insert_one({
+            "id": str(uuid.uuid4()),
+            "restaurantId": restaurant_id,
+            "ingredientId": ingredient_id,
+            "type": "outbound",
+            "source": source,
+            "sourceId": source_id,
+            "qty": -qty,  # Negative for outbound
+            "unit": ingredient["unit"],
+            "notes": f"Stock deduction via {source}",
+            "timestamp": datetime.now(timezone.utc).isoformat()
+        })
         
         return {
             "type": "ingredient",

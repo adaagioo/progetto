@@ -331,31 +331,57 @@ function CurrentMenu() {
   // Toggle item active status
   const handleToggleItemActive = async (itemId, currentStatus) => {
     try {
-      const response = await fetch(`${backendUrl}/api/menu/${currentMenu.id}/items/${itemId}`, {
+      const url = `${backendUrl}/api/menu/${currentMenu.id}/items/${itemId}`;
+      console.log('[CurrentMenu] Toggling item active at:', url);
+      
+      if (!token) {
+        alert('No authentication token. Please log in again.');
+        return;
+      }
+
+      const response = await fetch(url, {
         method: 'PATCH',
         headers: {
+          'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json',
-          Authorization: `Bearer ${token}`,
         },
         body: JSON.stringify({ isActive: !currentStatus }),
       });
 
-      if (!response.ok) {
-        let errorMessage = 'Failed to update item';
-        try {
-          const error = await response.json();
-          errorMessage = error.detail || errorMessage;
-        } catch (e) {
-          // If response is not JSON, use default message
-        }
-        throw new Error(errorMessage);
+      const requestId = response.headers.get('x-request-id');
+      console.log('[CurrentMenu] PATCH /api/menu/{id}/items/{itemId} - RequestId:', requestId || 'undefined');
+
+      if (response.status === 401) {
+        alert('Session expired or unauthorized. Please re-authenticate.');
+        return;
       }
 
-      // Consume the response body
+      if (!response.ok) {
+        const contentType = response.headers.get('content-type');
+        let errorMessage = 'Failed to update item';
+        
+        if (contentType && contentType.includes('application/json')) {
+          try {
+            const error = await response.json();
+            errorMessage = error.detail || errorMessage;
+          } catch (e) {
+            errorMessage = `${errorMessage} (${response.status} ${response.statusText})`;
+          }
+        } else {
+          errorMessage = `${errorMessage} (${response.status} ${response.statusText})`;
+        }
+        
+        console.error('[CurrentMenu] Toggle item failed:', errorMessage, 'RequestId:', requestId);
+        alert(t('currentMenu.error.update') + ': ' + errorMessage + (requestId ? ` [${requestId}]` : ''));
+        return;
+      }
+
       await response.json();
+      console.log('[CurrentMenu] Item toggled successfully. RequestId:', requestId);
 
       fetchCurrentMenu();
     } catch (err) {
+      console.error('[CurrentMenu] handleToggleItemActive error:', err);
       alert(t('currentMenu.error.update') + ': ' + err.message);
     }
   };

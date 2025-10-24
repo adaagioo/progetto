@@ -91,21 +91,22 @@ function AllergenSelector({ value = [], otherValue = [], onChange, onOtherChange
       {/* Standard Allergens - Checkbox Grid */}
       <div className="space-y-2">
         <Label>{t('ingredients.allergens') || 'Allergens'}</Label>
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 p-4 border rounded-lg bg-gray-50">
+        <div className="grid grid-cols-2 md:grid-cols-3 gap-3 p-4 border rounded-lg bg-gray-50">
           {STANDARD_ALLERGENS.map(code => (
             <label
               key={code}
               className={`flex items-center space-x-2 cursor-pointer ${disabled ? 'opacity-50' : 'hover:bg-gray-100'} p-2 rounded`}
+              title={t(`allergens.${code}`)}
             >
               <input
                 type="checkbox"
                 checked={value.includes(code)}
                 onChange={() => handleToggle(code)}
                 disabled={disabled}
-                className="h-4 w-4"
+                className="h-4 w-4 flex-shrink-0"
                 data-testid={`allergen-${code}`}
               />
-              <span className="text-sm capitalize">
+              <span className="text-sm capitalize truncate max-w-[150px]">
                 {t(`allergens.${code}`)}
               </span>
             </label>

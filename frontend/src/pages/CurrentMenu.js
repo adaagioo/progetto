@@ -776,16 +776,16 @@ function CurrentMenu() {
                         </td>
                         <td className="px-6 py-4">{getAvailabilityBadge(item.availabilityStatus)}</td>
                         <td className="px-6 py-4 text-right text-sm text-gray-900">
-                          {formatCurrency(item.computedCost || 0)}
+                          {formatMinor(item.computedCost || 0)}
                         </td>
                         <td className="px-6 py-4 text-right text-sm text-gray-900">
-                          {item.price ? formatCurrency(item.price) : '—'}
+                          {item.price ? formatMinor(item.price) : '—'}
                         </td>
                         <td className="px-6 py-4 text-right text-sm">
                           {margin.absolute !== null ? (
                             <div>
                               <div className="font-medium text-gray-900">
-                                {formatCurrency(margin.absolute)}
+                                {formatMinor(margin.absolute)}
                               </div>
                               <div
                                 className={`text-xs ${

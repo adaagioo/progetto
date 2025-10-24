@@ -365,8 +365,10 @@ function OrderList() {
                         document.body.removeChild(a);
                         toast.success(t('export.success') || 'Export successful');
                       } else {
-                        const error = await response.json();
-                        toast.error(error.detail || t('export.error') || 'Export failed');
+                        const requestId = response.headers.get('x-request-id') || 'unknown';
+                        console.error('Export failed. RequestId:', requestId);
+                        const error = await response.json().catch(() => ({ detail: 'Export failed' }));
+                        toast.error(`${error.detail || t('export.error')} (Request ID: ${requestId})`);
                       }
                     } catch (error) {
                       console.error('Export error:', error);

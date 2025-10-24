@@ -4177,43 +4177,46 @@ agent_communication:
     working: "NA"
     file: "backend/export_utils.py, server.py, frontend/src/pages/Dashboard.js"
     stuck_count: 0
-    priority: "high"
+    priority: "medium"
     needs_retesting: true
     status_history:
       - working: "NA"
         agent: "main"
         comment: |
           REQUIREMENT: Comprehensive dashboard report with date range support.
+          PENDING: Deferred until P0 items complete
           
-          SPEC:
-          - Endpoints: GET /api/reports/dashboard/export-pdf and export-xlsx
-          - Params: start=YYYY-MM-DD, end=YYYY-MM-DD, tz=Europe/Rome
-          - Date range: Default = current week (Mon-Sun, local TZ)
-          - URL-driven search with debouncing
+  - task: "OCR Parser: Italian Invoice Tuning"
+    implemented: false
+    working: "NA"
+    file: "backend/document_parser.py"
+    stuck_count: 0
+    priority: "medium"
+    needs_retesting: true
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: |
+          REQUIREMENT: Tune parser to extract structured data from Italian invoices.
           
-          SECTIONS (in order):
-          1. Sales summary - total revenue, orders count, avg ticket, by-day breakdown
-          2. Wastage summary - total waste cost, top 5 items by waste cost
-          3. Inventory snapshot - valuation at start vs end, delta, top 5 movers
-          4. Production snapshot - planned vs prepared portions (sum) for range
-          5. KPIs - COGS %, Waste %, Gross margin proxy
+          CURRENT STATE:
+          - OCR engine working perfectly (Tesseract 5.3.0) ✅
+          - Text extraction: 4,692 chars, 60.39% confidence ✅
+          - Structured parsing: Returns 0 lines (needs tuning) ❌
           
-          FORMATS:
-          - PDF: A4, sectioned; header: restaurant + date range; footer: page x/y + export timestamp
-          - XLSX: Sheets = Sales, Wastage, Inventory, Production, KPIs
-          
-          BEHAVIOR:
-          - Respect current filters where applicable
-          - Locale/currency: EUR with 2 decimals
-          - Filenames: DashboardReport_<restaurant>_<YYYY-MM-DD>_to_<YYYY-MM-DD>.pdf|xlsx
+          TARGET:
+          - Extract invoice header (supplier, date, invoice number)
+          - Parse line items (code, description, qty, unit, price)
+          - Extract totals (subtotal, tax, grand total)
+          - Handle Italian formats (comma decimals, date formats)
           
           ACCEPTANCE:
-          - Totals reconcile with module data for same range
-          - PDF/XLSX generated within ~3-5s for typical volumes
-          - Progress state shown during generation
-          - Friendly error with requestId on failure
+          - RIB.pdf test invoice extracts 6+ line items
+          - Supplier, date, total correctly identified
+          - Line item quantities and prices parsed
+          - Confidence threshold: >50% for usable data
           
-          PENDING: Backend implementation + frontend date picker integration
+          PENDING: Implementation after P0.1 and P2.5 complete
 
 frontend:
   - task: "ISSUE 1: Dashboard Total Inventory Value Card Missing"

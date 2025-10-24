@@ -24,10 +24,9 @@ function useDebounce(value, delay) {
 
 function CurrentMenu() {
   const { t } = useTranslation();
-  const { token } = useContext(AuthContext);
+  const { token, user } = useContext(AuthContext);
   const { formatCurrency } = useCurrency();
   const [searchParams, setSearchParams] = useSearchParams();
-  const backendUrl = process.env.REACT_APP_BACKEND_URL;
 
   const [currentMenu, setCurrentMenu] = useState(null);
   const [menuItems, setMenuItems] = useState([]);

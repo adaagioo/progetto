@@ -2405,6 +2405,43 @@ frontend:
           🎯 ORDER LIST MODULE: 90% FUNCTIONAL
           Excellent functionality with comprehensive driver system and filtering working perfectly.
 
+## === SMOKE TEST PROTOCOL (RUN BEFORE EACH DEPLOY) === ##
+## DO NOT SKIP - ENSURES P0 STABILITY
+
+smoke_tests:
+  required_before_deploy: true
+  max_duration_minutes: 5
+  
+  tests:
+    - name: "Dashboard - All Cards Render"
+      endpoint: "GET /api/inventory/valuation/total"
+      ui_check: "4 cards visible (Food, Beverage, Non-Food, Total Inventory Value)"
+      acceptance: "✅ All cards render, no console errors"
+      
+    - name: "Prep List - Rows + Export"
+      endpoint: "GET /api/prep-list"
+      ui_check: "Rows match totals, filter works (All/To Make)"
+      export_test: "GET /api/prep-list/export?date=YYYY-MM-DD&format=pdf"
+      acceptance: "✅ Rows render, export returns 200 with PDF"
+      
+    - name: "Order List - Export Works When Data Exists"
+      endpoint: "GET /api/order-list/export?date=YYYY-MM-DD&format=pdf"
+      acceptance: "✅ Returns 200 with data OR 404 with no data (both valid)"
+      
+    - name: "OCR - Health + Invoice Processing"
+      endpoint: "GET /api/health/ocr"
+      test_file: "RIB.pdf"
+      ocr_endpoint: "POST /api/ocr/process"
+      acceptance: "✅ Health returns ok:true, invoice extracts >1000 chars, confidence >50%"
+
+  failure_protocol:
+    - "STOP deployment immediately"
+    - "Identify which component broke (compare to last stable commit)"
+    - "Rollback changes affecting failed component"
+    - "Re-run smoke test to confirm stability restored"
+
+## === END SMOKE TEST PROTOCOL === ##
+
 metadata:
   created_by: "main_agent"
   version: "1.0"

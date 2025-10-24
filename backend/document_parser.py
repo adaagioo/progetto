@@ -200,99 +200,78 @@ class DocumentParser:
     def _parse_single_line_item(self, line: str, document_type: str) -> Optional[Dict[str, Any]]:
         """
         Parse a single line item - enhanced for Italian invoices
-        Expected formats:
-        - Italian: "L0347 1 AMARO DEL CAPO 1LT 22 | N 14,96 14,96"
-        - Italian: "V1933 6 VINO CHARDONNAY ATTEMS 2023 75CL 22 | N 7,2373 43,42"
-        - Generic: "Description Qty Unit Price"
+        SAFE: Returns None if parsing fails, doesn't break the upload flow
         """
-        
-        # Enhanced Italian invoice pattern
-        # Format: CODE QTY DESCRIPTION SIZE IVA% | UM UNIT_PRICE LINE_TOTAL
-        # Example: "L0347 1 AMARO DEL CAPO 1LT 22 | N 14,96 14,96"
-        italian_patterns = [
-            # With pipe separator
-            r'^([A-Z]\d{4})\s+(\d+)\s+(.+?)\s+(\d{2})\s*\|\s*\w+\s+([\d,]+(?:\.?\d*)?)\s+([\d,]+(?:\.?\d*)?)$',
-            # With comma in qty (12, SP.TOSO BRUT...)
-            r'^([A-Z]\d{4})\s+(\d+),?\s+(.+?)\s+(\d{2})\s*\|\s*\w+\s+([\d,]+(?:\.?\d*)?)\s+([\d,]+(?:\.?\d*)?)$',
-        ]
-        
-        for pattern in italian_patterns:
-            match = re.match(pattern, line)
-            if match:
-                code, qty, description, iva, unit_price, total = match.groups()
-                
-                # Clean quantity (remove trailing comma if present)
-                qty_clean = qty.rstrip(',')
-                
-                # Extract unit from description (1LT, 75CL, etc.)
-                unit = self._extract_unit_from_description(description) or 'unit'
-                
-                # Clean description - remove size info at end
-                desc_clean = re.sub(r'\s+(1LT|70CL\.?|75CL\.?|ML|LT|KG|G|\d+CL\.?|2023|2024|doc)$', '', description.strip(), flags=re.IGNORECASE)
-                desc_clean = desc_clean.strip()
-                
-                # Convert comma decimals to dots
-                unit_price_float = float(unit_price.replace(',', '.'))
-                total_float = float(total.replace(',', '.'))
-                
-                return {
-                    "description": desc_clean,
-                    "qty": float(qty_clean),
-                    "unit": unit,
-                    "unit_price": unit_price_float,
-                    "line_total": total_float,
-                    "code": code,
-                    "vat_percent": int(iva),
-                    "line_text": line
-                }
-        
-        # Generic pattern: capture description, numbers, and currency
-        parts = line.split()
-        if len(parts) < 3:
+        try:
+            # Enhanced Italian invoice pattern
+            # Format: CODE QTY DESCRIPTION SIZE IVA% | UM UNIT_PRICE LINE_TOTAL
+            italian_patterns = [
+                r'^([A-Z]\d{4})\s+(\d+)\s+(.+?)\s+(\d{2})\s*\|\s*\w+\s+([\d,]+(?:\.?\d*)?)\s+([\d,]+(?:\.?\d*)?)$',
+                r'^([A-Z]\d{4})\s+(\d+),?\s+(.+?)\s+(\d{2})\s*\|\s*\w+\s+([\d,]+(?:\.?\d*)?)\s+([\d,]+(?:\.?\d*)?)$',
+            ]
+            
+            for pattern in italian_patterns:
+                match = re.match(pattern, line)
+                if match:
+                    code, qty, description, iva, unit_price, total = match.groups()
+                    qty_clean = qty.rstrip(',')
+                    unit = self._extract_unit_from_description(description) or 'unit'
+                    desc_clean = re.sub(r'\s+(1LT|70CL\.?|75CL\.?|ML|LT|KG|G|\d+CL\.?|2023|2024|doc)$', '', description.strip(), flags=re.IGNORECASE)
+                    
+                    return {
+                        "description": desc_clean.strip(),
+                        "qty": float(qty_clean),
+                        "unit": unit,
+                        "price": float(unit_price.replace(',', '.')),
+                        "line_total": float(total.replace(',', '.')),
+                        "code": code,
+                        "vat_percent": int(iva),
+                        "line_text": line
+                    }
+            
+            # Generic pattern (original logic)
+            parts = line.split()
+            if len(parts) < 3:
+                return None
+            
+            numbers = []
+            description_parts = []
+            unit = None
+            price = None
+            
+            for i, part in enumerate(parts):
+                if re.match(r'^[0-9]+\.?[0-9]*$', part):
+                    numbers.append(float(part))
+                elif re.match(r'^[€$£]?[0-9,]+\.?\d{0,2}$', part):
+                    price_str = re.sub(r'[€$£,]', '', part)
+                    try:
+                        price = float(price_str)
+                    except:
+                        pass
+                elif part.lower() in ['kg', 'g', 'l', 'ml', 'pcs', 'pz', 'unit', 'units', 'lt', 'cl']:
+                    unit = part.lower()
+                else:
+                    description_parts.append(part)
+            
+            if not description_parts or not (numbers or price):
+                return None
+            
+            description = ' '.join(description_parts)
+            qty = numbers[0] if numbers else 1.0
+            
+            if price is None and len(numbers) > 1:
+                price = numbers[-1]
+            
+            return {
+                "description": description,
+                "qty": qty,
+                "unit": unit or 'unit',
+                "price": price,
+                "line_text": line
+            }
+        except Exception as e:
+            logger.warning(f"Line item parsing error for '{line}': {e}")
             return None
-        
-        # Find numbers and currency
-        numbers = []
-        description_parts = []
-        unit = None
-        price = None
-        
-        for i, part in enumerate(parts):
-            # Check if it's a number (qty or price)
-            if re.match(r'^[0-9]+\.?[0-9]*$', part):
-                numbers.append(float(part))
-            # Check if it's a price with currency
-            elif re.match(r'^[€$£]?[0-9,]+\.?\d{0,2}$', part):
-                price_str = re.sub(r'[€$£,]', '', part)
-                try:
-                    price = float(price_str)
-                except:
-                    pass
-            # Check if it's a unit
-            elif part.lower() in ['kg', 'g', 'l', 'ml', 'pcs', 'pz', 'unit', 'units', 'lt', 'cl']:
-                unit = part.lower()
-            # Otherwise it's part of description
-            else:
-                description_parts.append(part)
-        
-        # Need at least description and one number
-        if not description_parts or not (numbers or price):
-            return None
-        
-        description = ' '.join(description_parts)
-        qty = numbers[0] if numbers else 1.0
-        
-        # If price not found in currency format, try last number
-        if price is None and len(numbers) > 1:
-            price = numbers[-1]
-        
-        return {
-            "description": description,
-            "qty": qty,
-            "unit": unit or 'unit',
-            "unit_price": price,
-            "line_text": line
-        }
     
     def _extract_unit_from_description(self, description: str) -> Optional[str]:
         """Extract unit from description text"""

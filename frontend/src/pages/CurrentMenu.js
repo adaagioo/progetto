@@ -132,9 +132,18 @@ function CurrentMenu() {
       });
 
       if (!response.ok) {
-        const error = await response.json();
-        throw new Error(error.detail || 'Failed to create menu');
+        let errorMessage = 'Failed to create menu';
+        try {
+          const error = await response.json();
+          errorMessage = error.detail || errorMessage;
+        } catch (e) {
+          // If response is not JSON, use default message
+        }
+        throw new Error(errorMessage);
       }
+
+      // Consume the response body
+      await response.json();
 
       setShowCreateMenu(false);
       fetchCurrentMenu();

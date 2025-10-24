@@ -254,7 +254,7 @@ function Ingredients() {
               Add Ingredient
             </Button>
           </DialogTrigger>
-          <DialogContent className="max-w-md max-h-[90vh] overflow-y-auto" data-testid="ingredient-dialog">
+          <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto" data-testid="ingredient-dialog">
             <DialogHeader>
               <DialogTitle>{editingId ? 'Edit Ingredient' : 'New Ingredient'}</DialogTitle>
             </DialogHeader>

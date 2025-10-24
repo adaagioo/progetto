@@ -358,6 +358,34 @@ function Dashboard() {
         </div>
       </div>
 
+      {/* Expiring Soon Card */}
+      {expiringItems && (expiringItems.day1 > 0 || expiringItems.day2 > 0 || expiringItems.day3 > 0) && (
+        <Card className="glass-morphism border-0 cursor-pointer" onClick={() => navigate('/inventory?filter=expiring')}>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <AlertCircle className="h-5 w-5 text-orange-500" />
+              {t('dashboard.expiringSoon') || 'Expiring Soon'}
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="grid grid-cols-3 gap-4">
+              <div className="text-center">
+                <div className="text-2xl font-bold text-red-600">{expiringItems.day1 || 0}</div>
+                <p className="text-xs text-gray-500 mt-1">{t('dashboard.expiring1Day') || '1 day'}</p>
+              </div>
+              <div className="text-center">
+                <div className="text-2xl font-bold text-orange-600">{expiringItems.day2 || 0}</div>
+                <p className="text-xs text-gray-500 mt-1">{t('dashboard.expiring2Days') || '2 days'}</p>
+              </div>
+              <div className="text-center">
+                <div className="text-2xl font-bold text-yellow-600">{expiringItems.day3 || 0}</div>
+                <p className="text-xs text-gray-500 mt-1">{t('dashboard.expiring3Days') || '3 days'}</p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
       {/* Revenue & COGS Summary */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <Card 

@@ -235,8 +235,18 @@ function CurrentMenu() {
       });
 
       if (!response.ok) {
-        throw new Error('Failed to update item');
+        let errorMessage = 'Failed to update item';
+        try {
+          const error = await response.json();
+          errorMessage = error.detail || errorMessage;
+        } catch (e) {
+          // If response is not JSON, use default message
+        }
+        throw new Error(errorMessage);
       }
+
+      // Consume the response body
+      await response.json();
 
       fetchCurrentMenu();
     } catch (err) {

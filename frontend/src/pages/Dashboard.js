@@ -74,6 +74,15 @@ function Dashboard() {
     }
   };
 
+  const fetchExpiringItems = async () => {
+    try {
+      const response = await axios.get(`${API}/inventory/expiring?days=3`);
+      setExpiringItems(response.data);
+    } catch (error) {
+      console.error('Failed to load expiring items:', error);
+    }
+  };
+
   if (loading) {
     return (
       <div className="flex items-center justify-center h-96">

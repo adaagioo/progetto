@@ -270,30 +270,60 @@ function CurrentMenu() {
     }
 
     try {
-      const response = await fetch(`${backendUrl}/api/menu/${currentMenu.id}`, {
+      const url = `${backendUrl}/api/menu/${currentMenu.id}`;
+      console.log('[CurrentMenu] Deleting menu at:', url);
+      
+      if (!token) {
+        alert('No authentication token. Please log in again.');
+        return;
+      }
+
+      const response = await fetch(url, {
         method: 'DELETE',
         headers: {
-          Authorization: `Bearer ${token}`,
+          'Authorization': `Bearer ${token}`,
         },
       });
 
-      if (!response.ok) {
-        let errorMessage = 'Failed to delete menu';
-        try {
-          const error = await response.json();
-          errorMessage = error.detail || errorMessage;
-        } catch (e) {
-          // If response is not JSON, use default message
-        }
-        throw new Error(errorMessage);
+      const requestId = response.headers.get('x-request-id');
+      console.log('[CurrentMenu] DELETE /api/menu/{id} - RequestId:', requestId || 'undefined');
+
+      if (response.status === 401) {
+        alert('Session expired or unauthorized. Please re-authenticate.');
+        return;
       }
 
-      // Consume the response body
-      await response.json();
+      if (!response.ok) {
+        const contentType = response.headers.get('content-type');
+        let errorMessage = 'Failed to delete menu';
+        
+        if (contentType && contentType.includes('application/json')) {
+          try {
+            const error = await response.json();
+            errorMessage = error.detail || errorMessage;
+          } catch (e) {
+            errorMessage = `${errorMessage} (${response.status} ${response.statusText})`;
+          }
+        } else {
+          errorMessage = `${errorMessage} (${response.status} ${response.statusText})`;
+        }
+        
+        console.error('[CurrentMenu] Delete failed:', errorMessage, 'RequestId:', requestId);
+        alert(t('currentMenu.error.delete') + ': ' + errorMessage + (requestId ? ` [${requestId}]` : ''));
+        return;
+      }
+
+      // Check if response has content before trying to parse
+      const contentType = response.headers.get('content-type');
+      if (contentType && contentType.includes('application/json')) {
+        await response.json();
+      }
+      console.log('[CurrentMenu] Menu deleted successfully. RequestId:', requestId);
 
       fetchCurrentMenu();
-      alert(t('currentMenu.success.deleted'));
+      alert(t('currentMenu.success.deleted') + (requestId ? ` [${requestId}]` : ''));
     } catch (err) {
+      console.error('[CurrentMenu] handleDeleteMenu error:', err);
       alert(t('currentMenu.error.delete') + ': ' + err.message);
     }
   };

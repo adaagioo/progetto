@@ -57,14 +57,14 @@ def generate_daily_prep_pdf(
     elements.append(date_para)
     elements.append(Spacer(1, 0.3*inch))
     
-    # Table data
+    # Table data with ALL required columns
     if locale == 'en':
-        table_data = [['Preparation', 'Planned', 'To Prepare', 'Unit', 'Shelf Life', 'Cost/Portion', 'Total Cost', 'Notes']]
+        table_data = [['Date', 'Preparation', 'Forecast', 'Available', 'To Make', 'Unit', 'Shelf Life', 'Cost/Portion', 'Est. Total', 'Notes']]
     else:
-        table_data = [['Preparazione', 'Pianif.', 'Da Prep.', 'Unità', 'Scadenza', 'Costo/Porz.', 'Costo Tot.', 'Note']]
+        table_data = [['Data', 'Preparazione', 'Previsto', 'Disponibile', 'Da Fare', 'Unità', 'Scadenza', 'Costo/Porz.', 'Tot. Stim.', 'Note']]
     
     total_cost = 0
-    total_portions = 0
+    total_to_make = 0
     
     for item in data:
         shelf_life = item.get('shelfLife', '-')
@@ -73,34 +73,36 @@ def generate_daily_prep_pdf(
         notes = item.get('notes', '-')
         
         table_data.append([
+            item.get('date', date),
             item.get('name', ''),
-            str(item.get('plannedPortions', 0)),
-            str(item.get('toPrepare', 0)),
+            str(round(item.get('forecast', 0), 1)),
+            str(round(item.get('available', 0), 1)),
+            str(round(item.get('toMake', 0), 1)),
             item.get('unit', 'portions'),
             shelf_life,
             format_currency(cost_per_portion, locale),
             format_currency(total_item_cost, locale),
-            (notes[:20] + '...' if len(notes) > 20 else notes) if notes else ''
+            (notes[:15] + '...' if len(notes) > 15 else notes) if notes else '-'
         ])
         
         total_cost += total_item_cost
-        total_portions += item.get('toPrepare', 0)
+        total_to_make += item.get('toMake', 0)
     
     # Totals row
     totals_label = 'TOTALS' if locale == 'en' else 'TOTALI'
-    table_data.append(['', '', str(total_portions), '', '', '', format_currency(total_cost, locale), ''])
+    table_data.append([totals_label, '', '', '', str(round(total_to_make, 1)), '', '', '', format_currency(total_cost, locale), ''])
     
-    # Create table
-    table = Table(table_data, colWidths=[1.8*inch, 0.7*inch, 0.7*inch, 0.7*inch, 0.8*inch, 0.9*inch, 0.9*inch, 1.2*inch])
+    # Create table with adjusted column widths
+    table = Table(table_data, colWidths=[0.6*inch, 1.3*inch, 0.5*inch, 0.5*inch, 0.5*inch, 0.5*inch, 0.7*inch, 0.7*inch, 0.7*inch, 0.9*inch])
     table.setStyle(TableStyle([
         ('BACKGROUND', (0, 0), (-1, 0), colors.HexColor('#059669')),
         ('TEXTCOLOR', (0, 0), (-1, 0), colors.whitesmoke),
         ('ALIGN', (0, 0), (-1, -1), 'LEFT'),
-        ('ALIGN', (1, 0), (-1, -1), 'CENTER'),
+        ('ALIGN', (2, 0), (8, -1), 'CENTER'),
         ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
-        ('FONTSIZE', (0, 0), (-1, 0), 9),
-        ('FONTSIZE', (0, 1), (-1, -1), 8),
-        ('BOTTOMPADDING', (0, 0), (-1, 0), 12),
+        ('FONTSIZE', (0, 0), (-1, 0), 8),
+        ('FONTSIZE', (0, 1), (-1, -1), 7),
+        ('BOTTOMPADDING', (0, 0), (-1, 0), 10),
         ('BACKGROUND', (0, -1), (-1, -1), colors.HexColor('#f0fdf4')),
         ('FONTNAME', (0, -1), (-1, -1), 'Helvetica-Bold'),
         ('GRID', (0, 0), (-1, -1), 0.5, colors.grey),
@@ -109,7 +111,7 @@ def generate_daily_prep_pdf(
     
     elements.append(table)
     
-    # Footer
+    # Footer with page number
     elements.append(Spacer(1, 0.3*inch))
     footer_text = f"Exported: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}"
     footer = Paragraph(footer_text, styles['Italic'])

@@ -480,13 +480,13 @@ class RistoBrainV1P3Tester:
                                f"Failed: {error_text}")
                 print(f"   ❌ Get current menu: {response.status} | x-request-id: {request_id}")
 
-        # Test 2: POST /api/menu (create)
+        # Test 2: POST /api/menu (create) - set as inactive to avoid conflict
         menu_data = {
             "name": "Test Menu for API Testing",
             "description": "Test menu created for API testing",
             "effectiveFrom": "2024-01-01",
             "effectiveTo": "2024-12-31",
-            "isActive": True
+            "isActive": False  # Set as inactive to avoid conflict with existing active menu
         }
         
         async with self.session.post(

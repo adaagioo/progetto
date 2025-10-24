@@ -159,10 +159,10 @@ function CurrentMenu() {
 
   // Create menu
   const handleCreateMenu = async () => {
-    console.log('[CurrentMenu] handleCreateMenu called');
+    console.log('[CurrentMenu] handleCreateMenu called - isAuthReady:', isAuthReady, 'token:', !!token, 'user:', !!user);
     
-    if (!token || !user) {
-      console.error('[CurrentMenu] No auth - token:', !!token, 'user:', !!user);
+    if (!isAuthReady) {
+      console.error('[CurrentMenu] Auth not ready - user:', !!user, 'token:', !!token);
       alert('Please sign in to create a menu.');
       return;
     }
@@ -183,7 +183,7 @@ function CurrentMenu() {
       const requestId = response.headers.get('x-request-id') || 'undefined';
       const contentType = response.headers.get('content-type') || '';
       
-      console.log('[CurrentMenu] Create response:', { status: response.status, requestId });
+      console.log('[CurrentMenu] Create response:', { url, status: response.status, requestId, isAuthReady, hasToken: !!token });
 
       if (response.status === 401) {
         alert('Session expired or unauthorized. Please sign in again.');

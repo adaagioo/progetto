@@ -802,6 +802,7 @@ const resources = {
       'export.xlsx': 'Excel',
       'export.success': 'Esportazione riuscita',
       'export.error': 'Esportazione fallita',
+      'export.noData': 'Nessun dato da esportare per la data selezionata',
       'export.selectDate': 'Seleziona Data',
       'export.purchaseOrders': 'Esporta Ordini di Acquisto',
       'dashboard.clickToView': 'Clicca per visualizzare',

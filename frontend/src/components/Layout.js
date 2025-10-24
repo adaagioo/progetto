@@ -110,6 +110,11 @@ function Layout({ children }) {
             {children}
           </main>
         </div>
+        
+        {/* Build Version Footer */}
+        <footer className="text-center py-2 text-xs text-gray-400 border-t border-gray-200 mt-4">
+          Build: {process.env.REACT_APP_BUILD_VERSION || 'v1.0.0-p0-fixes'} • {new Date().toISOString().split('T')[0]}
+        </footer>
       </div>
     </div>
   );

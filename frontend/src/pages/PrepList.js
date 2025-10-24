@@ -377,118 +377,138 @@ function PrepList() {
 
       {/* Prep List Table */}
       {prepList && prepList.items && prepList.items.length > 0 ? (
-        <div className="bg-white rounded-lg shadow overflow-hidden">
-          <div className="overflow-x-auto">
-            <table className="w-full">
-              <thead className="bg-gray-50 sticky top-0">
-                <tr>
-                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    {t('prepList.preparation')}
-                  </th>
-                  <th className="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    {t('prepList.forecast')}
-                  </th>
-                  <th className="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    {t('prepList.available')}
-                  </th>
-                  <th className="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    {t('prepList.toMake')}
-                  </th>
-                  <th className="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    {t('prepList.actualQty')}
-                  </th>
-                  <th className="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    {t('prepList.unit')}
-                  </th>
-                  <th className="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    {t('prepList.forecastSource')}
-                  </th>
-                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    {t('prepList.notes')}
-                  </th>
-                </tr>
-              </thead>
-              <tbody className="bg-white divide-y divide-gray-200">
-                {filteredItems.map((item, index) => {
-                  const urgency = getUrgency(item);
-                  const urgencyColor = getUrgencyColor(urgency);
-                  const isOverridden = item.forecastSource === 'manual_override';
-                  
-                  return (
-                    <tr 
-                      key={index}
-                      className={`hover:bg-gray-50 ${urgency === 'high' ? 'bg-red-50' : ''}`}
-                      data-testid={`prep-item-${index}`}
-                    >
-                      <td className="px-4 py-3">
-                        <div className="flex items-center gap-2">
-                          <span className="font-medium">{item.preparationName || item.preparationId}</span>
-                          {isOverridden && (
-                            <span className="px-2 py-1 text-xs bg-blue-100 text-blue-800 rounded">
-                              {t('prepList.overridden')}
-                            </span>
-                          )}
-                        </div>
-                      </td>
-                      <td className="px-4 py-3 text-center text-gray-900">
-                        {item.forecastQty?.toFixed(2) || '0.00'}
-                      </td>
-                      <td className="px-4 py-3 text-center text-gray-900">
-                        {item.availableQty?.toFixed(2) || '0.00'}
-                      </td>
-                      <td className="px-4 py-3 text-center">
-                        {canEdit ? (
-                          <input
-                            type="number"
-                            step="0.01"
-                            value={item.overrideQty !== undefined ? item.overrideQty : item.toMakeQty}
-                            onChange={(e) => handleOverride(index, 'toMakeQty', parseFloat(e.target.value) || 0)}
-                            className="w-20 px-2 py-1 border border-gray-300 rounded text-center"
-                            data-testid={`to-make-qty-${index}`}
-                          />
-                        ) : (
-                          <span className="text-gray-900">{item.toMakeQty?.toFixed(2) || '0.00'}</span>
-                        )}
-                        {urgency === 'high' && (
-                          <AlertCircle className="inline-block ml-2 h-4 w-4 text-red-500" />
-                        )}
-                      </td>
-                      <td className="px-4 py-3 text-center">
-                        <input
-                          type="number"
-                          step="0.01"
-                          value={item.actualQty || ''}
-                          onChange={(e) => handleActualQty(index, e.target.value)}
-                          placeholder="--"
-                          className="w-20 px-2 py-1 border border-gray-300 rounded text-center"
-                          data-testid={`actual-qty-${index}`}
-                        />
-                      </td>
-                      <td className="px-4 py-3 text-center text-gray-600">
-                        {item.unit}
-                      </td>
-                      <td className="px-4 py-3 text-center">
-                        <span className={`px-2 py-1 text-xs rounded ${urgencyColor}`}>
-                          {t(`prepList.source.${item.forecastSource}`) || item.forecastSource}
-                        </span>
-                      </td>
-                      <td className="px-4 py-3">
-                        <input
-                          type="text"
-                          value={item.notes || ''}
-                          onChange={(e) => handleNotes(index, e.target.value)}
-                          placeholder={t('prepList.notes')}
-                          className="w-full px-2 py-1 border border-gray-300 rounded"
-                          data-testid={`notes-${index}`}
-                        />
-                      </td>
+        <>
+          {filteredItems.length > 0 ? (
+            <div className="bg-white rounded-lg shadow overflow-hidden">
+              <div className="overflow-x-auto">
+                <table className="w-full">
+                  <thead className="bg-gray-50 sticky top-0">
+                    <tr>
+                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        {t('prepList.preparation')}
+                      </th>
+                      <th className="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        {t('prepList.forecast')}
+                      </th>
+                      <th className="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        {t('prepList.available')}
+                      </th>
+                      <th className="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        {t('prepList.toMake')}
+                      </th>
+                      <th className="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        {t('prepList.actualQty')}
+                      </th>
+                      <th className="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        {t('prepList.unit')}
+                      </th>
+                      <th className="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        {t('prepList.forecastSource')}
+                      </th>
+                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        {t('prepList.notes')}
+                      </th>
                     </tr>
-                  );
-                })}
-              </tbody>
-            </table>
-          </div>
-        </div>
+                  </thead>
+                  <tbody className="bg-white divide-y divide-gray-200">
+                    {filteredItems.map((item, index) => {
+                      const urgency = getUrgency(item);
+                      const urgencyColor = getUrgencyColor(urgency);
+                      const isOverridden = item.forecastSource === 'manual_override';
+                      
+                      return (
+                        <tr 
+                          key={index}
+                          className={`hover:bg-gray-50 ${urgency === 'high' ? 'bg-red-50' : ''}`}
+                          data-testid={`prep-item-${index}`}
+                        >
+                          <td className="px-4 py-3">
+                            <div className="flex items-center gap-2">
+                              <span className="font-medium">{item.preparationName || item.preparationId}</span>
+                              {isOverridden && (
+                                <span className="px-2 py-1 text-xs bg-blue-100 text-blue-800 rounded">
+                                  {t('prepList.overridden')}
+                                </span>
+                              )}
+                            </div>
+                          </td>
+                          <td className="px-4 py-3 text-center text-gray-900">
+                            {item.forecastQty?.toFixed(2) || '0.00'}
+                          </td>
+                          <td className="px-4 py-3 text-center text-gray-900">
+                            {item.availableQty?.toFixed(2) || '0.00'}
+                          </td>
+                          <td className="px-4 py-3 text-center">
+                            {canEdit ? (
+                              <input
+                                type="number"
+                                step="0.01"
+                                value={item.overrideQty !== undefined ? item.overrideQty : item.toMakeQty}
+                                onChange={(e) => handleOverride(index, 'toMakeQty', parseFloat(e.target.value) || 0)}
+                                className="w-20 px-2 py-1 border border-gray-300 rounded text-center"
+                                data-testid={`to-make-qty-${index}`}
+                              />
+                            ) : (
+                              <span className="text-gray-900">{item.toMakeQty?.toFixed(2) || '0.00'}</span>
+                            )}
+                            {urgency === 'high' && (
+                              <AlertCircle className="inline-block ml-2 h-4 w-4 text-red-500" />
+                            )}
+                          </td>
+                          <td className="px-4 py-3 text-center">
+                            <input
+                              type="number"
+                              step="0.01"
+                              value={item.actualQty || ''}
+                              onChange={(e) => handleActualQty(index, e.target.value)}
+                              placeholder="--"
+                              className="w-20 px-2 py-1 border border-gray-300 rounded text-center"
+                              data-testid={`actual-qty-${index}`}
+                            />
+                          </td>
+                          <td className="px-4 py-3 text-center text-gray-600">
+                            {item.unit}
+                          </td>
+                          <td className="px-4 py-3 text-center">
+                            <span className={`px-2 py-1 text-xs rounded ${urgencyColor}`}>
+                              {t(`prepList.source.${item.forecastSource}`) || item.forecastSource}
+                            </span>
+                          </td>
+                          <td className="px-4 py-3">
+                            <input
+                              type="text"
+                              value={item.notes || ''}
+                              onChange={(e) => handleNotes(index, e.target.value)}
+                              placeholder={t('prepList.notes')}
+                              className="w-full px-2 py-1 border border-gray-300 rounded"
+                              data-testid={`notes-${index}`}
+                            />
+                          </td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          ) : (
+            <div className="bg-white rounded-lg shadow p-12 text-center">
+              <ClipboardList className="h-16 w-16 text-gray-400 mx-auto mb-4" />
+              <h3 className="text-lg font-medium text-gray-900 mb-2">
+                {t('prepList.noItemsToMake') || 'No items to make'}
+              </h3>
+              <p className="text-gray-500 mb-4">
+                {t('prepList.noItemsToMakeDesc') || 'No items to make for the selected date. All preps are already covered.'}
+              </p>
+              <button
+                onClick={() => setFilterView('all')}
+                className="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+              >
+                {t('prepList.switchToAll') || 'Switch to All to view the full list'}
+              </button>
+            </div>
+          )}
+        </>
       ) : (
         <div className="bg-white rounded-lg shadow p-12 text-center">
           <ClipboardList className="h-16 w-16 text-gray-400 mx-auto mb-4" />

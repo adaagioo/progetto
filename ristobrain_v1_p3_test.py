@@ -505,18 +505,18 @@ class RistoBrainV1P3Tester:
                 
                 # Test 3: POST /api/menu/{id}/items (add items) - if we have ingredients
                 if self.test_data["ingredients"]:
-                    menu_item_data = {
+                    menu_items_data = [{  # API expects a list of items
                         "refType": "ingredient",
                         "refId": self.test_data["ingredients"][0]["id"],
                         "displayName": "Test Menu Item",
                         "price": 12.50,
                         "tags": ["test"],
                         "isActive": True
-                    }
+                    }]
                     
                     async with self.session.post(
                         f"{API_BASE}/menu/{menu['id']}/items",
-                        json=menu_item_data,
+                        json=menu_items_data,
                         headers=self.get_auth_headers()
                     ) as item_response:
                         item_request_id = item_response.headers.get('x-request-id', 'N/A')

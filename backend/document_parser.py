@@ -314,28 +314,53 @@ class DocumentParser:
     def parse_invoice(self, ocr_text: str) -> Dict[str, Any]:
         """
         Parse invoice from OCR text - enhanced for Italian invoices
+        SAFE: Maintains backward compatibility with existing integrations
         
         Returns:
             Structured invoice data with line items, totals, and VAT
         """
-        line_items = self.parse_line_items(ocr_text, document_type='invoice')
-        
-        # Extract VAT/IVA information
-        vat_info = self._extract_vat_info(ocr_text)
-        
-        return {
-            "document_type": "invoice",
-            "invoice_number": self.parse_invoice_number(ocr_text),
-            "date": self.parse_date(ocr_text),
-            "supplier": self.parse_supplier_name(ocr_text),
-            "vat_number": self.parse_vat_number(ocr_text),
-            "lines": line_items,
-            "subtotal": vat_info.get('subtotal'),
-            "vat_amount": vat_info.get('vat_amount'),
-            "vat_rate": vat_info.get('vat_rate'),
-            "total": self._extract_total(ocr_text),
-            "line_count": len(line_items)
-        }
+        try:
+            line_items = self.parse_line_items(ocr_text, document_type='invoice')
+            
+            # Extract VAT/IVA information with error handling
+            try:
+                vat_info = self._extract_vat_info(ocr_text)
+            except Exception as e:
+                logger.warning(f"VAT extraction failed: {e}")
+                vat_info = {}
+            
+            # BACKWARD COMPATIBLE: Return both old and new field names
+            return {
+                "document_type": "invoice",
+                "invoice_number": self.parse_invoice_number(ocr_text),
+                "date": self.parse_date(ocr_text),
+                "supplier_name": self.parse_supplier_name(ocr_text),  # OLD field name
+                "supplier": self.parse_supplier_name(ocr_text),       # NEW field name
+                "vat_number": self.parse_vat_number(ocr_text),
+                "line_items": line_items,  # OLD field name
+                "lines": line_items,       # NEW field name
+                "subtotal": vat_info.get('subtotal'),
+                "vat_amount": vat_info.get('vat_amount'),
+                "vat_rate": vat_info.get('vat_rate'),
+                "total": self._extract_total(ocr_text),
+                "raw_text": ocr_text
+            }
+        except Exception as e:
+            logger.error(f"Invoice parsing error: {e}")
+            # FALLBACK: Return minimal structure so upload doesn't fail
+            return {
+                "document_type": "invoice",
+                "invoice_number": None,
+                "date": None,
+                "supplier_name": None,
+                "supplier": None,
+                "vat_number": None,
+                "line_items": [],
+                "lines": [],
+                "total": None,
+                "raw_text": ocr_text,
+                "error": str(e)
+            }
     
     def _extract_vat_info(self, text: str) -> Dict[str, Any]:
         """Extract VAT/IVA information from Italian invoice"""

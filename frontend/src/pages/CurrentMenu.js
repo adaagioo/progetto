@@ -610,8 +610,8 @@ function CurrentMenu() {
               <Button
                 variant="outline"
                 size="sm"
-                disabled={!token || !user}
                 onClick={() => {
+                  console.log('[CurrentMenu] Edit Menu button clicked');
                   setMenuForm({
                     name: currentMenu.name,
                     description: currentMenu.description || '',
@@ -628,8 +628,8 @@ function CurrentMenu() {
               <Button
                 variant="outline"
                 size="sm"
-                disabled={!token || !user}
                 onClick={() => {
+                  console.log('[CurrentMenu] Add Items button clicked');
                   fetchAvailableItems();
                   setShowAddItems(true);
                 }}
@@ -640,7 +640,6 @@ function CurrentMenu() {
               <Button
                 variant="outline"
                 size="sm"
-                disabled={!token || !user}
                 onClick={handleDeleteMenu}
                 className="text-red-600 hover:bg-red-50"
               >

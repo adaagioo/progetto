@@ -118,36 +118,35 @@ class DocumentParser:
     
     def parse_supplier_name(self, text: str) -> Optional[str]:
         """
-        Extract supplier name (usually near the top of the document)
-        Enhanced for Italian invoices
+        Extract supplier name - enhanced for Italian invoices
+        SAFE: Falls back to original logic if enhanced parsing fails
         """
-        lines = [line.strip() for line in text.split('\n') if line.strip()]
-        
-        # Italian pattern: look for "Destinatario" or customer name in caps
-        # Supplier is typically the customer/recipient in transport documents
-        for i, line in enumerate(lines):
-            # Look for "Destinatario" section
-            if re.search(r'Destinatario.*Intestazione', line, re.IGNORECASE):
-                # Next line often contains the company name
-                if i + 1 < len(lines):
-                    next_line = lines[i + 1].strip()
-                    # Check if it looks like a company name (all caps, ends with SRL/SPA/etc)
-                    if re.match(r'^[A-Z\s]{3,}(?:SRL|SPA|S\.R\.L\.|S\.P\.A\.|S\.N\.C\.|S\.A\.S\.)?$', next_line):
-                        return next_line
-        
-        # Alternative: look for company names with SRL, SPA, etc.
-        company_pattern = r'([A-Z][A-Z\s]{3,}(?:SRL|SPA|S\.R\.L\.|S\.P\.A\.|S\.N\.C\.|S\.A\.S\.))'
-        match = re.search(company_pattern, text)
-        if match:
-            return match.group(1).strip()
-        
-        # Fallback to original logic
-        for i, line in enumerate(lines):
-            if re.search(r'invoice|fattura', line, re.IGNORECASE):
-                if i + 1 < len(lines):
-                    next_line = lines[i + 1]
-                    if len(next_line) > 5 and not re.match(r'^[0-9\s\-\/]+$', next_line):
-                        return next_line
+        try:
+            lines = [line.strip() for line in text.split('\n') if line.strip()]
+            
+            # Italian pattern: look for "Destinatario" or customer name
+            for i, line in enumerate(lines):
+                if re.search(r'Destinatario.*Intestazione', line, re.IGNORECASE):
+                    if i + 1 < len(lines):
+                        next_line = lines[i + 1].strip()
+                        if re.match(r'^[A-Z\s]{3,}(?:SRL|SPA|S\.R\.L\.|S\.P\.A\.|S\.N\.C\.|S\.A\.S\.)?$', next_line):
+                            return next_line
+            
+            # Look for company names with SRL, SPA, etc.
+            company_pattern = r'([A-Z][A-Z\s]{3,}(?:SRL|SPA|S\.R\.L\.|S\.P\.A\.|S\.N\.C\.|S\.A\.S\.))'
+            match = re.search(company_pattern, text)
+            if match:
+                return match.group(1).strip()
+            
+            # Fallback to original logic
+            for i, line in enumerate(lines):
+                if re.search(r'invoice|fattura', line, re.IGNORECASE):
+                    if i + 1 < len(lines):
+                        next_line = lines[i + 1]
+                        if len(next_line) > 5 and not re.match(r'^[0-9\s\-\/]+$', next_line):
+                            return next_line
+        except Exception as e:
+            logger.warning(f"Supplier name extraction error: {e}")
         return None
     
     def parse_line_items(self, text: str, document_type: str = 'invoice') -> List[Dict[str, Any]]:

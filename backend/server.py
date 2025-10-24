@@ -918,6 +918,177 @@ async def compute_recipe_allergens(items: List[dict], db) -> tuple[List[str], Li
     
     return list(all_allergens), list(all_other_allergens)
 
+async def populate_menu_item_data(menu_item: dict, db) -> dict:
+    """
+    Populate menu item with data from the referenced entity and compute availability.
+    
+    Args:
+        menu_item: MenuItem dict with refType and refId
+        db: Database connection
+        
+    Returns:
+        Enhanced menu_item dict with populated fields
+    """
+    ref_type = menu_item["refType"]
+    ref_id = menu_item["refId"]
+    
+    # Initialize populated fields
+    populated = {
+        "name": None,
+        "category": None,
+        "recipeType": None,
+        "computedCost": None,
+        "allergens": [],
+        "otherAllergens": [],
+        "availabilityStatus": "unknown",  # available, low, out
+        "feasiblePortions": 0
+    }
+    
+    try:
+        if ref_type == "ingredient":
+            ingredient = await db.ingredients.find_one({"id": ref_id}, {"_id": 0})
+            if ingredient:
+                populated["name"] = ingredient["name"]
+                populated["category"] = ingredient.get("category", "food")
+                populated["computedCost"] = ingredient.get("effectiveUnitCost", ingredient.get("unitCost", 0))
+                populated["allergens"] = ingredient.get("allergens", [])
+                populated["otherAllergens"] = ingredient.get("otherAllergens", [])
+                
+                # Availability: check inventory
+                inventory = await db.inventory.find_one({
+                    "ingredientId": ref_id,
+                    "restaurantId": ingredient["restaurantId"]
+                })
+                qty_on_hand = inventory.get("qty", 0) if inventory else 0
+                if qty_on_hand <= 0:
+                    populated["availabilityStatus"] = "out"
+                    populated["feasiblePortions"] = 0
+                elif qty_on_hand < 5:
+                    populated["availabilityStatus"] = "low"
+                    populated["feasiblePortions"] = int(qty_on_hand)
+                else:
+                    populated["availabilityStatus"] = "available"
+                    populated["feasiblePortions"] = int(qty_on_hand)
+                    
+        elif ref_type == "preparation":
+            preparation = await db.preparations.find_one({"id": ref_id}, {"_id": 0})
+            if preparation:
+                populated["name"] = preparation["name"]
+                populated["category"] = "food"  # Preparations are always food
+                populated["computedCost"] = preparation.get("cost", 0)
+                populated["allergens"] = preparation.get("allergens", [])
+                populated["otherAllergens"] = preparation.get("otherAllergens", [])
+                
+                # Availability: check if ingredients are available for 1 portion
+                can_make = True
+                min_portions = float('inf')
+                
+                for item in preparation.get("items", []):
+                    ingredient = await db.ingredients.find_one({"id": item["ingredientId"]}, {"_id": 0})
+                    if not ingredient:
+                        can_make = False
+                        break
+                    
+                    inventory = await db.inventory.find_one({
+                        "ingredientId": item["ingredientId"],
+                        "restaurantId": preparation["restaurantId"]
+                    })
+                    qty_on_hand = inventory.get("qty", 0) if inventory else 0
+                    
+                    # Normalize inventory quantity to match item unit
+                    normalized_qty = normalize_quantity_to_base_unit(
+                        qty_on_hand, 
+                        ingredient.get("unit", "kg"),
+                        item.get("unit", "kg")
+                    )
+                    
+                    if normalized_qty <= 0:
+                        can_make = False
+                        break
+                    
+                    portions_possible = int(normalized_qty / item["qty"]) if item["qty"] > 0 else 0
+                    min_portions = min(min_portions, portions_possible)
+                
+                if not can_make or min_portions == 0:
+                    populated["availabilityStatus"] = "out"
+                    populated["feasiblePortions"] = 0
+                elif min_portions < 5:
+                    populated["availabilityStatus"] = "low"
+                    populated["feasiblePortions"] = min_portions
+                else:
+                    populated["availabilityStatus"] = "available"
+                    populated["feasiblePortions"] = min_portions
+                    
+        elif ref_type == "recipe":
+            recipe = await db.recipes.find_one({"id": ref_id}, {"_id": 0})
+            if recipe:
+                populated["name"] = recipe["name"]
+                populated["category"] = recipe.get("category", "main")
+                populated["recipeType"] = recipe.get("recipeType", "kitchen")
+                populated["computedCost"] = recipe.get("costPerPortion", 0)
+                populated["allergens"] = recipe.get("allergens", [])
+                populated["otherAllergens"] = recipe.get("otherAllergens", [])
+                
+                # Availability: check if all items are available for 1 portion
+                can_make = True
+                min_portions = float('inf')
+                
+                for item in recipe.get("items", []):
+                    if item["type"] == "ingredient":
+                        ingredient = await db.ingredients.find_one({"id": item["itemId"]}, {"_id": 0})
+                        if not ingredient:
+                            can_make = False
+                            break
+                        
+                        inventory = await db.inventory.find_one({
+                            "ingredientId": item["itemId"],
+                            "restaurantId": recipe["restaurantId"]
+                        })
+                        qty_on_hand = inventory.get("qty", 0) if inventory else 0
+                        
+                        # Normalize inventory quantity to match item unit
+                        normalized_qty = normalize_quantity_to_base_unit(
+                            qty_on_hand, 
+                            ingredient.get("unit", "kg"),
+                            item.get("unit", "kg")
+                        )
+                        
+                        if normalized_qty <= 0:
+                            can_make = False
+                            break
+                        
+                        portions_possible = int(normalized_qty / item["qtyPerPortion"]) if item["qtyPerPortion"] > 0 else 0
+                        min_portions = min(min_portions, portions_possible)
+                        
+                    elif item["type"] == "preparation":
+                        # For simplicity, we'll just check if prep exists
+                        # Full recursive check would be more complex
+                        prep = await db.preparations.find_one({"id": item["itemId"]}, {"_id": 0})
+                        if not prep:
+                            can_make = False
+                            break
+                
+                if not can_make or min_portions == 0 or min_portions == float('inf'):
+                    populated["availabilityStatus"] = "out"
+                    populated["feasiblePortions"] = 0
+                elif min_portions < 5:
+                    populated["availabilityStatus"] = "low"
+                    populated["feasiblePortions"] = min_portions if min_portions != float('inf') else 0
+                else:
+                    populated["availabilityStatus"] = "available"
+                    populated["feasiblePortions"] = min_portions if min_portions != float('inf') else 0
+    
+    except Exception as e:
+        logging.error(f"Error populating menu item data: {str(e)}")
+        # Return defaults on error
+        pass
+    
+    # Merge populated data into menu_item
+    menu_item.update(populated)
+    return menu_item
+
+
+
 async def deduct_stock_for_recipe(recipe_id: str, qty: int, restaurant_id: str, db) -> List[dict]:
     """
     Deduct stock for a recipe sale using WAC and prep-first priority.

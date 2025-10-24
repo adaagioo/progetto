@@ -122,7 +122,7 @@ function CurrentMenu() {
 
   useEffect(() => {
     fetchCurrentMenu();
-  }, []);
+  }, [token, user]);
 
   // Update URL when filters change
   useEffect(() => {

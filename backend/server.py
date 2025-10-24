@@ -1137,7 +1137,7 @@ async def deduct_stock_for_recipe(recipe_id: str, qty: int, restaurant_id: str, 
     
     return deductions
 
-async def deduct_preparation_stock(prep_id: str, qty: float, restaurant_id: str, db) -> List[dict]:
+async def deduct_preparation_stock(prep_id: str, qty: float, restaurant_id: str, db, source: str = "consumption", source_id: str = None) -> List[dict]:
     """
     Deduct preparation stock. If insufficient, deduct underlying ingredients.
     
@@ -1146,6 +1146,8 @@ async def deduct_preparation_stock(prep_id: str, qty: float, restaurant_id: str,
         qty: Quantity to deduct
         restaurant_id: Restaurant ID
         db: Database connection
+        source: Source of deduction
+        source_id: ID of source document
         
     Returns:
         List of deductions made
@@ -1163,13 +1165,30 @@ async def deduct_preparation_stock(prep_id: str, qty: float, restaurant_id: str,
         "restaurantId": restaurant_id
     })
     
-    if prep_inventory and prep_inventory.get("qtyOnHand", 0) >= qty:
+    # Use qty field (new schema) with fallback to qtyOnHand (legacy)
+    prep_qty_on_hand = prep_inventory.get("qty", prep_inventory.get("qtyOnHand", 0)) if prep_inventory else 0
+    
+    if prep_inventory and prep_qty_on_hand >= qty:
         # Deduct from preparation stock
-        new_qty = prep_inventory["qtyOnHand"] - qty
+        new_qty = prep_qty_on_hand - qty
         await db.inventory.update_one(
             {"preparationId": prep_id, "restaurantId": restaurant_id},
-            {"$set": {"qtyOnHand": new_qty, "updatedAt": datetime.now(timezone.utc).isoformat()}}
+            {"$set": {"qty": new_qty, "updatedAt": datetime.now(timezone.utc).isoformat()}}
         )
+        
+        # Log movement
+        await db.inventory_movements.insert_one({
+            "id": str(uuid.uuid4()),
+            "restaurantId": restaurant_id,
+            "preparationId": prep_id,
+            "type": "outbound",
+            "source": source,
+            "sourceId": source_id,
+            "qty": -qty,
+            "unit": prep.get("unit", "portions"),
+            "notes": f"Preparation deduction via {source}",
+            "timestamp": datetime.now(timezone.utc).isoformat()
+        })
         
         deductions.append({
             "type": "preparation",
@@ -1182,7 +1201,7 @@ async def deduct_preparation_stock(prep_id: str, qty: float, restaurant_id: str,
     else:
         # Insufficient prep stock → deduct underlying ingredients
         # Calculate how much prep stock we can use (if any)
-        prep_qty_available = prep_inventory.get("qtyOnHand", 0) if prep_inventory else 0
+        prep_qty_available = prep_qty_on_hand
         prep_qty_from_stock = min(prep_qty_available, qty)
         prep_qty_from_ingredients = qty - prep_qty_from_stock
         
@@ -1190,8 +1209,23 @@ async def deduct_preparation_stock(prep_id: str, qty: float, restaurant_id: str,
             # Use available prep stock
             await db.inventory.update_one(
                 {"preparationId": prep_id, "restaurantId": restaurant_id},
-                {"$set": {"qtyOnHand": 0, "updatedAt": datetime.now(timezone.utc).isoformat()}}
+                {"$set": {"qty": 0, "updatedAt": datetime.now(timezone.utc).isoformat()}}
             )
+            
+            # Log movement
+            await db.inventory_movements.insert_one({
+                "id": str(uuid.uuid4()),
+                "restaurantId": restaurant_id,
+                "preparationId": prep_id,
+                "type": "outbound",
+                "source": source,
+                "sourceId": source_id,
+                "qty": -prep_qty_from_stock,
+                "unit": prep.get("unit", "portions"),
+                "notes": f"Partial preparation deduction via {source}",
+                "timestamp": datetime.now(timezone.utc).isoformat()
+            })
+            
             deductions.append({
                 "type": "preparation",
                 "itemId": prep_id,
@@ -1211,7 +1245,8 @@ async def deduct_preparation_stock(prep_id: str, qty: float, restaurant_id: str,
             for prep_item in prep.get("items", []):
                 ingredient_qty_needed = prep_item["qty"] * scale_factor
                 ingredient_deduction = await deduct_ingredient_stock(
-                    prep_item["ingredientId"], ingredient_qty_needed, restaurant_id, db
+                    prep_item["ingredientId"], ingredient_qty_needed, restaurant_id, db,
+                    source=source, source_id=source_id
                 )
                 deductions.append(ingredient_deduction)
     

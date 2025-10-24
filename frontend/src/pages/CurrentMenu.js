@@ -609,6 +609,7 @@ function CurrentMenu() {
               <Button
                 variant="outline"
                 size="sm"
+                disabled={!token || !user}
                 onClick={() => {
                   setMenuForm({
                     name: currentMenu.name,
@@ -626,6 +627,7 @@ function CurrentMenu() {
               <Button
                 variant="outline"
                 size="sm"
+                disabled={!token || !user}
                 onClick={() => {
                   fetchAvailableItems();
                   setShowAddItems(true);
@@ -637,6 +639,7 @@ function CurrentMenu() {
               <Button
                 variant="outline"
                 size="sm"
+                disabled={!token || !user}
                 onClick={handleDeleteMenu}
                 className="text-red-600 hover:bg-red-50"
               >

@@ -24,9 +24,13 @@ function useDebounce(value, delay) {
 
 function CurrentMenu() {
   const { t } = useTranslation();
-  const { token, user } = useContext(AuthContext);
+  const { user } = useContext(AuthContext);
   const { formatCurrency } = useCurrency();
   const [searchParams, setSearchParams] = useSearchParams();
+  
+  // Get token from localStorage (same as rest of app)
+  const token = localStorage.getItem('token');
+  const isAuthReady = !!user && !!token;
 
   const [currentMenu, setCurrentMenu] = useState(null);
   const [menuItems, setMenuItems] = useState([]);

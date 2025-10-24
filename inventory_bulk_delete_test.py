@@ -12,7 +12,7 @@ from datetime import datetime, timezone
 from typing import Dict, List, Any
 
 # Configuration
-BACKEND_URL = os.getenv('REACT_APP_BACKEND_URL', 'https://bulk-delete-rbac.preview.emergentagent.com')
+BACKEND_URL = os.getenv('REACT_APP_BACKEND_URL', 'https://ristobrain-menu.preview.emergentagent.com')
 API_BASE = f"{BACKEND_URL}/api"
 
 # Test credentials

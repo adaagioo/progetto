@@ -11,7 +11,7 @@ import uuid
 from typing import Dict, Any, Optional, List
 
 # Configuration
-BACKEND_URL = "https://bulk-delete-rbac.preview.emergentagent.com/api"
+BACKEND_URL = "https://ristobrain-menu.preview.emergentagent.com/api"
 TEST_CREDENTIALS = {
     "admin": {"email": "admin@test.com", "password": "admin123"},
     "manager": {"email": "manager@test.com", "password": "manager123"},

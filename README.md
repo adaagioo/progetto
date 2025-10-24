@@ -54,9 +54,9 @@ python3 seed_test_data.py
 - `staff@test.com` / `staff123` (Waiter)
 
 ### Access Application
-- **URL**: https://bulk-delete-rbac.preview.emergentagent.com
-- **Health**: https://bulk-delete-rbac.preview.emergentagent.com/api/health
-- **API Docs**: https://bulk-delete-rbac.preview.emergentagent.com/docs
+- **URL**: https://ristobrain-menu.preview.emergentagent.com
+- **Health**: https://ristobrain-menu.preview.emergentagent.com/api/health
+- **API Docs**: https://ristobrain-menu.preview.emergentagent.com/docs
 
 ## Database Migration
 

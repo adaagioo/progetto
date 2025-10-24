@@ -23,8 +23,8 @@
 ## 🌐 Staging Environment
 
 ### URLs
-- **Application**: https://bulk-delete-rbac.preview.emergentagent.com
-- **API Base**: https://bulk-delete-rbac.preview.emergentagent.com/api
+- **Application**: https://ristobrain-menu.preview.emergentagent.com
+- **API Base**: https://ristobrain-menu.preview.emergentagent.com/api
 
 ### Test Credentials
 

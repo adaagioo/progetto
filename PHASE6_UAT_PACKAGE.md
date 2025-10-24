@@ -9,7 +9,7 @@
 
 ## 🌐 STAGING ENVIRONMENT
 
-**URL:** `https://bulk-delete-rbac.preview.emergentagent.com`
+**URL:** `https://ristobrain-menu.preview.emergentagent.com`
 
 **Tenant:** Test Restaurant (Multi-restaurant tenant)
 

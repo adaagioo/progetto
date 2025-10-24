@@ -9,7 +9,7 @@ import json
 from datetime import datetime
 
 # Test Configuration
-BASE_URL = "https://bulk-delete-rbac.preview.emergentagent.com/api"
+BASE_URL = "https://ristobrain-menu.preview.emergentagent.com/api"
 
 # Test Credentials
 TEST_CREDENTIALS = {

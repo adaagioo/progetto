@@ -2989,7 +2989,7 @@ async def export_daily_preparations(
     
     prep_map = {p["id"]: p for p in preparations}
     
-    # Build export data
+    # Build export data with ALL required columns
     export_data = []
     for item in prep_list.get("items", []):
         prep = prep_map.get(item["preparationId"], {})
@@ -3007,9 +3007,11 @@ async def export_daily_preparations(
             shelf_life_str = f"{shelf_life.get('value', '-')} {shelf_life.get('unit', '')}"
         
         export_data.append({
+            "date": date,
             "name": item.get("preparationName", prep.get("name", "Unknown")),
-            "plannedPortions": item.get("forecastQty", 0),
-            "toPrepare": to_prepare,
+            "forecast": item.get("forecastQty", 0),
+            "available": item.get("availableQty", 0),
+            "toMake": to_prepare,
             "unit": item.get("unit", "portions"),
             "shelfLife": shelf_life_str,
             "costPerPortion": cost_per_portion,

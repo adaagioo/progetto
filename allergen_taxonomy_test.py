@@ -10,7 +10,7 @@ import json
 from typing import Dict, Any, List, Optional
 
 # Configuration
-BACKEND_URL = "https://ristobrain-menu.preview.emergentagent.com/api"
+BACKEND_URL = "https://menuflow-8.preview.emergentagent.com/api"
 TEST_CREDENTIALS = {
     "admin": {"email": "admin@test.com", "password": "admin123"}
 }

@@ -6,7 +6,7 @@ Check actual ingredient data from the backend
 import asyncio
 import aiohttp
 
-BASE_URL = "https://ristobrain-menu.preview.emergentagent.com/api"
+BASE_URL = "https://menuflow-8.preview.emergentagent.com/api"
 
 async def check_ingredients():
     async with aiohttp.ClientSession() as session:

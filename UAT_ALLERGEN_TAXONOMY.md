@@ -23,8 +23,8 @@
 ## 🌐 Staging Environment
 
 ### URLs
-- **Application**: https://ristobrain-menu.preview.emergentagent.com
-- **API Base**: https://ristobrain-menu.preview.emergentagent.com/api
+- **Application**: https://menuflow-8.preview.emergentagent.com
+- **API Base**: https://menuflow-8.preview.emergentagent.com/api
 
 ### Test Credentials
 

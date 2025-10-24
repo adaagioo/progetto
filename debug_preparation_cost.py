@@ -7,7 +7,7 @@ import asyncio
 import aiohttp
 import json
 
-BASE_URL = "https://ristobrain-menu.preview.emergentagent.com/api"
+BASE_URL = "https://menuflow-8.preview.emergentagent.com/api"
 
 async def debug_preparation_cost():
     async with aiohttp.ClientSession() as session:

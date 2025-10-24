@@ -54,9 +54,9 @@ python3 seed_test_data.py
 - `staff@test.com` / `staff123` (Waiter)
 
 ### Access Application
-- **URL**: https://ristobrain-menu.preview.emergentagent.com
-- **Health**: https://ristobrain-menu.preview.emergentagent.com/api/health
-- **API Docs**: https://ristobrain-menu.preview.emergentagent.com/docs
+- **URL**: https://menuflow-8.preview.emergentagent.com
+- **Health**: https://menuflow-8.preview.emergentagent.com/api/health
+- **API Docs**: https://menuflow-8.preview.emergentagent.com/docs
 
 ## Database Migration
 

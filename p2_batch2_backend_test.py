@@ -10,7 +10,7 @@ import uuid
 from datetime import datetime, timezone
 
 # Configuration
-BACKEND_URL = "https://ristobrain-menu.preview.emergentagent.com/api"
+BACKEND_URL = "https://menuflow-8.preview.emergentagent.com/api"
 
 # Test credentials
 ADMIN_CREDENTIALS = {"email": "admin@test.com", "password": "admin123"}

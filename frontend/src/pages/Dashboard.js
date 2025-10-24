@@ -38,8 +38,20 @@ function Dashboard() {
 
   const fetchValuation = async () => {
     try {
-      const response = await axios.get(`${API}/inventory/valuation/summary`);
-      setValuationSummary(response.data);
+      // Fetch all category valuations in parallel
+      const [foodRes, beverageRes, nonfoodRes] = await Promise.all([
+        axios.get(`${API}/inventory/valuation/food`),
+        axios.get(`${API}/inventory/valuation/beverage`),
+        axios.get(`${API}/inventory/valuation/nonfood`)
+      ]);
+      
+      setValuationSummary({
+        categories: {
+          food: foodRes.data.value || 0,
+          beverage: beverageRes.data.value || 0,
+          nofood: nonfoodRes.data.value || 0
+        }
+      });
     } catch (error) {
       console.error('Failed to load valuation:', error);
     }

@@ -18,6 +18,7 @@ import DocumentImport from './pages/DocumentImport';
 import Preparations from './pages/Preparations';
 import PrepList from './pages/PrepList';
 import OrderList from './pages/OrderList';
+import CurrentMenu from './pages/CurrentMenu';
 import ForgotPassword from './pages/ForgotPassword';
 import ResetPassword from './pages/ResetPassword';
 import Layout from './components/Layout';

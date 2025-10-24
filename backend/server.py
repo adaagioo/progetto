@@ -5552,6 +5552,16 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+# Add request ID middleware for tracking
+@app.middleware("http")
+async def add_request_id(request, call_next):
+    import uuid
+    request_id = str(uuid.uuid4())
+    response = await call_next(request)
+    response.headers["x-request-id"] = request_id
+    return response
+
+
 logging.basicConfig(
     level=logging.INFO,
     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'

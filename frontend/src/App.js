@@ -141,6 +141,10 @@ function App() {
             element={user ? <Layout><Preparations /></Layout> : <Navigate to="/login" />}
           />
           <Route
+            path="/current-menu"
+            element={user ? <Layout><CurrentMenu /></Layout> : <Navigate to="/login" />}
+          />
+          <Route
             path="/prep-list"
             element={user ? <Layout><PrepList /></Layout> : <Navigate to="/login" />}
           />

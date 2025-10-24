@@ -142,6 +142,9 @@ function OCRUploadButton({
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
             <DialogTitle>{t('ocr.processing') || 'Processing Document...'}</DialogTitle>
+            <DialogDescription>
+              {t('ocr.dialogDescription') || 'Please wait while we extract text and data from your document using OCR.'}
+            </DialogDescription>
           </DialogHeader>
           <div className="flex flex-col items-center justify-center py-8 space-y-4">
             {processing ? (

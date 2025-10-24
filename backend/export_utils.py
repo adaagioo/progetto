@@ -366,6 +366,7 @@ def generate_purchase_orders_xlsx(
     header_fill = PatternFill(start_color="059669", end_color="059669", fill_type="solid")
     subtotal_fill = PatternFill(start_color="fef3c7", end_color="fef3c7", fill_type="solid")
     supplier_fill = PatternFill(start_color="e0f2fe", end_color="e0f2fe", fill_type="solid")
+    grand_fill = PatternFill(start_color="dcfce7", end_color="dcfce7", fill_type="solid")
     border = Border(
         left=Side(style='thin'),
         right=Side(style='thin'),
@@ -374,7 +375,7 @@ def generate_purchase_orders_xlsx(
     )
     
     # Title
-    ws.merge_cells('A1:H1')
+    ws.merge_cells('A1:I1')
     ws['A1'] = f"{restaurant_name} - Purchase Orders"
     ws['A1'].font = Font(bold=True, size=14)
     ws['A1'].alignment = Alignment(horizontal='center')
@@ -385,18 +386,19 @@ def generate_purchase_orders_xlsx(
     current_row = 4
     grand_total = 0
     
-    # Headers
+    # Headers with ALL required columns
     if locale == 'en':
-        headers = ['Item', 'Qty to Order', 'Unit', 'Unit Price', 'Extended Cost', 'Delivery Date', 'Driver', 'Notes']
+        headers = ['Supplier', 'Item (Code)', 'Qty', 'Unit', 'Unit Price', 'Extended Cost', 'Delivery Date', 'Reason/Driver', 'Notes']
     else:
-        headers = ['Articolo', 'Qtà da Ordinare', 'Unità', 'Prezzo Unitario', 'Costo Totale', 'Data Consegna', 'Motivo', 'Note']
+        headers = ['Fornitore', 'Articolo (Cod.)', 'Qtà', 'Unità', 'Prezzo', 'Costo Totale', 'Data Cons.', 'Motivo', 'Note']
     
     for supplier_name, items in data.items():
-        # Supplier header
-        ws.merge_cells(f'A{current_row}:H{current_row}')
-        ws[f'A{current_row}'] = f"Supplier: {supplier_name}"
+        # Supplier section header
+        ws.merge_cells(f'A{current_row}:I{current_row}')
+        ws[f'A{current_row}'] = f"{'Supplier' if locale == 'en' else 'Fornitore'}: {supplier_name}"
         ws[f'A{current_row}'].font = Font(bold=True, size=12)
         ws[f'A{current_row}'].fill = supplier_fill
+        ws[f'A{current_row}'].alignment = Alignment(horizontal='left')
         current_row += 1
         
         # Column headers
@@ -413,21 +415,25 @@ def generate_purchase_orders_xlsx(
         for item in items:
             qty = item.get('qtyToOrder', 0)
             unit_price = item.get('unitPrice', 0)
-            extended = qty * unit_price
+            extended = item.get('extendedCost', qty * unit_price)
             supplier_total += extended
             
-            ws.cell(row=current_row, column=1, value=item.get('itemName', ''))
-            ws.cell(row=current_row, column=2, value=qty)
-            ws.cell(row=current_row, column=3, value=item.get('unit', ''))
-            ws.cell(row=current_row, column=4, value=unit_price)
-            ws.cell(row=current_row, column=4).number_format = '€#,##0.00'
-            ws.cell(row=current_row, column=5, value=extended)
-            ws.cell(row=current_row, column=5).number_format = '€#,##0.00'
-            ws.cell(row=current_row, column=6, value=item.get('deliveryDate', ''))
-            ws.cell(row=current_row, column=7, value=item.get('driver', ''))
-            ws.cell(row=current_row, column=8, value=item.get('notes', ''))
+            item_code = item.get('code', '')
+            item_display = f"{item.get('itemName', '')} ({item_code})" if item_code else item.get('itemName', '')
             
-            for col in range(1, 9):
+            ws.cell(row=current_row, column=1, value=supplier_name)
+            ws.cell(row=current_row, column=2, value=item_display)
+            ws.cell(row=current_row, column=3, value=round(qty, 1))
+            ws.cell(row=current_row, column=4, value=item.get('unit', ''))
+            ws.cell(row=current_row, column=5, value=unit_price)
+            ws.cell(row=current_row, column=5).number_format = '€#,##0.00'
+            ws.cell(row=current_row, column=6, value=extended)
+            ws.cell(row=current_row, column=6).number_format = '€#,##0.00'
+            ws.cell(row=current_row, column=7, value=item.get('deliveryDate', ''))
+            ws.cell(row=current_row, column=8, value=item.get('driver', ''))
+            ws.cell(row=current_row, column=9, value=item.get('notes', ''))
+            
+            for col in range(1, 10):
                 ws.cell(row=current_row, column=col).border = border
             
             current_row += 1
@@ -436,11 +442,11 @@ def generate_purchase_orders_xlsx(
         subtotal_label = 'SUBTOTAL' if locale == 'en' else 'SUBTOTALE'
         ws.cell(row=current_row, column=1, value=subtotal_label)
         ws.cell(row=current_row, column=1).font = Font(bold=True)
-        ws.cell(row=current_row, column=5, value=supplier_total)
-        ws.cell(row=current_row, column=5).number_format = '€#,##0.00'
-        ws.cell(row=current_row, column=5).font = Font(bold=True)
+        ws.cell(row=current_row, column=6, value=supplier_total)
+        ws.cell(row=current_row, column=6).number_format = '€#,##0.00'
+        ws.cell(row=current_row, column=6).font = Font(bold=True)
         
-        for col in range(1, 9):
+        for col in range(1, 10):
             ws.cell(row=current_row, column=col).fill = subtotal_fill
             ws.cell(row=current_row, column=col).border = border
         
@@ -448,16 +454,29 @@ def generate_purchase_orders_xlsx(
         grand_total += supplier_total
     
     # Grand total
+    ws.merge_cells(f'A{current_row}:E{current_row}')
     grand_total_label = 'GRAND TOTAL' if locale == 'en' else 'TOTALE GENERALE'
-    ws.cell(row=current_row, column=1, value=grand_total_label)
-    ws.cell(row=current_row, column=1).font = Font(bold=True, size=12)
-    ws.cell(row=current_row, column=5, value=grand_total)
-    ws.cell(row=current_row, column=5).number_format = '€#,##0.00'
-    ws.cell(row=current_row, column=5).font = Font(bold=True, size=12)
+    ws[f'A{current_row}'] = grand_total_label
+    ws[f'A{current_row}'].font = Font(bold=True, size=12)
+    ws[f'A{current_row}'].alignment = Alignment(horizontal='right')
+    ws.cell(row=current_row, column=6, value=grand_total)
+    ws.cell(row=current_row, column=6).number_format = '€#,##0.00'
+    ws.cell(row=current_row, column=6).font = Font(bold=True, size=12)
+    
+    for col in range(1, 10):
+        ws.cell(row=current_row, column=col).fill = grand_fill
+        ws.cell(row=current_row, column=col).border = border
     
     # Column widths
-    ws.column_dimensions['A'].width = 25
-    ws.column_dimensions['B'].width = 12
+    ws.column_dimensions['A'].width = 18
+    ws.column_dimensions['B'].width = 28
+    ws.column_dimensions['C'].width = 8
+    ws.column_dimensions['D'].width = 8
+    ws.column_dimensions['E'].width = 12
+    ws.column_dimensions['F'].width = 12
+    ws.column_dimensions['G'].width = 12
+    ws.column_dimensions['H'].width = 25
+    ws.column_dimensions['I'].width = 20
     ws.column_dimensions['C'].width = 10
     ws.column_dimensions['D'].width = 14
     ws.column_dimensions['E'].width = 14

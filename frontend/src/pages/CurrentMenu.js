@@ -490,6 +490,14 @@ function CurrentMenu() {
     }
 
     try {
+      const url = `${backendUrl}/api/menu/${currentMenu.id}/items`;
+      console.log('[CurrentMenu] Adding items at:', url);
+      
+      if (!token) {
+        alert('No authentication token. Please log in again.');
+        return;
+      }
+
       const itemsToAdd = selectedItems.map((item) => ({
         refType: item.refType,
         refId: item.id,
@@ -499,34 +507,52 @@ function CurrentMenu() {
         isActive: true,
       }));
 
-      const response = await fetch(`${backendUrl}/api/menu/${currentMenu.id}/items`, {
+      const response = await fetch(url, {
         method: 'POST',
         headers: {
+          'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json',
-          Authorization: `Bearer ${token}`,
         },
         body: JSON.stringify(itemsToAdd),
       });
 
-      if (!response.ok) {
-        let errorMessage = 'Failed to add items';
-        try {
-          const error = await response.json();
-          errorMessage = error.detail || errorMessage;
-        } catch (e) {
-          // If response is not JSON, use default message
-        }
-        throw new Error(errorMessage);
+      const requestId = response.headers.get('x-request-id');
+      console.log('[CurrentMenu] POST /api/menu/{id}/items - RequestId:', requestId || 'undefined');
+
+      if (response.status === 401) {
+        alert('Session expired or unauthorized. Please re-authenticate.');
+        return;
       }
 
-      // Consume the response body
+      if (!response.ok) {
+        const contentType = response.headers.get('content-type');
+        let errorMessage = 'Failed to add items';
+        
+        if (contentType && contentType.includes('application/json')) {
+          try {
+            const error = await response.json();
+            errorMessage = error.detail || errorMessage;
+          } catch (e) {
+            errorMessage = `${errorMessage} (${response.status} ${response.statusText})`;
+          }
+        } else {
+          errorMessage = `${errorMessage} (${response.status} ${response.statusText})`;
+        }
+        
+        console.error('[CurrentMenu] Add items failed:', errorMessage, 'RequestId:', requestId);
+        alert(t('currentMenu.error.addItems') + ': ' + errorMessage + (requestId ? ` [${requestId}]` : ''));
+        return;
+      }
+
       await response.json();
+      console.log('[CurrentMenu] Items added successfully. RequestId:', requestId);
 
       setShowAddItems(false);
       setSelectedItems([]);
       fetchCurrentMenu();
-      alert(t('currentMenu.success.itemsAdded'));
+      alert(t('currentMenu.success.itemsAdded') + (requestId ? ` [${requestId}]` : ''));
     } catch (err) {
+      console.error('[CurrentMenu] handleAddItems error:', err);
       alert(t('currentMenu.error.addItems') + ': ' + err.message);
     }
   };

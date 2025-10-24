@@ -3138,6 +3138,8 @@ async def create_sales(sales_data: SalesCreate, current_user: dict = Depends(get
     if not sales_data.lines or len(sales_data.lines) == 0:
         raise HTTPException(status_code=422, detail="Sales must have at least one line item")
     
+    sales_id = str(uuid.uuid4())
+    
     # Validate all recipes exist
     all_deductions = []
     for line in sales_data.lines:
@@ -3149,11 +3151,11 @@ async def create_sales(sales_data: SalesCreate, current_user: dict = Depends(get
         
         # Deduct stock for this recipe sale
         deductions = await deduct_stock_for_recipe(
-            line.recipeId, line.qty, current_user["restaurantId"], db
+            line.recipeId, line.qty, current_user["restaurantId"], db,
+            source="sale", source_id=sales_id
         )
         all_deductions.extend(deductions)
     
-    sales_id = str(uuid.uuid4())
     sales = {
         "id": sales_id,
         "restaurantId": current_user["restaurantId"],

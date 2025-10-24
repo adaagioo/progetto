@@ -506,13 +506,12 @@ function RecipesEnhanced() {
                       required
                     />
                   </div>
-                  <div>
+                  <div className="hidden">
                     <Label htmlFor="category">{t('recipes.category') || 'Category'} *</Label>
                     <Input
                       id="category"
                       value={formData.category}
                       onChange={(e) => setFormData({ ...formData, category: e.target.value })}
-                      required
                     />
                   </div>
                   <div>

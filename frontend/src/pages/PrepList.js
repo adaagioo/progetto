@@ -249,96 +249,96 @@ function PrepList() {
             {prepList && prepList.items && prepList.items.length > 0 && (
               <div className="flex gap-2">
                 <button
-                  onClick={async () => {
+                  onClick={() => {
                     const token = localStorage.getItem('token');
                     const locale = localStorage.getItem('i18nextLng') || 'en';
                     const url = `${process.env.REACT_APP_BACKEND_URL}/api/prep-list/export?date=${targetDate}&format=pdf&locale=${locale}`;
                     
                     console.log('Exporting PrepList PDF:', url);
                     
-                    try {
-                      const response = await fetch(url, {
-                        method: 'GET',
-                        headers: {
-                          'Authorization': `Bearer ${token}`
-                        }
-                      });
+                    const xhr = new XMLHttpRequest();
+                    xhr.open('GET', url, true);
+                    xhr.setRequestHeader('Authorization', `Bearer ${token}`);
+                    xhr.responseType = 'blob';
+                    
+                    xhr.onload = function() {
+                      const requestId = xhr.getResponseHeader('x-request-id') || 'unknown';
+                      console.log(`Export response - Status: ${xhr.status}, RequestId: ${requestId}`);
                       
-                      const requestId = response.headers.get('x-request-id') || 'unknown';
-                      
-                      if (!response.ok) {
-                        console.error(`Export failed - Status: ${response.status}, RequestId: ${requestId}`);
-                        if (response.status === 404) {
-                          toast.warning(t('export.noData') || 'No data to export for selected date');
-                        } else {
-                          toast.error(`Export failed (Request ID: ${requestId})`);
-                        }
-                        return;
+                      if (xhr.status === 200) {
+                        const blob = xhr.response;
+                        const downloadUrl = window.URL.createObjectURL(blob);
+                        const a = document.createElement('a');
+                        a.href = downloadUrl;
+                        a.download = `DailyPreparations_${targetDate}.pdf`;
+                        document.body.appendChild(a);
+                        a.click();
+                        window.URL.revokeObjectURL(downloadUrl);
+                        document.body.removeChild(a);
+                        toast.success(t('export.success') || 'Export successful');
+                      } else if (xhr.status === 404) {
+                        console.warn(`No data to export. RequestId: ${requestId}`);
+                        toast.warning(t('export.noData') || 'No data to export for selected date');
+                      } else {
+                        console.error(`Export failed - Status: ${xhr.status}, RequestId: ${requestId}`);
+                        toast.error(`Export failed (Request ID: ${requestId})`);
                       }
-                      
-                      console.log(`Export success - Status: ${response.status}, RequestId: ${requestId}`);
-                      const blob = await response.blob();
-                      const downloadUrl = window.URL.createObjectURL(blob);
-                      const a = document.createElement('a');
-                      a.href = downloadUrl;
-                      a.download = `DailyPreparations_${targetDate}.pdf`;
-                      document.body.appendChild(a);
-                      a.click();
-                      window.URL.revokeObjectURL(downloadUrl);
-                      document.body.removeChild(a);
-                      toast.success(t('export.success') || 'Export successful');
-                    } catch (error) {
-                      console.error('Export error:', error);
-                      toast.error('Export failed: ' + error.message);
-                    }
+                    };
+                    
+                    xhr.onerror = function() {
+                      console.error('Export network error');
+                      toast.error('Export failed: Network error');
+                    };
+                    
+                    xhr.send();
                   }}
                   className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 flex items-center gap-2"
                 >
                   {t('export.pdf')}
                 </button>
                 <button
-                  onClick={async () => {
+                  onClick={() => {
                     const token = localStorage.getItem('token');
                     const locale = localStorage.getItem('i18nextLng') || 'en';
                     const url = `${process.env.REACT_APP_BACKEND_URL}/api/prep-list/export?date=${targetDate}&format=xlsx&locale=${locale}`;
                     
                     console.log('Exporting PrepList XLSX:', url);
                     
-                    try {
-                      const response = await fetch(url, {
-                        method: 'GET',
-                        headers: {
-                          'Authorization': `Bearer ${token}`
-                        }
-                      });
+                    const xhr = new XMLHttpRequest();
+                    xhr.open('GET', url, true);
+                    xhr.setRequestHeader('Authorization', `Bearer ${token}`);
+                    xhr.responseType = 'blob';
+                    
+                    xhr.onload = function() {
+                      const requestId = xhr.getResponseHeader('x-request-id') || 'unknown';
+                      console.log(`Export response - Status: ${xhr.status}, RequestId: ${requestId}`);
                       
-                      const requestId = response.headers.get('x-request-id') || 'unknown';
-                      
-                      if (!response.ok) {
-                        console.error(`Export failed - Status: ${response.status}, RequestId: ${requestId}`);
-                        if (response.status === 404) {
-                          toast.warning(t('export.noData') || 'No data to export for selected date');
-                        } else {
-                          toast.error(`Export failed (Request ID: ${requestId})`);
-                        }
-                        return;
+                      if (xhr.status === 200) {
+                        const blob = xhr.response;
+                        const downloadUrl = window.URL.createObjectURL(blob);
+                        const a = document.createElement('a');
+                        a.href = downloadUrl;
+                        a.download = `DailyPreparations_${targetDate}.xlsx`;
+                        document.body.appendChild(a);
+                        a.click();
+                        window.URL.revokeObjectURL(downloadUrl);
+                        document.body.removeChild(a);
+                        toast.success(t('export.success') || 'Export successful');
+                      } else if (xhr.status === 404) {
+                        console.warn(`No data to export. RequestId: ${requestId}`);
+                        toast.warning(t('export.noData') || 'No data to export for selected date');
+                      } else {
+                        console.error(`Export failed - Status: ${xhr.status}, RequestId: ${requestId}`);
+                        toast.error(`Export failed (Request ID: ${requestId})`);
                       }
-                      
-                      console.log(`Export success - Status: ${response.status}, RequestId: ${requestId}`);
-                      const blob = await response.blob();
-                      const downloadUrl = window.URL.createObjectURL(blob);
-                      const a = document.createElement('a');
-                      a.href = downloadUrl;
-                      a.download = `DailyPreparations_${targetDate}.xlsx`;
-                      document.body.appendChild(a);
-                      a.click();
-                      window.URL.revokeObjectURL(downloadUrl);
-                      document.body.removeChild(a);
-                      toast.success(t('export.success') || 'Export successful');
-                    } catch (error) {
-                      console.error('Export error:', error);
-                      toast.error('Export failed: ' + error.message);
-                    }
+                    };
+                    
+                    xhr.onerror = function() {
+                      console.error('Export network error');
+                      toast.error('Export failed: Network error');
+                    };
+                    
+                    xhr.send();
                   }}
                   className="px-4 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 flex items-center gap-2"
                 >

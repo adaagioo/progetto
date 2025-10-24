@@ -434,13 +434,13 @@ function CurrentMenu() {
   const fetchAvailableItems = async () => {
     try {
       const [ingredientsRes, preparationsRes, recipesRes] = await Promise.all([
-        fetch(`${backendUrl}/api/ingredients`, {
+        fetch(`${API}/ingredients`, {
           headers: { Authorization: `Bearer ${token}` },
         }),
-        fetch(`${backendUrl}/api/preparations`, {
+        fetch(`${API}/preparations`, {
           headers: { Authorization: `Bearer ${token}` },
         }),
-        fetch(`${backendUrl}/api/recipes`, {
+        fetch(`${API}/recipes`, {
           headers: { Authorization: `Bearer ${token}` },
         }),
       ]);
@@ -455,6 +455,7 @@ function CurrentMenu() {
         ...recipes.map((r) => ({ ...r, refType: 'recipe' })),
       ];
 
+      console.log('[CurrentMenu] Loaded available items:', allItems.length);
       setAvailableItems(allItems);
     } catch (err) {
       console.error('Failed to load available items:', err);

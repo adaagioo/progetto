@@ -3193,7 +3193,8 @@ async def create_wastage(wastage_data: WastageCreate, current_user: dict = Depen
     elif wastage_data.type == "preparation":
         # Deduct preparation stock
         prep_deductions = await deduct_preparation_stock(
-            wastage_data.itemId, wastage_data.qty, current_user["restaurantId"], db
+            wastage_data.itemId, wastage_data.qty, current_user["restaurantId"], db,
+            source="waste", source_id=wastage_id
         )
         deductions.extend(prep_deductions)
         
@@ -3209,7 +3210,8 @@ async def create_wastage(wastage_data: WastageCreate, current_user: dict = Depen
     elif wastage_data.type == "recipe":
         # Deduct recipe items (full dish waste)
         recipe_deductions = await deduct_stock_for_recipe(
-            wastage_data.itemId, int(wastage_data.qty), current_user["restaurantId"], db
+            wastage_data.itemId, int(wastage_data.qty), current_user["restaurantId"], db,
+            source="waste", source_id=wastage_id
         )
         deductions.extend(recipe_deductions)
         
@@ -3224,7 +3226,6 @@ async def create_wastage(wastage_data: WastageCreate, current_user: dict = Depen
             # (simplified: we'll use the recipe cost if available)
             cost_impact = 0  # TODO: Calculate from recipe items
     
-    wastage_id = str(uuid.uuid4())
     wastage = {
         "id": wastage_id,
         "restaurantId": current_user["restaurantId"],

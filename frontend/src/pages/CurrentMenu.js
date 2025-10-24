@@ -460,9 +460,14 @@ function CurrentMenu() {
       return;
     }
 
+    if (!token || !user) {
+      alert('Please sign in to add items.');
+      return;
+    }
+
     try {
-      const url = `${backendUrl}/api/menu/${currentMenu.id}/items`;
-      console.log('[CurrentMenu] Adding items at:', url);
+      const url = `${API}/menu/${currentMenu.id}/items`;
+      console.log('[CurrentMenu] POST (add items)', url);
 
       const itemsToAdd = selectedItems.map((item) => ({
         refType: item.refType,
@@ -482,44 +487,36 @@ function CurrentMenu() {
         body: JSON.stringify(itemsToAdd),
       });
 
-      const requestId = response.headers.get('x-request-id');
-      console.log('[CurrentMenu] POST /api/menu/{id}/items - RequestId:', requestId || 'undefined');
+      const requestId = response.headers.get('x-request-id') || 'undefined';
+      const contentType = response.headers.get('content-type') || '';
 
       if (response.status === 401) {
-        alert('Session expired or unauthorized. Please re-authenticate.');
+        alert('Session expired or unauthorized. Please sign in again.');
         return;
       }
 
       if (!response.ok) {
-        const contentType = response.headers.get('content-type');
-        let errorMessage = 'Failed to add items';
-        
-        if (contentType && contentType.includes('application/json')) {
+        let errorMessage = `HTTP ${response.status}`;
+        if (contentType.includes('application/json')) {
           try {
-            const error = await response.json();
-            errorMessage = error.detail || errorMessage;
-          } catch (e) {
-            errorMessage = `${errorMessage} (${response.status} ${response.statusText})`;
-          }
-        } else {
-          errorMessage = `${errorMessage} (${response.status} ${response.statusText})`;
+            const errorData = await response.json();
+            errorMessage = errorData.detail || errorData.message || errorMessage;
+          } catch (e) {}
         }
-        
-        console.error('[CurrentMenu] Add items failed:', errorMessage, 'RequestId:', requestId);
-        alert(t('currentMenu.error.addItems') + ': ' + errorMessage + (requestId ? ` [${requestId}]` : ''));
+        alert(`${t('currentMenu.error.addItems')}: ${errorMessage} [${requestId}]`);
         return;
       }
 
       await response.json();
-      console.log('[CurrentMenu] Items added successfully. RequestId:', requestId);
+      console.log('[CurrentMenu] Items added. RequestId:', requestId);
 
       setShowAddItems(false);
       setSelectedItems([]);
       fetchCurrentMenu();
-      alert(t('currentMenu.success.itemsAdded') + (requestId ? ` [${requestId}]` : ''));
+      alert(`${t('currentMenu.success.itemsAdded')} [${requestId}]`);
     } catch (err) {
       console.error('[CurrentMenu] handleAddItems error:', err);
-      alert(t('currentMenu.error.addItems') + ': ' + err.message);
+      alert(`${t('currentMenu.error.addItems')}: ${err.message}`);
     }
   };
 

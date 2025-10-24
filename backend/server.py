@@ -2562,7 +2562,8 @@ async def get_inventory_valuation(current_user: dict = Depends(get_current_user)
             continue
         
         qty = record.get("qty", 0)
-        unit_cost = record.get("unitCost", 0)
+        # Try effectiveUnitCost first (from Receiving), fallback to unitCost
+        unit_cost = record.get("effectiveUnitCost", record.get("unitCost", 0))
         
         if ingredient_id not in valuation_data:
             valuation_data[ingredient_id] = {

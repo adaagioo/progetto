@@ -4616,6 +4616,7 @@ async def create_receiving(receiving: ReceivingCreate, current_user: dict = Depe
                     )
                 else:
                     # Create new inventory record
+                    logging.info(f"Creating new inventory for ingredient {line.ingredientId} with unit price {line.unitPrice}")
                     inventory_record = {
                         "id": str(uuid.uuid4()),
                         "restaurantId": current_user["restaurantId"],
@@ -4624,11 +4625,12 @@ async def create_receiving(receiving: ReceivingCreate, current_user: dict = Depe
                         "unit": ingredient.get("unit", "kg"),
                         "effectiveUnitCost": line.unitPrice,
                         "location": receiving.category,  # Use category as location (food/beverage/nofood)
-                        "expiryDate": line.expiryDate,
+                        "expiryDate": line.expiryDate if hasattr(line, 'expiryDate') else None,
                         "lastReceived": datetime.now(timezone.utc).isoformat(),
                         "createdAt": datetime.now(timezone.utc).isoformat(),
                         "updatedAt": None
                     }
+                    logging.info(f"Inventory record to insert: {inventory_record}")
                     
                     await db.inventory.insert_one(inventory_record)
                 

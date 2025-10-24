@@ -4850,10 +4850,31 @@ test_plan:
   test_priority: "high_first"
 
 agent_communication:
-    -agent: "main"
-    -message: "Communication message between agents"
-    -agent: "testing"
-    -message: |
+  - agent: "main"
+    message: |
+      CURRENT MENU formatCurrency FIX COMPLETED - READY FOR TESTING
+      
+      Fixed the runtime error "formatCurrency is not a function" in the Current Menu Add Items flow.
+      
+      ROOT CAUSE: CurrentMenu.js was trying to destructure { formatCurrency } from useCurrency(), but the CurrencyContext only exports { currency, locale, format, formatMinor }.
+      
+      FIX APPLIED: Changed to destructure { formatMinor } instead, matching the pattern used in Inventory.js and Recipes.js.
+      
+      TESTING NEEDED:
+      1. Navigate to Current Menu page
+      2. Click "Add Items" button
+      3. Type in the search field
+      4. Verify search results render without "formatCurrency is not a function" error
+      5. Verify prices are formatted correctly (EUR, 2 decimals)
+      6. Verify main menu table shows cost/price/margin with correct formatting
+      
+      AUTHENTICATION:
+      - Test user: menufix2@test.com (based on previous backend tests)
+      - Current Menu APIs are already tested and working from previous backend testing
+      
+      This is a SURGICAL FIX ONLY - no other code changes made.
+  - agent: "testing"
+    message: |
       🎯 FINAL P0 VERIFICATION COMPLETED - ALL CRITICAL SYSTEMS VERIFIED ✅
       
       📊 COMPREHENSIVE TESTING RESULTS (4/4 tests completed):

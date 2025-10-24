@@ -305,6 +305,10 @@ function OrderList() {
                     const locale = localStorage.getItem('i18nextLng') || 'en';
                     const url = `${process.env.REACT_APP_BACKEND_URL}/api/order-list/export?date=${targetDate}&format=pdf&locale=${locale}`;
                     
+                    // Capture toast and t in closure
+                    const showToast = toast;
+                    const translate = t;
+                    
                     console.log('Exporting OrderList PDF:', url);
                     
                     const xhr = new XMLHttpRequest();
@@ -312,7 +316,7 @@ function OrderList() {
                     xhr.setRequestHeader('Authorization', `Bearer ${token}`);
                     xhr.responseType = 'blob';
                     
-                    xhr.onload = function() {
+                    xhr.onload = () => {
                       const requestId = xhr.getResponseHeader('x-request-id') || 'unknown';
                       console.log(`Export response - Status: ${xhr.status}, RequestId: ${requestId}`);
                       
@@ -326,19 +330,19 @@ function OrderList() {
                         a.click();
                         window.URL.revokeObjectURL(downloadUrl);
                         document.body.removeChild(a);
-                        toast.success(t('export.success') || 'Export successful');
+                        showToast.success(translate('export.success') || 'Export successful');
                       } else if (xhr.status === 404) {
                         console.warn(`No orders to export. RequestId: ${requestId}`);
-                        toast.warning(t('export.noData') || 'No orders to export for selected date');
+                        showToast.warning(translate('export.noData') || 'No orders to export for selected date');
                       } else {
                         console.error(`Export failed - Status: ${xhr.status}, RequestId: ${requestId}`);
-                        toast.error(`Export failed (Request ID: ${requestId})`);
+                        showToast.error(`Export failed (Request ID: ${requestId})`);
                       }
                     };
                     
-                    xhr.onerror = function() {
+                    xhr.onerror = () => {
                       console.error('Export network error');
-                      toast.error('Export failed: Network error');
+                      showToast.error('Export failed: Network error');
                     };
                     
                     xhr.send();
@@ -353,6 +357,10 @@ function OrderList() {
                     const locale = localStorage.getItem('i18nextLng') || 'en';
                     const url = `${process.env.REACT_APP_BACKEND_URL}/api/order-list/export?date=${targetDate}&format=xlsx&locale=${locale}`;
                     
+                    // Capture toast and t in closure
+                    const showToast = toast;
+                    const translate = t;
+                    
                     console.log('Exporting OrderList XLSX:', url);
                     
                     const xhr = new XMLHttpRequest();
@@ -360,7 +368,7 @@ function OrderList() {
                     xhr.setRequestHeader('Authorization', `Bearer ${token}`);
                     xhr.responseType = 'blob';
                     
-                    xhr.onload = function() {
+                    xhr.onload = () => {
                       const requestId = xhr.getResponseHeader('x-request-id') || 'unknown';
                       console.log(`Export response - Status: ${xhr.status}, RequestId: ${requestId}`);
                       
@@ -374,19 +382,19 @@ function OrderList() {
                         a.click();
                         window.URL.revokeObjectURL(downloadUrl);
                         document.body.removeChild(a);
-                        toast.success(t('export.success') || 'Export successful');
+                        showToast.success(translate('export.success') || 'Export successful');
                       } else if (xhr.status === 404) {
                         console.warn(`No orders to export. RequestId: ${requestId}`);
-                        toast.warning(t('export.noData') || 'No orders to export for selected date');
+                        showToast.warning(translate('export.noData') || 'No orders to export for selected date');
                       } else {
                         console.error(`Export failed - Status: ${xhr.status}, RequestId: ${requestId}`);
-                        toast.error(`Export failed (Request ID: ${requestId})`);
+                        showToast.error(`Export failed (Request ID: ${requestId})`);
                       }
                     };
                     
-                    xhr.onerror = function() {
+                    xhr.onerror = () => {
                       console.error('Export network error');
-                      toast.error('Export failed: Network error');
+                      showToast.error('Export failed: Network error');
                     };
                     
                     xhr.send();

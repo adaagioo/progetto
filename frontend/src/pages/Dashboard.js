@@ -270,6 +270,7 @@ function Dashboard() {
           <Card 
             className="glass-morphism border-0 bg-gradient-to-br from-emerald-500 to-teal-600 text-white cursor-pointer"
             onClick={() => navigate('/inventory')}
+            data-testid="total-inventory-value-card"
           >
             <CardHeader className="pb-2">
               <CardTitle className="text-sm font-medium text-white/90">
@@ -299,9 +300,9 @@ function Dashboard() {
                     {t('dashboard.retry') || 'Retry'}
                   </button>
                 </>
-              ) : totalInventoryValue ? (
+              ) : totalInventoryValue && (totalInventoryValue.totalValue !== undefined && totalInventoryValue.totalValue !== null) ? (
                 <>
-                  <div className="text-2xl font-bold">
+                  <div className="text-2xl font-bold text-white">
                     {formatMinor(totalInventoryValue.totalValue || 0)}
                   </div>
                   <p className="text-xs text-white/80 mt-1">
@@ -312,7 +313,7 @@ function Dashboard() {
                       className="mt-2 text-xs bg-red-500/20 border border-red-300/30 rounded px-2 py-1 flex items-center gap-1 cursor-pointer hover:bg-red-500/30 transition-colors"
                       onClick={(e) => {
                         e.stopPropagation();
-                        navigate('/inventory');
+                        navigate('/inventory?filter=negative');
                       }}
                     >
                       <AlertTriangle className="h-3 w-3" />
@@ -323,7 +324,7 @@ function Dashboard() {
                 </>
               ) : (
                 <>
-                  <div className="text-2xl font-bold">€0.00</div>
+                  <div className="text-2xl font-bold text-white">€0.00</div>
                   <p className="text-xs text-white/80 mt-1">
                     {t('dashboard.asOfNow') || 'as of now'}
                   </p>

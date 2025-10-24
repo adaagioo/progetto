@@ -370,11 +370,15 @@ class Inventory(BaseModel):
     unit: str
     countType: Optional[str] = None  # New schema
     unitCost: Optional[float] = None  # Legacy schema
+    effectiveUnitCost: Optional[float] = None  # WAC from Receiving
     totalValue: Optional[float] = None  # Legacy schema
     batchExpiry: Optional[str] = None
+    expiryDate: Optional[str] = None  # From Receiving
     location: Optional[str] = None
+    lastReceived: Optional[str] = None  # Last receiving timestamp
     createdAt: Optional[str] = None  # New schema
     lastUpdated: Optional[str] = None  # Legacy schema
+    updatedAt: Optional[str] = None  # New schema
 
 class RecipeItem(BaseModel):
     """Item in a recipe - can be ingredient or preparation"""

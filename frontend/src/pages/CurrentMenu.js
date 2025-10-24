@@ -143,11 +143,6 @@ function CurrentMenu() {
     try {
       const url = `${backendUrl}/api/menu`;
       console.log('[CurrentMenu] Creating menu at:', url);
-      
-      if (!token) {
-        alert('No authentication token. Please log in again.');
-        return;
-      }
 
       const response = await fetch(url, {
         method: 'POST',

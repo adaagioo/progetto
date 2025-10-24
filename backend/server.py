@@ -2695,11 +2695,13 @@ async def get_inventory_beverage_value(current_user: dict = Depends(get_current_
     
     total_value = 0
     for item in valuation:
+        # Check both category (from ingredient) and location (from inventory)
         category = item.get("category", "").lower()
+        location = item.get("location", "").lower()
         qty_on_hand = item.get("qtyOnHand", 0)
         total_val = item.get("totalValue", 0)
         
-        if category == "beverage" and qty_on_hand > 0 and total_val > 0:
+        if (category == "beverage" or location == "beverage") and qty_on_hand > 0 and total_val > 0:
             total_value += total_val
     
     return {"value": round(total_value, 2)}

@@ -522,20 +522,22 @@ class RistoBrainV1P3Tester:
                         item_request_id = item_response.headers.get('x-request-id', 'N/A')
                         
                         if item_response.status == 200:
-                            menu_item = await item_response.json()
-                            self.test_data["menu_items"].append(menu_item)
+                            menu_items = await item_response.json()
+                            self.test_data["menu_items"].extend(menu_items)
                             self.record_test("POST /api/menu/{id}/items", "✅", 200, item_request_id, 
-                                           f"Menu item added: {menu_item.get('displayName')}")
+                                           f"Menu items added: {len(menu_items)} items")
                             print(f"   ✅ Add menu item: {item_response.status} | x-request-id: {item_request_id}")
                             
                             # Test 4: PATCH /api/menu/{id}/items/{itemId} (toggle active)
-                            patch_data = {"isActive": False}
-                            
-                            async with self.session.patch(
-                                f"{API_BASE}/menu/{menu['id']}/items/{menu_item['id']}",
-                                json=patch_data,
-                                headers=self.get_auth_headers()
-                            ) as patch_response:
+                            if menu_items:
+                                menu_item = menu_items[0]
+                                patch_data = {"isActive": False}
+                                
+                                async with self.session.patch(
+                                    f"{API_BASE}/menu/{menu['id']}/items/{menu_item['id']}",
+                                    json=patch_data,
+                                    headers=self.get_auth_headers()
+                                ) as patch_response:
                                 patch_request_id = patch_response.headers.get('x-request-id', 'N/A')
                                 
                                 if patch_response.status == 200:

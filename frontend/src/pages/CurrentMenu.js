@@ -463,11 +463,6 @@ function CurrentMenu() {
     try {
       const url = `${backendUrl}/api/menu/${currentMenu.id}/items`;
       console.log('[CurrentMenu] Adding items at:', url);
-      
-      if (!token) {
-        alert('No authentication token. Please log in again.');
-        return;
-      }
 
       const itemsToAdd = selectedItems.map((item) => ({
         refType: item.refType,

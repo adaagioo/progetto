@@ -258,11 +258,6 @@ function CurrentMenu() {
     try {
       const url = `${backendUrl}/api/menu/${currentMenu.id}`;
       console.log('[CurrentMenu] Deleting menu at:', url);
-      
-      if (!token) {
-        alert('No authentication token. Please log in again.');
-        return;
-      }
 
       const response = await fetch(url, {
         method: 'DELETE',

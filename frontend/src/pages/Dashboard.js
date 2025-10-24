@@ -24,6 +24,7 @@ function Dashboard() {
     fetchKPIs();
     fetchValuation();
     fetchTotalInventoryValue();
+    fetchExpiringItems();
   }, []);
 
   const fetchKPIs = async () => {

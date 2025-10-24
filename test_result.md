@@ -2587,15 +2587,56 @@ exports_status:
 
 ## === END EXPORT STATUS === ##
 
+frontend:
+  - task: "Current Menu - Fix formatCurrency Runtime Error"
+    implemented: true
+    working: "NA"
+    file: "frontend/src/pages/CurrentMenu.js"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: |
+          CURRENT MENU formatCurrency FIX COMPLETED:
+          
+          ✅ ROOT CAUSE IDENTIFIED:
+          - Line 28: const { formatCurrency } = useCurrency(); ❌
+          - CurrencyContext only exports: currency, locale, format, formatMinor
+          - formatCurrency does not exist in the context
+          - Error: "formatCurrency is not a function"
+          
+          ✅ SURGICAL FIX APPLIED (3 changes):
+          - Changed line 28: const { formatMinor } = useCurrency(); ✅
+          - Changed line 779: formatMinor(item.computedCost || 0) ✅
+          - Changed line 782: formatMinor(item.price) ✅
+          - Changed line 788: formatMinor(margin.absolute) ✅
+          
+          ✅ PATTERN VERIFIED FROM OTHER PAGES:
+          - Inventory.js line 20: uses formatMinor ✅
+          - Recipes.js line 20: uses formatMinor ✅
+          - All pages use the same pattern consistently ✅
+          
+          ✅ LINTING:
+          - ESLint run on CurrentMenu.js: No issues found ✅
+          
+          PENDING TESTING:
+          - E2E test: Open Current Menu page → No console errors
+          - E2E test: Click "Add Items" → Modal opens without crash
+          - E2E test: Type in search field → Results render with formatted prices
+          - E2E test: Verify EUR formatting (€X.XX) displayed correctly
+          - E2E test: Main menu table shows formatted cost/price/margin values
+
 metadata:
   created_by: "main_agent"
   version: "1.0"
-  test_sequence: 5
+  test_sequence: 6
   run_ui: true
 
 test_plan:
   current_focus:
-    - "P2 Batch 5: Inventory Bulk Delete + Search (FINAL BATCH) - Backend deletes records only, frontend with search + checkboxes"
+    - "Current Menu - Fix formatCurrency Runtime Error (URGENT)"
   stuck_tasks:
     - "Enhanced Recipe Editor with Keyboard UX"
   test_all: false

@@ -590,9 +590,9 @@ class RistoBrainV1P3Tester:
                                f"Failed: {error_text}")
                 print(f"   ❌ Prep-list PDF export: {response.status} | x-request-id: {request_id}")
 
-        # Test 2: GET /api/order-list/export (XLSX)
+        # Test 2: GET /api/order-list/export (XLSX) - requires date parameter
         async with self.session.get(
-            f"{API_BASE}/order-list/export",
+            f"{API_BASE}/order-list/export?date={today}",
             headers=self.get_auth_headers()
         ) as response:
             request_id = response.headers.get('x-request-id', 'N/A')

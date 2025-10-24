@@ -3567,6 +3567,414 @@ async def delete_pl(pl_id: str, current_user: dict = Depends(get_current_user)):
     
     return {"message": "P&L deleted"}
 
+
+# ============ MENU / CURRENT MENU ============
+
+@api_router.post("/menu", response_model=Menu)
+async def create_menu(menu: MenuCreate, current_user: dict = Depends(get_current_user)):
+    """Create a new menu"""
+    await check_subscription(current_user)
+    
+    # Check RBAC: Only admin/manager can create menus
+    if current_user.get("roleKey") not in ["admin", "manager"]:
+        raise HTTPException(status_code=403, detail="Admin or Manager access required")
+    
+    # Check for overlapping active menus
+    if menu.isActive:
+        existing_active = await db.menus.find_one({
+            "restaurantId": current_user["restaurantId"],
+            "isActive": True
+        })
+        if existing_active:
+            raise HTTPException(
+                status_code=400, 
+                detail="Another active menu already exists. Deactivate it first or set this menu as inactive."
+            )
+    
+    menu_doc = {
+        "id": str(uuid.uuid4()),
+        "restaurantId": current_user["restaurantId"],
+        "name": menu.name,
+        "description": menu.description,
+        "effectiveFrom": menu.effectiveFrom,
+        "effectiveTo": menu.effectiveTo,
+        "isActive": menu.isActive,
+        "createdAt": datetime.now(timezone.utc).isoformat(),
+        "updatedAt": None
+    }
+    
+    await db.menus.insert_one(menu_doc)
+    
+    # Log audit
+    await log_audit(
+        db,
+        current_user["restaurantId"],
+        current_user["id"],
+        "create",
+        "menu",
+        menu_doc["id"],
+        {"name": menu.name, "isActive": menu.isActive}
+    )
+    
+    menu_doc.pop("_id", None)
+    return Menu(**menu_doc)
+
+@api_router.get("/menu", response_model=List[Menu])
+async def get_menus(current_user: dict = Depends(get_current_user)):
+    """Get all menus for the restaurant"""
+    await check_subscription(current_user)
+    
+    menus = await db.menus.find(
+        {"restaurantId": current_user["restaurantId"]},
+        {"_id": 0}
+    ).sort("effectiveFrom", -1).to_list(1000)
+    
+    return [Menu(**m) for m in menus]
+
+@api_router.get("/menu/current")
+async def get_current_menu(current_user: dict = Depends(get_current_user)):
+    """Get the currently active menu with all items"""
+    await check_subscription(current_user)
+    
+    # Find active menu
+    menu = await db.menus.find_one(
+        {"restaurantId": current_user["restaurantId"], "isActive": True},
+        {"_id": 0}
+    )
+    
+    if not menu:
+        return {"menu": None, "items": []}
+    
+    # Get all menu items
+    menu_items = await db.menu_items.find(
+        {"menuId": menu["id"]},
+        {"_id": 0}
+    ).to_list(1000)
+    
+    # Populate each menu item with data from referenced entities
+    populated_items = []
+    for item in menu_items:
+        populated_item = await populate_menu_item_data(item, db)
+        populated_items.append(populated_item)
+    
+    return {
+        "menu": Menu(**menu),
+        "items": populated_items
+    }
+
+@api_router.get("/menu/{menu_id}", response_model=Menu)
+async def get_menu(menu_id: str, current_user: dict = Depends(get_current_user)):
+    """Get a specific menu"""
+    await check_subscription(current_user)
+    
+    menu = await db.menus.find_one(
+        {"id": menu_id, "restaurantId": current_user["restaurantId"]},
+        {"_id": 0}
+    )
+    
+    if not menu:
+        raise HTTPException(status_code=404, detail="Menu not found")
+    
+    return Menu(**menu)
+
+@api_router.patch("/menu/{menu_id}", response_model=Menu)
+async def update_menu(
+    menu_id: str,
+    menu_update: MenuUpdate,
+    current_user: dict = Depends(get_current_user)
+):
+    """Update a menu"""
+    await check_subscription(current_user)
+    
+    # Check RBAC
+    if current_user.get("roleKey") not in ["admin", "manager"]:
+        raise HTTPException(status_code=403, detail="Admin or Manager access required")
+    
+    # Check if menu exists
+    existing = await db.menus.find_one(
+        {"id": menu_id, "restaurantId": current_user["restaurantId"]}
+    )
+    if not existing:
+        raise HTTPException(status_code=404, detail="Menu not found")
+    
+    # If activating this menu, deactivate others
+    if menu_update.isActive is True and not existing.get("isActive"):
+        await db.menus.update_many(
+            {"restaurantId": current_user["restaurantId"], "isActive": True},
+            {"$set": {"isActive": False, "updatedAt": datetime.now(timezone.utc).isoformat()}}
+        )
+    
+    # Build update dict
+    update_data = {}
+    if menu_update.name is not None:
+        update_data["name"] = menu_update.name
+    if menu_update.description is not None:
+        update_data["description"] = menu_update.description
+    if menu_update.effectiveFrom is not None:
+        update_data["effectiveFrom"] = menu_update.effectiveFrom
+    if menu_update.effectiveTo is not None:
+        update_data["effectiveTo"] = menu_update.effectiveTo
+    if menu_update.isActive is not None:
+        update_data["isActive"] = menu_update.isActive
+    
+    update_data["updatedAt"] = datetime.now(timezone.utc).isoformat()
+    
+    await db.menus.update_one(
+        {"id": menu_id, "restaurantId": current_user["restaurantId"]},
+        {"$set": update_data}
+    )
+    
+    # Log audit
+    await log_audit(
+        db,
+        current_user["restaurantId"],
+        current_user["id"],
+        "update",
+        "menu",
+        menu_id,
+        {"updates": update_data}
+    )
+    
+    # Fetch and return updated menu
+    updated = await db.menus.find_one(
+        {"id": menu_id, "restaurantId": current_user["restaurantId"]},
+        {"_id": 0}
+    )
+    return Menu(**updated)
+
+@api_router.delete("/menu/{menu_id}")
+async def delete_menu(menu_id: str, current_user: dict = Depends(get_current_user)):
+    """Delete a menu and all its items"""
+    await check_subscription(current_user)
+    
+    # Check RBAC
+    if current_user.get("roleKey") not in ["admin", "manager"]:
+        raise HTTPException(status_code=403, detail="Admin or Manager access required")
+    
+    # Check if menu exists
+    menu = await db.menus.find_one(
+        {"id": menu_id, "restaurantId": current_user["restaurantId"]}
+    )
+    if not menu:
+        raise HTTPException(status_code=404, detail="Menu not found")
+    
+    # Delete all menu items first
+    await db.menu_items.delete_many({"menuId": menu_id})
+    
+    # Delete menu
+    await db.menus.delete_one({"id": menu_id, "restaurantId": current_user["restaurantId"]})
+    
+    # Log audit
+    await log_audit(
+        db,
+        current_user["restaurantId"],
+        current_user["id"],
+        "delete",
+        "menu",
+        menu_id,
+        {"name": menu.get("name")}
+    )
+    
+    return {"message": "Menu deleted"}
+
+# ============ MENU ITEMS ============
+
+@api_router.post("/menu/{menu_id}/items", response_model=List[MenuItem])
+async def add_menu_items(
+    menu_id: str,
+    items: List[MenuItemCreate],
+    current_user: dict = Depends(get_current_user)
+):
+    """Add multiple items to a menu (batch operation)"""
+    await check_subscription(current_user)
+    
+    # Check RBAC
+    if current_user.get("roleKey") not in ["admin", "manager"]:
+        raise HTTPException(status_code=403, detail="Admin or Manager access required")
+    
+    # Check if menu exists and belongs to restaurant
+    menu = await db.menus.find_one(
+        {"id": menu_id, "restaurantId": current_user["restaurantId"]}
+    )
+    if not menu:
+        raise HTTPException(status_code=404, detail="Menu not found")
+    
+    created_items = []
+    
+    for item in items:
+        # Validate refType
+        if item.refType not in ["ingredient", "preparation", "recipe"]:
+            raise HTTPException(status_code=400, detail=f"Invalid refType: {item.refType}")
+        
+        # Validate that referenced entity exists
+        collection_map = {
+            "ingredient": "ingredients",
+            "preparation": "preparations",
+            "recipe": "recipes"
+        }
+        collection_name = collection_map[item.refType]
+        ref_entity = await db[collection_name].find_one(
+            {"id": item.refId, "restaurantId": current_user["restaurantId"]}
+        )
+        if not ref_entity:
+            raise HTTPException(status_code=404, detail=f"{item.refType.capitalize()} {item.refId} not found")
+        
+        # Check for duplicates
+        existing = await db.menu_items.find_one({
+            "menuId": menu_id,
+            "refType": item.refType,
+            "refId": item.refId
+        })
+        if existing:
+            # Skip duplicate
+            continue
+        
+        # Create menu item
+        menu_item = {
+            "id": str(uuid.uuid4()),
+            "menuId": menu_id,
+            "refType": item.refType,
+            "refId": item.refId,
+            "displayName": item.displayName,
+            "price": item.price,
+            "tags": item.tags or [],
+            "isActive": item.isActive,
+            "createdAt": datetime.now(timezone.utc).isoformat(),
+            "updatedAt": None
+        }
+        
+        await db.menu_items.insert_one(menu_item)
+        
+        # Populate item data
+        menu_item.pop("_id", None)
+        populated_item = await populate_menu_item_data(menu_item, db)
+        created_items.append(populated_item)
+    
+    # Log audit
+    await log_audit(
+        db,
+        current_user["restaurantId"],
+        current_user["id"],
+        "create",
+        "menu_items",
+        menu_id,
+        {"count": len(created_items)}
+    )
+    
+    return created_items
+
+@api_router.get("/menu/{menu_id}/items")
+async def get_menu_items(menu_id: str, current_user: dict = Depends(get_current_user)):
+    """Get all items for a menu"""
+    await check_subscription(current_user)
+    
+    # Check if menu exists
+    menu = await db.menus.find_one(
+        {"id": menu_id, "restaurantId": current_user["restaurantId"]}
+    )
+    if not menu:
+        raise HTTPException(status_code=404, detail="Menu not found")
+    
+    # Get menu items
+    menu_items = await db.menu_items.find(
+        {"menuId": menu_id},
+        {"_id": 0}
+    ).to_list(1000)
+    
+    # Populate each item
+    populated_items = []
+    for item in menu_items:
+        populated_item = await populate_menu_item_data(item, db)
+        populated_items.append(populated_item)
+    
+    return populated_items
+
+@api_router.patch("/menu/{menu_id}/items/{item_id}")
+async def update_menu_item(
+    menu_id: str,
+    item_id: str,
+    item_update: MenuItemUpdate,
+    current_user: dict = Depends(get_current_user)
+):
+    """Update a menu item (toggle isActive, update price, tags)"""
+    await check_subscription(current_user)
+    
+    # Check RBAC
+    if current_user.get("roleKey") not in ["admin", "manager"]:
+        raise HTTPException(status_code=403, detail="Admin or Manager access required")
+    
+    # Check if menu item exists
+    existing = await db.menu_items.find_one({"id": item_id, "menuId": menu_id})
+    if not existing:
+        raise HTTPException(status_code=404, detail="Menu item not found")
+    
+    # Build update dict
+    update_data = {}
+    if item_update.displayName is not None:
+        update_data["displayName"] = item_update.displayName
+    if item_update.price is not None:
+        update_data["price"] = item_update.price
+    if item_update.tags is not None:
+        update_data["tags"] = item_update.tags
+    if item_update.isActive is not None:
+        update_data["isActive"] = item_update.isActive
+    
+    update_data["updatedAt"] = datetime.now(timezone.utc).isoformat()
+    
+    await db.menu_items.update_one(
+        {"id": item_id, "menuId": menu_id},
+        {"$set": update_data}
+    )
+    
+    # Log audit
+    await log_audit(
+        db,
+        current_user["restaurantId"],
+        current_user["id"],
+        "update",
+        "menu_item",
+        item_id,
+        {"updates": update_data}
+    )
+    
+    # Fetch and return updated item
+    updated = await db.menu_items.find_one({"id": item_id, "menuId": menu_id}, {"_id": 0})
+    populated_item = await populate_menu_item_data(updated, db)
+    
+    return populated_item
+
+@api_router.delete("/menu/{menu_id}/items/{item_id}")
+async def delete_menu_item(
+    menu_id: str,
+    item_id: str,
+    current_user: dict = Depends(get_current_user)
+):
+    """Delete a menu item"""
+    await check_subscription(current_user)
+    
+    # Check RBAC
+    if current_user.get("roleKey") not in ["admin", "manager"]:
+        raise HTTPException(status_code=403, detail="Admin or Manager access required")
+    
+    # Delete menu item
+    result = await db.menu_items.delete_one({"id": item_id, "menuId": menu_id})
+    if result.deleted_count == 0:
+        raise HTTPException(status_code=404, detail="Menu item not found")
+    
+    # Log audit
+    await log_audit(
+        db,
+        current_user["restaurantId"],
+        current_user["id"],
+        "delete",
+        "menu_item",
+        item_id,
+        {}
+    )
+    
+    return {"message": "Menu item deleted"}
+
+
 # ============ FILE UPLOAD & DOWNLOAD ============
 
 from fastapi import Form

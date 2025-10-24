@@ -154,9 +154,14 @@ function CurrentMenu() {
 
   // Create menu
   const handleCreateMenu = async () => {
+    if (!token || !user) {
+      alert('Please sign in to create a menu.');
+      return;
+    }
+
     try {
-      const url = `${backendUrl}/api/menu`;
-      console.log('[CurrentMenu] Creating menu at:', url);
+      const url = `${API}/menu`;
+      console.log('[CurrentMenu] POST', url);
 
       const response = await fetch(url, {
         method: 'POST',
@@ -167,44 +172,41 @@ function CurrentMenu() {
         body: JSON.stringify(menuForm),
       });
 
-      const requestId = response.headers.get('x-request-id');
-      console.log('[CurrentMenu] POST /api/menu - RequestId:', requestId || 'undefined');
+      const requestId = response.headers.get('x-request-id') || 'undefined';
+      const contentType = response.headers.get('content-type') || '';
+      
+      console.log('[CurrentMenu] Create response:', { status: response.status, requestId });
 
       if (response.status === 401) {
-        alert('Session expired or unauthorized. Please re-authenticate.');
+        alert('Session expired or unauthorized. Please sign in again.');
+        console.error('[CurrentMenu] 401 on create. RequestId:', requestId);
         return;
       }
 
       if (!response.ok) {
-        const contentType = response.headers.get('content-type');
-        let errorMessage = 'Failed to create menu';
-        
-        if (contentType && contentType.includes('application/json')) {
+        let errorMessage = `HTTP ${response.status}`;
+        if (contentType.includes('application/json')) {
           try {
-            const error = await response.json();
-            errorMessage = error.detail || errorMessage;
+            const errorData = await response.json();
+            errorMessage = errorData.detail || errorData.message || errorMessage;
           } catch (e) {
-            errorMessage = `${errorMessage} (${response.status} ${response.statusText})`;
+            console.error('[CurrentMenu] Error parsing error response:', e);
           }
-        } else {
-          errorMessage = `${errorMessage} (${response.status} ${response.statusText})`;
         }
-        
         console.error('[CurrentMenu] Create failed:', errorMessage, 'RequestId:', requestId);
-        alert(t('currentMenu.error.create') + ': ' + errorMessage + (requestId ? ` [${requestId}]` : ''));
+        alert(`${t('currentMenu.error.create')}: ${errorMessage} [${requestId}]`);
         return;
       }
 
-      // Consume the response body once
-      await response.json();
+      const createdMenu = await response.json();
       console.log('[CurrentMenu] Menu created successfully. RequestId:', requestId);
 
       setShowCreateMenu(false);
       fetchCurrentMenu();
-      alert(t('currentMenu.success.created') + (requestId ? ` [${requestId}]` : ''));
+      alert(`${t('currentMenu.success.created')} [${requestId}]`);
     } catch (err) {
       console.error('[CurrentMenu] handleCreateMenu error:', err);
-      alert(t('currentMenu.error.create') + ': ' + err.message);
+      alert(`${t('currentMenu.error.create')}: ${err.message}`);
     }
   };
 

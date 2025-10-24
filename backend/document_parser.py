@@ -345,7 +345,23 @@ class DocumentParser:
         }
     
     def _extract_total(self, text: str) -> Optional[float]:
-        """Extract total amount from invoice"""
+        """Extract total amount from invoice - enhanced for Italian format"""
+        # Italian pattern: "Totale Documento\n€ 268,23"
+        italian_patterns = [
+            r'Totale\s+Documento\s*[:\s]*€?\s*([\d,]+(?:\.?\d{2})?)',
+            r'(?:importo\s+)?totale\s*[:\s]*€?\s*([\d,]+(?:\.?\d{2})?)',
+        ]
+        
+        for pattern in italian_patterns:
+            match = re.search(pattern, text, re.IGNORECASE)
+            if match:
+                try:
+                    total_str = match.group(1).replace(',', '.')  # Italian uses comma for decimals
+                    return float(total_str)
+                except:
+                    pass
+        
+        # Try original patterns
         for pattern in self.total_patterns:
             match = re.search(pattern, text, re.IGNORECASE)
             if match:

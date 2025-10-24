@@ -349,22 +349,6 @@ def generate_purchase_orders_pdf(
         
         elements.append(table)
         elements.append(Spacer(1, 0.2*inch))
-            ('BACKGROUND', (0, 0), (-1, 0), colors.HexColor('#059669')),
-            ('TEXTCOLOR', (0, 0), (-1, 0), colors.whitesmoke),
-            ('ALIGN', (0, 0), (-1, -1), 'LEFT'),
-            ('ALIGN', (1, 0), (-1, -1), 'CENTER'),
-            ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
-            ('FONTSIZE', (0, 0), (-1, 0), 9),
-            ('FONTSIZE', (0, 1), (-1, -1), 8),
-            ('BOTTOMPADDING', (0, 0), (-1, 0), 12),
-            ('BACKGROUND', (0, -1), (-1, -1), colors.HexColor('#fef3c7')),
-            ('FONTNAME', (0, -1), (-1, -1), 'Helvetica-Bold'),
-            ('GRID', (0, 0), (-1, -1), 0.5, colors.grey),
-            ('ROWBACKGROUNDS', (0, 1), (-1, -2), [colors.white, colors.HexColor('#f9fafb')])
-        ]))
-        
-        elements.append(table)
-        elements.append(Spacer(1, 0.2*inch))
         
         grand_total += supplier_total
     

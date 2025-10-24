@@ -68,10 +68,6 @@ function CurrentMenu() {
       
       const url = `${backendUrl}/api/menu/current`;
       console.log('[CurrentMenu] Fetching:', url);
-      
-      if (!token) {
-        throw new Error('No authentication token available');
-      }
 
       const response = await fetch(url, {
         method: 'GET',

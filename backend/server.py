@@ -2660,6 +2660,105 @@ async def get_inventory_total_value(current_user: dict = Depends(get_current_use
         "timestamp": datetime.now(timezone.utc).isoformat()
     }
 
+
+@api_router.get("/inventory/valuation/food")
+async def get_inventory_food_value(current_user: dict = Depends(get_current_user)):
+    """Get food category inventory value"""
+    await check_subscription(current_user)
+    
+    valuation = await get_inventory_valuation(current_user)
+    
+    total_value = 0
+    for item in valuation:
+        category = item.get("category", "").lower()
+        qty_on_hand = item.get("qtyOnHand", 0)
+        total_val = item.get("totalValue", 0)
+        
+        if category == "food" and qty_on_hand > 0 and total_val > 0:
+            total_value += total_val
+    
+    return {"value": round(total_value, 2)}
+
+@api_router.get("/inventory/valuation/beverage")
+async def get_inventory_beverage_value(current_user: dict = Depends(get_current_user)):
+    """Get beverage category inventory value"""
+    await check_subscription(current_user)
+    
+    valuation = await get_inventory_valuation(current_user)
+    
+    total_value = 0
+    for item in valuation:
+        category = item.get("category", "").lower()
+        qty_on_hand = item.get("qtyOnHand", 0)
+        total_val = item.get("totalValue", 0)
+        
+        if category == "beverage" and qty_on_hand > 0 and total_val > 0:
+            total_value += total_val
+    
+    return {"value": round(total_value, 2)}
+
+@api_router.get("/inventory/valuation/nonfood")
+async def get_inventory_nonfood_value(current_user: dict = Depends(get_current_user)):
+    """Get non-food category inventory value"""
+    await check_subscription(current_user)
+    
+    valuation = await get_inventory_valuation(current_user)
+    
+    total_value = 0
+    for item in valuation:
+        category = item.get("category", "").lower()
+        qty_on_hand = item.get("qtyOnHand", 0)
+        total_val = item.get("totalValue", 0)
+        
+        if category == "non-food" and qty_on_hand > 0 and total_val > 0:
+            total_value += total_val
+    
+    return {"value": round(total_value, 2)}
+
+@api_router.get("/inventory/expiring")
+async def get_expiring_inventory(
+    days: int = 3,
+    current_user: dict = Depends(get_current_user)
+):
+    """Get count of items expiring within specified days (bucketed by day)"""
+    await check_subscription(current_user)
+    
+    from datetime import date, timedelta
+    
+    # Get all inventory items with expiry dates
+    inventory_items = await db.inventory.find({
+        "restaurantId": current_user["restaurantId"],
+        "expiryDate": {"$exists": True, "$ne": None}
+    }).to_list(10000)
+    
+    today = date.today()
+    buckets = {f"day{i}": 0 for i in range(1, days + 1)}
+    
+    for item in inventory_items:
+        expiry_str = item.get("expiryDate")
+        if not expiry_str:
+            continue
+            
+        try:
+            if isinstance(expiry_str, str):
+                expiry_date = date.fromisoformat(expiry_str.split('T')[0])
+            else:
+                continue
+                
+            days_until_expiry = (expiry_date - today).days
+            
+            # Bucket items by days (1, 2, 3, etc.)
+            if 0 <= days_until_expiry < days:
+                bucket_key = f"day{days_until_expiry + 1}"
+                if bucket_key in buckets:
+                    buckets[bucket_key] += 1
+                    
+        except (ValueError, AttributeError):
+            continue
+    
+    return buckets
+
+
 @api_router.post("/inventory/adjustments")
 async def create_inventory_adjustment(
     adjustment: dict,

@@ -63,6 +63,7 @@ const resources = {
       'export.xlsx': 'Excel',
       'export.success': 'Export successful',
       'export.error': 'Export failed',
+      'export.noData': 'No data to export for selected date',
       'export.selectDate': 'Select Date',
       'export.purchaseOrders': 'Export Purchase Orders',
       'dashboard.clickToView': 'Click to view',

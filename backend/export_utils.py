@@ -258,9 +258,9 @@ def generate_purchase_orders_pdf(
     restaurant_name: str,
     locale: str = 'en'
 ) -> bytes:
-    """Generate Purchase Orders PDF export (grouped by supplier)"""
+    """Generate Purchase Orders PDF export (grouped by supplier) with ALL required columns"""
     buffer = BytesIO()
-    doc = SimpleDocTemplate(buffer, pagesize=A4, rightMargin=0.5*inch, leftMargin=0.5*inch,
+    doc = SimpleDocTemplate(buffer, pagesize=A4, rightMargin=0.4*inch, leftMargin=0.4*inch,
                            topMargin=0.75*inch, bottomMargin=0.75*inch)
     
     elements = []
@@ -287,17 +287,17 @@ def generate_purchase_orders_pdf(
     
     grand_total = 0
     
-    # Headers
+    # Headers with ALL required columns: Supplier, Item (code), Qty+Unit, Unit price, Extended cost, Delivery date, Reason/driver, Notes
     if locale == 'en':
-        headers = ['Item', 'Qty', 'Unit', 'Unit Price', 'Extended', 'Delivery', 'Driver', 'Notes']
+        headers = ['Supplier', 'Item (Code)', 'Qty', 'Unit', 'Unit Price', 'Extended', 'Delivery', 'Reason', 'Notes']
     else:
-        headers = ['Articolo', 'Qtà', 'Unità', 'Prezzo', 'Totale', 'Consegna', 'Motivo', 'Note']
+        headers = ['Fornitore', 'Articolo (Cod.)', 'Qtà', 'Unità', 'Prezzo', 'Totale', 'Consegna', 'Motivo', 'Note']
     
     # Group by supplier
     for supplier_name, items in data.items():
-        # Supplier header
-        supplier_header = Paragraph(f"<b>Supplier: {supplier_name}</b>", styles['Heading2'])
-        elements.append(supplier_header)
+        # Supplier section header
+        supplier_para = Paragraph(f"<b>{'Supplier' if locale == 'en' else 'Fornitore'}: {supplier_name}</b>", styles['Heading3'])
+        elements.append(supplier_para)
         elements.append(Spacer(1, 0.1*inch))
         
         # Table data
@@ -307,27 +307,48 @@ def generate_purchase_orders_pdf(
         for item in items:
             qty = item.get('qtyToOrder', 0)
             unit_price = item.get('unitPrice', 0)
-            extended = qty * unit_price
+            extended = item.get('extendedCost', qty * unit_price)
             supplier_total += extended
             
+            item_code = item.get('code', '')
+            item_display = f"{item.get('itemName', '')} ({item_code})" if item_code else item.get('itemName', '')
+            
             table_data.append([
-                item.get('itemName', ''),
-                str(qty),
+                supplier_name,
+                item_display[:25],  # Item with code
+                str(round(qty, 1)),
                 item.get('unit', ''),
                 format_currency(unit_price, locale),
                 format_currency(extended, locale),
-                item.get('deliveryDate', '-'),
-                item.get('driver', '-')[:20] if item.get('driver') else '-',
-                item.get('notes', '-')[:15] if item.get('notes') else '-'
+                item.get('deliveryDate', '-')[:10] if item.get('deliveryDate') else '-',
+                item.get('driver', '-')[:18] if item.get('driver') else '-',
+                item.get('notes', '-')[:12] if item.get('notes') else '-'
             ])
         
-        # Supplier subtotal
+        # Supplier subtotal row
         subtotal_label = 'SUBTOTAL' if locale == 'en' else 'SUBTOTALE'
-        table_data.append(['', '', '', '', format_currency(supplier_total, locale), '', '', ''])
+        table_data.append([subtotal_label, '', '', '', '', format_currency(supplier_total, locale), '', '', ''])
+        grand_total += supplier_total
         
-        # Create table
-        table = Table(table_data, colWidths=[1.8*inch, 0.6*inch, 0.6*inch, 0.9*inch, 0.9*inch, 0.8*inch, 1.2*inch, 0.9*inch])
+        # Create table with adjusted widths for 9 columns
+        table = Table(table_data, colWidths=[0.9*inch, 1.4*inch, 0.4*inch, 0.4*inch, 0.7*inch, 0.7*inch, 0.7*inch, 1.0*inch, 0.7*inch])
         table.setStyle(TableStyle([
+            ('BACKGROUND', (0, 0), (-1, 0), colors.HexColor('#059669')),
+            ('TEXTCOLOR', (0, 0), (-1, 0), colors.whitesmoke),
+            ('ALIGN', (0, 0), (-1, -1), 'LEFT'),
+            ('ALIGN', (2, 0), (5, -1), 'CENTER'),
+            ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
+            ('FONTSIZE', (0, 0), (-1, 0), 8),
+            ('FONTSIZE', (0, 1), (-1, -1), 7),
+            ('BOTTOMPADDING', (0, 0), (-1, 0), 10),
+            ('BACKGROUND', (0, -1), (-1, -1), colors.HexColor('#fef3c7')),
+            ('FONTNAME', (0, -1), (-1, -1), 'Helvetica-Bold'),
+            ('GRID', (0, 0), (-1, -1), 0.5, colors.grey),
+            ('ROWBACKGROUNDS', (0, 1), (-1, -2), [colors.white, colors.HexColor('#f9fafb')])
+        ]))
+        
+        elements.append(table)
+        elements.append(Spacer(1, 0.2*inch))
             ('BACKGROUND', (0, 0), (-1, 0), colors.HexColor('#059669')),
             ('TEXTCOLOR', (0, 0), (-1, 0), colors.whitesmoke),
             ('ALIGN', (0, 0), (-1, -1), 'LEFT'),

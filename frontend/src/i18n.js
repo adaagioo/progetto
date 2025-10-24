@@ -21,6 +21,7 @@ const resources = {
       'nav.orderList': 'Order List',
       'nav.pl': 'P&L',
       'nav.settings': 'Settings',
+      'nav.currentMenu': 'Current Menu',
       
       // Auth
       'auth.login': 'Login',

@@ -5,7 +5,22 @@ import { useCurrency } from '../contexts/CurrencyContext';
 import { Button } from '../components/ui/button';
 import { Plus, Edit, Trash2, Power, PowerOff, Search, Filter, X, Check, AlertCircle, CheckCircle, XCircle } from 'lucide-react';
 import { useSearchParams } from 'react-router-dom';
-import { useDebounce } from '../hooks/useDebounce';
+
+function useDebounce(value, delay) {
+  const [debouncedValue, setDebouncedValue] = useState(value);
+
+  useEffect(() => {
+    const handler = setTimeout(() => {
+      setDebouncedValue(value);
+    }, delay);
+
+    return () => {
+      clearTimeout(handler);
+    };
+  }, [value, delay]);
+
+  return debouncedValue;
+}
 
 function CurrentMenu() {
   const { t } = useTranslation();

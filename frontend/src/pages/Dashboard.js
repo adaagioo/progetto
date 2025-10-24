@@ -15,6 +15,7 @@ function Dashboard() {
   const [kpis, setKpis] = useState(null);
   const [valuationSummary, setValuationSummary] = useState(null);
   const [totalInventoryValue, setTotalInventoryValue] = useState(null);
+  const [expiringItems, setExpiringItems] = useState(null);
   const [loading, setLoading] = useState(true);
   const [loadingTotal, setLoadingTotal] = useState(true);
   const [totalError, setTotalError] = useState(false);

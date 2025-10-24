@@ -145,33 +145,60 @@ function CurrentMenu() {
   // Create menu
   const handleCreateMenu = async () => {
     try {
-      const response = await fetch(`${backendUrl}/api/menu`, {
+      const url = `${backendUrl}/api/menu`;
+      console.log('[CurrentMenu] Creating menu at:', url);
+      
+      if (!token) {
+        alert('No authentication token. Please log in again.');
+        return;
+      }
+
+      const response = await fetch(url, {
         method: 'POST',
         headers: {
+          'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json',
-          Authorization: `Bearer ${token}`,
         },
         body: JSON.stringify(menuForm),
       });
 
-      if (!response.ok) {
-        let errorMessage = 'Failed to create menu';
-        try {
-          const error = await response.json();
-          errorMessage = error.detail || errorMessage;
-        } catch (e) {
-          // If response is not JSON, use default message
-        }
-        throw new Error(errorMessage);
+      const requestId = response.headers.get('x-request-id');
+      console.log('[CurrentMenu] POST /api/menu - RequestId:', requestId || 'undefined');
+
+      if (response.status === 401) {
+        alert('Session expired or unauthorized. Please re-authenticate.');
+        return;
       }
 
-      // Consume the response body
+      if (!response.ok) {
+        const contentType = response.headers.get('content-type');
+        let errorMessage = 'Failed to create menu';
+        
+        if (contentType && contentType.includes('application/json')) {
+          try {
+            const error = await response.json();
+            errorMessage = error.detail || errorMessage;
+          } catch (e) {
+            errorMessage = `${errorMessage} (${response.status} ${response.statusText})`;
+          }
+        } else {
+          errorMessage = `${errorMessage} (${response.status} ${response.statusText})`;
+        }
+        
+        console.error('[CurrentMenu] Create failed:', errorMessage, 'RequestId:', requestId);
+        alert(t('currentMenu.error.create') + ': ' + errorMessage + (requestId ? ` [${requestId}]` : ''));
+        return;
+      }
+
+      // Consume the response body once
       await response.json();
+      console.log('[CurrentMenu] Menu created successfully. RequestId:', requestId);
 
       setShowCreateMenu(false);
       fetchCurrentMenu();
-      alert(t('currentMenu.success.created'));
+      alert(t('currentMenu.success.created') + (requestId ? ` [${requestId}]` : ''));
     } catch (err) {
+      console.error('[CurrentMenu] handleCreateMenu error:', err);
       alert(t('currentMenu.error.create') + ': ' + err.message);
     }
   };

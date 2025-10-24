@@ -199,11 +199,6 @@ function CurrentMenu() {
     try {
       const url = `${backendUrl}/api/menu/${currentMenu.id}`;
       console.log('[CurrentMenu] Updating menu at:', url);
-      
-      if (!token) {
-        alert('No authentication token. Please log in again.');
-        return;
-      }
 
       const response = await fetch(url, {
         method: 'PATCH',

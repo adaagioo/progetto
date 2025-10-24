@@ -155,14 +155,17 @@ function CurrentMenu() {
 
   // Create menu
   const handleCreateMenu = async () => {
+    console.log('[CurrentMenu] handleCreateMenu called');
+    
     if (!token || !user) {
+      console.error('[CurrentMenu] No auth - token:', !!token, 'user:', !!user);
       alert('Please sign in to create a menu.');
       return;
     }
 
     try {
       const url = `${API}/menu`;
-      console.log('[CurrentMenu] POST', url);
+      console.log('[CurrentMenu] POST', url, 'Payload:', menuForm);
 
       const response = await fetch(url, {
         method: 'POST',
@@ -200,7 +203,7 @@ function CurrentMenu() {
       }
 
       const createdMenu = await response.json();
-      console.log('[CurrentMenu] Menu created successfully. RequestId:', requestId);
+      console.log('[CurrentMenu] Menu created successfully. RequestId:', requestId, 'Menu:', createdMenu);
 
       setShowCreateMenu(false);
       fetchCurrentMenu();

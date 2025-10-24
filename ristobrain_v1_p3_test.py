@@ -562,9 +562,10 @@ class RistoBrainV1P3Tester:
         """Test Exports (PDF/XLSX)"""
         print("\n📄 Testing Exports...")
         
-        # Test 1: GET /api/prep-list/export (PDF)
+        # Test 1: GET /api/prep-list/export (PDF) - requires date parameter
+        today = datetime.now().strftime("%Y-%m-%d")
         async with self.session.get(
-            f"{API_BASE}/prep-list/export",
+            f"{API_BASE}/prep-list/export?date={today}",
             headers=self.get_auth_headers()
         ) as response:
             request_id = response.headers.get('x-request-id', 'N/A')

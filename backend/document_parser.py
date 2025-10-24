@@ -41,17 +41,22 @@ class DocumentParser:
         ]
     
     def parse_invoice_number(self, text: str) -> Optional[str]:
-        """Extract invoice number"""
-        # Try Italian patterns first
+        """Extract invoice number - enhanced for Italian invoices"""
+        # Italian patterns - "Fattura Accompagnatora ; 33124 26.09.2025"
         italian_patterns = [
-            r'(?:Fattura|Invoice|Documento).*?(?:numero|n\.|#)\s*(\d+)',
-            r'(?:numero|n\.|#)\s*(\d+)',
+            r'Fattura\s+Accompagnatora\s*[;:]\s*(\d+)',
+            r'(?:Fattura|Invoice|Documento).*?(?:numero|n\.|#)\s*[:\s]*(\d+)',
+            r'(?:numero|n\.|#)\s*[:\s]*(\d+)',
+            r'(?:N\.\s*)?(\d{5,})',  # 5+ digit number (common for invoices)
         ]
         
         for pattern in italian_patterns:
             match = re.search(pattern, text, re.IGNORECASE)
             if match:
-                return match.group(1).strip()
+                inv_num = match.group(1).strip()
+                # Validate it's not a VAT or phone number
+                if len(inv_num) <= 10 and not re.match(r'^0[36]', inv_num):  # Not phone
+                    return inv_num
         
         # Try original patterns
         for pattern in self.invoice_number_patterns:

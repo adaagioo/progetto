@@ -317,9 +317,13 @@ function PrepList() {
                         window.URL.revokeObjectURL(url);
                         document.body.removeChild(a);
                         toast.success(t('export.success') || 'Export successful');
+                      } else if (response.status === 404) {
+                        const requestId = response.headers.get('x-request-id') || 'unknown';
+                        console.warn('No data to export. RequestId:', requestId);
+                        toast.warning(t('export.noData') || `No data to export for ${targetDate}`);
                       } else {
                         const requestId = response.headers.get('x-request-id') || 'unknown';
-                        console.error('Export failed. RequestId:', requestId);
+                        console.error('Export failed. RequestId:', requestId, 'Status:', response.status);
                         const error = await response.json().catch(() => ({ detail: 'Export failed' }));
                         toast.error(`${error.detail || t('export.error')} (Request ID: ${requestId})`);
                       }

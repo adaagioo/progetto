@@ -544,7 +544,7 @@ function Receiving() {
                   </Select>
                 </div>
 
-                <div>
+                <div className="hidden">
                   <Label htmlFor="category">{t('receiving.form.category') || 'Category'} *</Label>
                   <Select 
                     value={formData.category} 

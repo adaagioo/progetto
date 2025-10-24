@@ -1093,7 +1093,7 @@ async def populate_menu_item_data(menu_item: dict, db) -> dict:
 
 
 
-async def deduct_stock_for_recipe(recipe_id: str, qty: int, restaurant_id: str, db) -> List[dict]:
+async def deduct_stock_for_recipe(recipe_id: str, qty: int, restaurant_id: str, db, source: str = "consumption", source_id: str = None) -> List[dict]:
     """
     Deduct stock for a recipe sale using WAC and prep-first priority.
     
@@ -1106,6 +1106,8 @@ async def deduct_stock_for_recipe(recipe_id: str, qty: int, restaurant_id: str, 
         qty: Number of portions sold
         restaurant_id: Restaurant ID for tenant isolation
         db: Database connection
+        source: Source of deduction (sale, waste, etc.)
+        source_id: ID of source document
         
     Returns:
         List of stock deductions made (for audit trail)
@@ -1124,14 +1126,16 @@ async def deduct_stock_for_recipe(recipe_id: str, qty: int, restaurant_id: str, 
         if item["type"] == "preparation":
             # Try to deduct preparation stock first
             prep_deduction = await deduct_preparation_stock(
-                item["itemId"], item_qty_needed, restaurant_id, db
+                item["itemId"], item_qty_needed, restaurant_id, db,
+                source=source, source_id=source_id
             )
             deductions.extend(prep_deduction)
             
         elif item["type"] == "ingredient":
             # Deduct raw ingredient stock
             ingredient_deduction = await deduct_ingredient_stock(
-                item["itemId"], item_qty_needed, restaurant_id, db
+                item["itemId"], item_qty_needed, restaurant_id, db,
+                source=source, source_id=source_id
             )
             deductions.append(ingredient_deduction)
     

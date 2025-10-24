@@ -62,14 +62,15 @@ function CurrentMenu() {
 
   // Fetch current menu
   const fetchCurrentMenu = async () => {
-    if (!token || !user) {
-      console.log('[CurrentMenu] Waiting for authentication...');
-      return;
-    }
-
     try {
       setLoading(true);
       
+      if (!token || !user) {
+        console.log('[CurrentMenu] Auth not ready yet');
+        setLoading(false);
+        return;
+      }
+
       const url = `${API}/menu/current`;
       console.log('[CurrentMenu] GET', url);
 

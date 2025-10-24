@@ -62,11 +62,16 @@ function CurrentMenu() {
 
   // Fetch current menu
   const fetchCurrentMenu = async () => {
+    if (!token || !user) {
+      console.log('[CurrentMenu] Waiting for authentication...');
+      return;
+    }
+
     try {
       setLoading(true);
       
-      const url = `${backendUrl}/api/menu/current`;
-      console.log('[CurrentMenu] Fetching:', url);
+      const url = `${API}/menu/current`;
+      console.log('[CurrentMenu] GET', url);
 
       const response = await fetch(url, {
         method: 'GET',
@@ -75,24 +80,34 @@ function CurrentMenu() {
         },
       });
 
-      const requestId = response.headers.get('x-request-id');
-      console.log('[CurrentMenu] GET /api/menu/current - RequestId:', requestId || 'undefined');
+      const requestId = response.headers.get('x-request-id') || 'undefined';
+      const contentType = response.headers.get('content-type') || '';
+      
+      console.log('[CurrentMenu] Response:', { status: response.status, requestId });
 
       if (response.status === 401) {
-        alert('Session expired or unauthorized. Please re-authenticate.');
-        setError('Unauthorized');
+        console.error('[CurrentMenu] 401 Unauthorized. RequestId:', requestId);
+        setError('Session expired. Please sign in again.');
         setLoading(false);
         return;
       }
 
       if (!response.ok) {
-        const errorText = await response.text();
-        console.error('[CurrentMenu] Load failed:', errorText, 'RequestId:', requestId);
-        throw new Error('Failed to load menu');
+        let errorMessage = `HTTP ${response.status}`;
+        if (contentType.includes('application/json')) {
+          try {
+            const errorData = await response.json();
+            errorMessage = errorData.detail || errorData.message || errorMessage;
+          } catch (e) {
+            console.error('[CurrentMenu] Error parsing error response:', e);
+          }
+        }
+        console.error('[CurrentMenu] Load failed:', errorMessage, 'RequestId:', requestId);
+        throw new Error(errorMessage);
       }
 
       const data = await response.json();
-      console.log('[CurrentMenu] Current menu loaded successfully. RequestId:', requestId);
+      console.log('[CurrentMenu] Current menu loaded. RequestId:', requestId);
       setCurrentMenu(data.menu);
       setMenuItems(data.items || []);
       setError(null);

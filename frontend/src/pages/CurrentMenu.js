@@ -212,9 +212,14 @@ function CurrentMenu() {
 
   // Update menu
   const handleUpdateMenu = async () => {
+    if (!token || !user) {
+      alert('Please sign in to update the menu.');
+      return;
+    }
+
     try {
-      const url = `${backendUrl}/api/menu/${currentMenu.id}`;
-      console.log('[CurrentMenu] Updating menu at:', url);
+      const url = `${API}/menu/${currentMenu.id}`;
+      console.log('[CurrentMenu] PATCH', url);
 
       const response = await fetch(url, {
         method: 'PATCH',
@@ -225,43 +230,35 @@ function CurrentMenu() {
         body: JSON.stringify(menuForm),
       });
 
-      const requestId = response.headers.get('x-request-id');
-      console.log('[CurrentMenu] PATCH /api/menu/{id} - RequestId:', requestId || 'undefined');
+      const requestId = response.headers.get('x-request-id') || 'undefined';
+      const contentType = response.headers.get('content-type') || '';
 
       if (response.status === 401) {
-        alert('Session expired or unauthorized. Please re-authenticate.');
+        alert('Session expired or unauthorized. Please sign in again.');
         return;
       }
 
       if (!response.ok) {
-        const contentType = response.headers.get('content-type');
-        let errorMessage = 'Failed to update menu';
-        
-        if (contentType && contentType.includes('application/json')) {
+        let errorMessage = `HTTP ${response.status}`;
+        if (contentType.includes('application/json')) {
           try {
-            const error = await response.json();
-            errorMessage = error.detail || errorMessage;
-          } catch (e) {
-            errorMessage = `${errorMessage} (${response.status} ${response.statusText})`;
-          }
-        } else {
-          errorMessage = `${errorMessage} (${response.status} ${response.statusText})`;
+            const errorData = await response.json();
+            errorMessage = errorData.detail || errorData.message || errorMessage;
+          } catch (e) {}
         }
-        
-        console.error('[CurrentMenu] Update failed:', errorMessage, 'RequestId:', requestId);
-        alert(t('currentMenu.error.update') + ': ' + errorMessage + (requestId ? ` [${requestId}]` : ''));
+        alert(`${t('currentMenu.error.update')}: ${errorMessage} [${requestId}]`);
         return;
       }
 
       await response.json();
-      console.log('[CurrentMenu] Menu updated successfully. RequestId:', requestId);
+      console.log('[CurrentMenu] Menu updated. RequestId:', requestId);
 
       setShowEditMenu(false);
       fetchCurrentMenu();
-      alert(t('currentMenu.success.updated') + (requestId ? ` [${requestId}]` : ''));
+      alert(`${t('currentMenu.success.updated')} [${requestId}]`);
     } catch (err) {
       console.error('[CurrentMenu] handleUpdateMenu error:', err);
-      alert(t('currentMenu.error.update') + ': ' + err.message);
+      alert(`${t('currentMenu.error.update')}: ${err.message}`);
     }
   };
 
@@ -271,9 +268,14 @@ function CurrentMenu() {
       return;
     }
 
+    if (!token || !user) {
+      alert('Please sign in to delete the menu.');
+      return;
+    }
+
     try {
-      const url = `${backendUrl}/api/menu/${currentMenu.id}`;
-      console.log('[CurrentMenu] Deleting menu at:', url);
+      const url = `${API}/menu/${currentMenu.id}`;
+      console.log('[CurrentMenu] DELETE', url);
 
       const response = await fetch(url, {
         method: 'DELETE',
@@ -282,54 +284,50 @@ function CurrentMenu() {
         },
       });
 
-      const requestId = response.headers.get('x-request-id');
-      console.log('[CurrentMenu] DELETE /api/menu/{id} - RequestId:', requestId || 'undefined');
+      const requestId = response.headers.get('x-request-id') || 'undefined';
+      const contentType = response.headers.get('content-type') || '';
 
       if (response.status === 401) {
-        alert('Session expired or unauthorized. Please re-authenticate.');
+        alert('Session expired or unauthorized. Please sign in again.');
         return;
       }
 
       if (!response.ok) {
-        const contentType = response.headers.get('content-type');
-        let errorMessage = 'Failed to delete menu';
-        
-        if (contentType && contentType.includes('application/json')) {
+        let errorMessage = `HTTP ${response.status}`;
+        if (contentType.includes('application/json')) {
           try {
-            const error = await response.json();
-            errorMessage = error.detail || errorMessage;
-          } catch (e) {
-            errorMessage = `${errorMessage} (${response.status} ${response.statusText})`;
-          }
-        } else {
-          errorMessage = `${errorMessage} (${response.status} ${response.statusText})`;
+            const errorData = await response.json();
+            errorMessage = errorData.detail || errorData.message || errorMessage;
+          } catch (e) {}
         }
-        
-        console.error('[CurrentMenu] Delete failed:', errorMessage, 'RequestId:', requestId);
-        alert(t('currentMenu.error.delete') + ': ' + errorMessage + (requestId ? ` [${requestId}]` : ''));
+        alert(`${t('currentMenu.error.delete')}: ${errorMessage} [${requestId}]`);
         return;
       }
 
-      // Check if response has content before trying to parse
-      const contentType = response.headers.get('content-type');
-      if (contentType && contentType.includes('application/json')) {
+      // Only read body if JSON response
+      if (contentType.includes('application/json')) {
         await response.json();
       }
-      console.log('[CurrentMenu] Menu deleted successfully. RequestId:', requestId);
+      console.log('[CurrentMenu] Menu deleted. RequestId:', requestId);
 
       fetchCurrentMenu();
-      alert(t('currentMenu.success.deleted') + (requestId ? ` [${requestId}]` : ''));
+      alert(`${t('currentMenu.success.deleted')} [${requestId}]`);
     } catch (err) {
       console.error('[CurrentMenu] handleDeleteMenu error:', err);
-      alert(t('currentMenu.error.delete') + ': ' + err.message);
+      alert(`${t('currentMenu.error.delete')}: ${err.message}`);
     }
   };
 
   // Toggle item active status
   const handleToggleItemActive = async (itemId, currentStatus) => {
+    if (!token || !user) {
+      alert('Please sign in to toggle items.');
+      return;
+    }
+
     try {
-      const url = `${backendUrl}/api/menu/${currentMenu.id}/items/${itemId}`;
-      console.log('[CurrentMenu] Toggling item active at:', url);
+      const url = `${API}/menu/${currentMenu.id}/items/${itemId}`;
+      console.log('[CurrentMenu] PATCH (toggle)', url);
 
       const response = await fetch(url, {
         method: 'PATCH',
@@ -340,41 +338,32 @@ function CurrentMenu() {
         body: JSON.stringify({ isActive: !currentStatus }),
       });
 
-      const requestId = response.headers.get('x-request-id');
-      console.log('[CurrentMenu] PATCH /api/menu/{id}/items/{itemId} - RequestId:', requestId || 'undefined');
+      const requestId = response.headers.get('x-request-id') || 'undefined';
+      const contentType = response.headers.get('content-type') || '';
 
       if (response.status === 401) {
-        alert('Session expired or unauthorized. Please re-authenticate.');
+        alert('Session expired or unauthorized. Please sign in again.');
         return;
       }
 
       if (!response.ok) {
-        const contentType = response.headers.get('content-type');
-        let errorMessage = 'Failed to update item';
-        
-        if (contentType && contentType.includes('application/json')) {
+        let errorMessage = `HTTP ${response.status}`;
+        if (contentType.includes('application/json')) {
           try {
-            const error = await response.json();
-            errorMessage = error.detail || errorMessage;
-          } catch (e) {
-            errorMessage = `${errorMessage} (${response.status} ${response.statusText})`;
-          }
-        } else {
-          errorMessage = `${errorMessage} (${response.status} ${response.statusText})`;
+            const errorData = await response.json();
+            errorMessage = errorData.detail || errorData.message || errorMessage;
+          } catch (e) {}
         }
-        
-        console.error('[CurrentMenu] Toggle item failed:', errorMessage, 'RequestId:', requestId);
-        alert(t('currentMenu.error.update') + ': ' + errorMessage + (requestId ? ` [${requestId}]` : ''));
+        alert(`${t('currentMenu.error.update')}: ${errorMessage} [${requestId}]`);
         return;
       }
 
       await response.json();
-      console.log('[CurrentMenu] Item toggled successfully. RequestId:', requestId);
-
+      console.log('[CurrentMenu] Item toggled. RequestId:', requestId);
       fetchCurrentMenu();
     } catch (err) {
       console.error('[CurrentMenu] handleToggleItemActive error:', err);
-      alert(t('currentMenu.error.update') + ': ' + err.message);
+      alert(`${t('currentMenu.error.update')}: ${err.message}`);
     }
   };
 
@@ -384,9 +373,14 @@ function CurrentMenu() {
       return;
     }
 
+    if (!token || !user) {
+      alert('Please sign in to delete items.');
+      return;
+    }
+
     try {
-      const url = `${backendUrl}/api/menu/${currentMenu.id}/items/${itemId}`;
-      console.log('[CurrentMenu] Deleting item at:', url);
+      const url = `${API}/menu/${currentMenu.id}/items/${itemId}`;
+      console.log('[CurrentMenu] DELETE (item)', url);
 
       const response = await fetch(url, {
         method: 'DELETE',
@@ -395,46 +389,36 @@ function CurrentMenu() {
         },
       });
 
-      const requestId = response.headers.get('x-request-id');
-      console.log('[CurrentMenu] DELETE /api/menu/{id}/items/{itemId} - RequestId:', requestId || 'undefined');
+      const requestId = response.headers.get('x-request-id') || 'undefined';
+      const contentType = response.headers.get('content-type') || '';
 
       if (response.status === 401) {
-        alert('Session expired or unauthorized. Please re-authenticate.');
+        alert('Session expired or unauthorized. Please sign in again.');
         return;
       }
 
       if (!response.ok) {
-        const contentType = response.headers.get('content-type');
-        let errorMessage = 'Failed to delete item';
-        
-        if (contentType && contentType.includes('application/json')) {
+        let errorMessage = `HTTP ${response.status}`;
+        if (contentType.includes('application/json')) {
           try {
-            const error = await response.json();
-            errorMessage = error.detail || errorMessage;
-          } catch (e) {
-            errorMessage = `${errorMessage} (${response.status} ${response.statusText})`;
-          }
-        } else {
-          errorMessage = `${errorMessage} (${response.status} ${response.statusText})`;
+            const errorData = await response.json();
+            errorMessage = errorData.detail || errorData.message || errorMessage;
+          } catch (e) {}
         }
-        
-        console.error('[CurrentMenu] Delete item failed:', errorMessage, 'RequestId:', requestId);
-        alert(t('currentMenu.error.delete') + ': ' + errorMessage + (requestId ? ` [${requestId}]` : ''));
+        alert(`${t('currentMenu.error.delete')}: ${errorMessage} [${requestId}]`);
         return;
       }
 
-      // Check if response has content before trying to parse
-      const contentType = response.headers.get('content-type');
-      if (contentType && contentType.includes('application/json')) {
+      if (contentType.includes('application/json')) {
         await response.json();
       }
-      console.log('[CurrentMenu] Item deleted successfully. RequestId:', requestId);
+      console.log('[CurrentMenu] Item deleted. RequestId:', requestId);
 
       fetchCurrentMenu();
-      alert(t('currentMenu.success.itemDeleted') + (requestId ? ` [${requestId}]` : ''));
+      alert(`${t('currentMenu.success.itemDeleted')} [${requestId}]`);
     } catch (err) {
       console.error('[CurrentMenu] handleDeleteItem error:', err);
-      alert(t('currentMenu.error.delete') + ': ' + err.message);
+      alert(`${t('currentMenu.error.delete')}: ${err.message}`);
     }
   };
 

@@ -2883,22 +2883,56 @@ async def create_inventory_adjustment(
     
     await db.inventory_adjustments.insert_one(adjustment_record)
     
-    # Create corresponding inventory record
+    # Update aggregated inventory record
     if qty_adjustment != 0:
-        inventory_record = {
+        # Find existing inventory record
+        existing_inv = await db.inventory.find_one({
+            "restaurantId": current_user["restaurantId"],
+            "ingredientId": ingredient_id
+        })
+        
+        if existing_inv:
+            # Update existing record
+            current_qty = existing_inv.get("qty", existing_inv.get("qtyOnHand", 0))
+            new_qty = current_qty + qty_adjustment
+            
+            await db.inventory.update_one(
+                {"id": existing_inv["id"]},
+                {
+                    "$set": {
+                        "qty": new_qty,
+                        "updatedAt": datetime.now(timezone.utc).isoformat()
+                    }
+                }
+            )
+        else:
+            # Create new inventory record if none exists
+            inventory_record = {
+                "id": str(uuid.uuid4()),
+                "restaurantId": current_user["restaurantId"],
+                "ingredientId": ingredient_id,
+                "qty": qty_adjustment,
+                "unit": ingredient["unit"],
+                "countType": "adjustment",
+                "location": "Manual adjustment",
+                "createdAt": datetime.now(timezone.utc).isoformat(),
+                "updatedAt": None
+            }
+            await db.inventory.insert_one(inventory_record)
+        
+        # Log movement
+        await db.inventory_movements.insert_one({
             "id": str(uuid.uuid4()),
             "restaurantId": current_user["restaurantId"],
             "ingredientId": ingredient_id,
+            "type": "adjustment",
+            "source": "manual_adjustment",
+            "sourceId": adjustment_record["id"],
             "qty": qty_adjustment,
             "unit": ingredient["unit"],
-            "countType": "adjustment",
-            "batchExpiry": None,
-            "location": f"Manual adjustment by {current_user.get('displayName')}",
-            "adjustmentId": adjustment_record["id"],
-            "createdAt": datetime.now(timezone.utc).isoformat()
-        }
-        
-        await db.inventory.insert_one(inventory_record)
+            "notes": f"Manual adjustment: {reason}",
+            "timestamp": datetime.now(timezone.utc).isoformat()
+        })
     
     # Log audit
     await log_audit(

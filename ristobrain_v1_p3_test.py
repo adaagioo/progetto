@@ -639,10 +639,10 @@ class RistoBrainV1P3Tester:
         
         # Test that all endpoints require authentication
         test_endpoints = [
-            "/api/inventory",
-            "/api/inventory/valuation",
-            "/api/menu/current",
-            "/api/suppliers"
+            "/inventory",
+            "/inventory/valuation",
+            "/menu/current",
+            "/suppliers"
         ]
         
         for endpoint in test_endpoints:

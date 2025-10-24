@@ -223,28 +223,6 @@ def generate_daily_prep_xlsx(
     ws.column_dimensions['H'].width = 14
     ws.column_dimensions['I'].width = 12
     ws.column_dimensions['J'].width = 20
-    totals_label = 'TOTALS' if locale == 'en' else 'TOTALI'
-    ws.cell(row=totals_row, column=1, value=totals_label)
-    ws.cell(row=totals_row, column=1).font = Font(bold=True)
-    ws.cell(row=totals_row, column=3, value=total_portions)
-    ws.cell(row=totals_row, column=3).font = Font(bold=True)
-    ws.cell(row=totals_row, column=7, value=total_cost)
-    ws.cell(row=totals_row, column=7).number_format = '€#,##0.00'
-    ws.cell(row=totals_row, column=7).font = Font(bold=True)
-    
-    for col in range(1, 9):
-        ws.cell(row=totals_row, column=col).fill = total_fill
-        ws.cell(row=totals_row, column=col).border = border
-    
-    # Column widths
-    ws.column_dimensions['A'].width = 25
-    ws.column_dimensions['B'].width = 12
-    ws.column_dimensions['C'].width = 12
-    ws.column_dimensions['D'].width = 10
-    ws.column_dimensions['E'].width = 12
-    ws.column_dimensions['F'].width = 14
-    ws.column_dimensions['G'].width = 14
-    ws.column_dimensions['H'].width = 30
     
     # Save to bytes
     buffer = BytesIO()

@@ -3170,10 +3170,13 @@ async def create_wastage(wastage_data: WastageCreate, current_user: dict = Depen
     item_name = ""
     cost_impact = 0
     
+    wastage_id = str(uuid.uuid4())
+    
     if wastage_data.type == "ingredient":
         # Deduct ingredient stock
         deduction = await deduct_ingredient_stock(
-            wastage_data.itemId, wastage_data.qty, current_user["restaurantId"], db
+            wastage_data.itemId, wastage_data.qty, current_user["restaurantId"], db, 
+            source="waste", source_id=wastage_id
         )
         deductions.append(deduction)
         item_name = deduction["itemName"]

@@ -538,17 +538,17 @@ class RistoBrainV1P3Tester:
                                     json=patch_data,
                                     headers=self.get_auth_headers()
                                 ) as patch_response:
-                                patch_request_id = patch_response.headers.get('x-request-id', 'N/A')
-                                
-                                if patch_response.status == 200:
-                                    self.record_test("PATCH /api/menu/{id}/items/{itemId}", "✅", 200, patch_request_id, 
-                                                   "Menu item toggled inactive")
-                                    print(f"   ✅ Toggle menu item: {patch_response.status} | x-request-id: {patch_request_id}")
-                                else:
-                                    error_text = await patch_response.text()
-                                    self.record_test("PATCH /api/menu/{id}/items/{itemId}", "❌", patch_response.status, patch_request_id, 
-                                                   f"Failed: {error_text}")
-                                    print(f"   ❌ Toggle menu item: {patch_response.status} | x-request-id: {patch_request_id}")
+                                    patch_request_id = patch_response.headers.get('x-request-id', 'N/A')
+                                    
+                                    if patch_response.status == 200:
+                                        self.record_test("PATCH /api/menu/{id}/items/{itemId}", "✅", 200, patch_request_id, 
+                                                       "Menu item toggled inactive")
+                                        print(f"   ✅ Toggle menu item: {patch_response.status} | x-request-id: {patch_request_id}")
+                                    else:
+                                        error_text = await patch_response.text()
+                                        self.record_test("PATCH /api/menu/{id}/items/{itemId}", "❌", patch_response.status, patch_request_id, 
+                                                       f"Failed: {error_text}")
+                                        print(f"   ❌ Toggle menu item: {patch_response.status} | x-request-id: {patch_request_id}")
                         else:
                             error_text = await item_response.text()
                             self.record_test("POST /api/menu/{id}/items", "❌", item_response.status, item_request_id, 

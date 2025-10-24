@@ -386,32 +386,55 @@ class DocumentParser:
         }
     
     def _extract_total(self, text: str) -> Optional[float]:
-        """Extract total amount from invoice - enhanced for Italian format"""
-        # Italian pattern: "Totale Documento\n€ 268,23"
-        italian_patterns = [
-            r'Totale\s+Documento\s*[:\s]*€?\s*([\d,]+(?:\.?\d{2})?)',
-            r'(?:importo\s+)?totale\s*[:\s]*€?\s*([\d,]+(?:\.?\d{2})?)',
-        ]
-        
-        for pattern in italian_patterns:
-            match = re.search(pattern, text, re.IGNORECASE)
-            if match:
-                try:
-                    total_str = match.group(1).replace(',', '.')  # Italian uses comma for decimals
+        """Extract total amount - enhanced for Italian format
+        SAFE: Falls back to original patterns if Italian patterns don't match
+        """
+        try:
+            # Italian pattern: "Totale Documento\n€ 268,23"
+            italian_patterns = [
+                r'Totale\s+Documento\s*[:\s]*€?\s*([\d,]+(?:\.?\d{2})?)',
+                r'(?:importo\s+)?totale\s*[:\s]*€?\s*([\d,]+(?:\.?\d{2})?)',
+            ]
+            
+            for pattern in italian_patterns:
+                match = re.search(pattern, text, re.IGNORECASE)
+                if match:
+                    total_str = match.group(1).replace(',', '.')
                     return float(total_str)
-                except:
-                    pass
-        
-        # Try original patterns
-        for pattern in self.total_patterns:
-            match = re.search(pattern, text, re.IGNORECASE)
-            if match:
-                try:
+            
+            # Original patterns
+            for pattern in self.total_patterns:
+                match = re.search(pattern, text, re.IGNORECASE)
+                if match:
                     total_str = match.group(1).replace(',', '')
                     return float(total_str)
-                except:
-                    pass
+        except Exception as e:
+            logger.warning(f"Total extraction error: {e}")
         return None
+    
+    def _extract_vat_info(self, text: str) -> Dict[str, Any]:
+        """Extract VAT/IVA information from Italian invoice
+        SAFE: Returns empty dict if extraction fails
+        """
+        vat_info = {}
+        try:
+            patterns = {
+                'subtotal': r'imponibile.*?IVA.*?\n\s*([\d,]+)',
+                'vat_rate': r'(\d{1,2})[,.](\d{2})%',
+                'vat_amount': r'importo\s+IVA\s*[\n\s]+([\d,]+)',
+            }
+            
+            for key, pattern in patterns.items():
+                match = re.search(pattern, text, re.IGNORECASE)
+                if match:
+                    if key == 'vat_rate':
+                        vat_info[key] = float(f"{match.group(1)}.{match.group(2)}")
+                    else:
+                        value_str = match.group(1).replace(',', '.')
+                        vat_info[key] = float(value_str)
+        except Exception as e:
+            logger.warning(f"VAT extraction error: {e}")
+        return vat_info
     
     def auto_parse(self, ocr_text: str) -> Dict[str, Any]:
         """

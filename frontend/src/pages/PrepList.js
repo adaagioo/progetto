@@ -307,35 +307,44 @@ function PrepList() {
                     try {
                       const token = localStorage.getItem('token');
                       const locale = localStorage.getItem('i18nextLng') || 'en';
-                      const response = await fetch(
-                        `${process.env.REACT_APP_BACKEND_URL}/api/prep-list/export?date=${targetDate}&format=xlsx&locale=${locale}`,
-                        {
-                          headers: {
-                            'Authorization': `Bearer ${token}`
-                          }
+                      const url = `${process.env.REACT_APP_BACKEND_URL}/api/prep-list/export?date=${targetDate}&format=xlsx&locale=${locale}`;
+                      
+                      const response = await fetch(url, {
+                        headers: {
+                          'Authorization': `Bearer ${token}`
                         }
-                      );
+                      });
+                      
+                      const requestId = response.headers.get('x-request-id') || 'unknown';
+                      console.log(`PrepList XLSX export - Status: ${response.status}, RequestId: ${requestId}`);
                       
                       if (response.ok) {
                         const blob = await response.blob();
-                        const url = window.URL.createObjectURL(blob);
+                        const downloadUrl = window.URL.createObjectURL(blob);
                         const a = document.createElement('a');
-                        a.href = url;
+                        a.href = downloadUrl;
                         a.download = `DailyPreparations_${targetDate}.xlsx`;
                         document.body.appendChild(a);
                         a.click();
-                        window.URL.revokeObjectURL(url);
+                        window.URL.revokeObjectURL(downloadUrl);
                         document.body.removeChild(a);
                         toast.success(t('export.success') || 'Export successful');
                       } else if (response.status === 404) {
-                        const requestId = response.headers.get('x-request-id') || 'unknown';
                         console.warn('No data to export. RequestId:', requestId);
                         toast.warning(t('export.noData') || `No data to export for ${targetDate}`);
                       } else {
-                        const requestId = response.headers.get('x-request-id') || 'unknown';
                         console.error('Export failed. RequestId:', requestId, 'Status:', response.status);
-                        const error = await response.json().catch(() => ({ detail: 'Export failed' }));
-                        toast.error(`${error.detail || t('export.error')} (Request ID: ${requestId})`);
+                        const contentType = response.headers.get('content-type');
+                        let errorMsg = 'Export failed';
+                        if (contentType && contentType.includes('application/json')) {
+                          try {
+                            const error = await response.json();
+                            errorMsg = error.detail || errorMsg;
+                          } catch (e) {
+                            console.error('Could not parse error JSON:', e);
+                          }
+                        }
+                        toast.error(`${errorMsg} (Request ID: ${requestId})`);
                       }
                     } catch (error) {
                       console.error('Export error:', error);

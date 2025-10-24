@@ -50,6 +50,7 @@ function Dashboard() {
       setLoadingTotal(true);
       setTotalError(false);
       const response = await axios.get(`${API}/inventory/valuation/total`);
+      console.log('Total Inventory Value Response:', response.data, 'RequestId:', response.headers['x-request-id']);
       setTotalInventoryValue(response.data);
     } catch (error) {
       console.error('Failed to load total inventory value:', error);

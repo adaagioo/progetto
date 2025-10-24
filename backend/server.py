@@ -4573,7 +4573,7 @@ async def create_receiving(receiving: ReceivingCreate, current_user: dict = Depe
     
     await db.receiving.insert_one(receiving_data)
     
-    # Write-through to Inventory (add quantities)
+    # Update Inventory (aggregate quantities by ingredient)
     for line in receiving.lines:
         if line.ingredientId:
             # Check if ingredient exists
@@ -4582,22 +4582,70 @@ async def create_receiving(receiving: ReceivingCreate, current_user: dict = Depe
             )
             
             if ingredient:
-                # Create inventory record for received goods
-                inventory_record = {
+                # Find or create inventory record
+                existing_inv = await db.inventory.find_one({
+                    "restaurantId": current_user["restaurantId"],
+                    "ingredientId": line.ingredientId
+                })
+                
+                if existing_inv:
+                    # Update existing inventory - add quantity
+                    new_qty = existing_inv.get("qty", 0) + line.qty
+                    
+                    # Update WAC (Weighted Average Cost)
+                    old_qty = existing_inv.get("qty", 0)
+                    old_cost = existing_inv.get("effectiveUnitCost", existing_inv.get("unitCost", 0))
+                    new_cost = line.unitPrice
+                    
+                    if old_qty + line.qty > 0:
+                        wac = ((old_qty * old_cost) + (line.qty * new_cost)) / (old_qty + line.qty)
+                    else:
+                        wac = new_cost
+                    
+                    await db.inventory.update_one(
+                        {"id": existing_inv["id"]},
+                        {
+                            "$set": {
+                                "qty": new_qty,
+                                "effectiveUnitCost": wac,
+                                "lastReceived": datetime.now(timezone.utc).isoformat(),
+                                "updatedAt": datetime.now(timezone.utc).isoformat()
+                            }
+                        }
+                    )
+                else:
+                    # Create new inventory record
+                    inventory_record = {
+                        "id": str(uuid.uuid4()),
+                        "restaurantId": current_user["restaurantId"],
+                        "ingredientId": line.ingredientId,
+                        "qty": line.qty,
+                        "unit": ingredient.get("unit", "kg"),
+                        "effectiveUnitCost": line.unitPrice,
+                        "location": receiving.category,  # Use category as location (food/beverage/nofood)
+                        "expiryDate": line.expiryDate,
+                        "lastReceived": datetime.now(timezone.utc).isoformat(),
+                        "createdAt": datetime.now(timezone.utc).isoformat(),
+                        "updatedAt": None
+                    }
+                    
+                    await db.inventory.insert_one(inventory_record)
+                
+                # Log movement in inventory_movements collection
+                movement_record = {
                     "id": str(uuid.uuid4()),
                     "restaurantId": current_user["restaurantId"],
                     "ingredientId": line.ingredientId,
+                    "type": "inbound",
+                    "source": "receiving",
+                    "sourceId": receiving_data["id"],
                     "qty": line.qty,
                     "unit": line.unit,
-                    "countType": "receiving",
-                    "batchExpiry": line.expiryDate,
-                    "location": f"Receiving from {supplier['name']}",
-                    "receivingId": receiving_data["id"],
-                    "unitCost": line.unitPrice,  # Store unit cost for valuation
-                    "createdAt": datetime.now(timezone.utc).isoformat()
+                    "unitCost": line.unitPrice,
+                    "notes": f"Received from {supplier['name']}",
+                    "timestamp": datetime.now(timezone.utc).isoformat()
                 }
-                
-                await db.inventory.insert_one(inventory_record)
+                await db.inventory_movements.insert_one(movement_record)
     
     # Log audit
     await log_audit(

@@ -581,11 +581,11 @@ function Ingredients() {
                     <AlertCircle className="h-4 w-4 text-red-600 mt-0.5" />
                     <div className="flex-1">
                       <span className="text-xs font-medium text-red-600">{t('ingredients.allergens') || 'Allergens'}:</span>
-                      <div className="flex flex-wrap gap-1 mt-1">
+                      <div className="flex flex-wrap gap-1.5 mt-1">
                         {ingredient.allergens && ingredient.allergens.map(allergen => (
                           <span 
                             key={allergen} 
-                            className="inline-block text-xs bg-red-100 text-red-800 px-2 py-0.5 rounded max-w-[120px] truncate"
+                            className="inline-block text-xs bg-red-100 text-red-800 px-2 py-1 rounded max-w-[140px] truncate whitespace-nowrap"
                             title={t(`allergens.${allergen.toUpperCase()}`) || allergen}
                           >
                             {t(`allergens.${allergen.toUpperCase()}`) || allergen}
@@ -594,7 +594,7 @@ function Ingredients() {
                         {ingredient.otherAllergens && ingredient.otherAllergens.map((allergen, idx) => (
                           <span 
                             key={`other-${idx}`} 
-                            className="inline-block text-xs bg-orange-100 text-orange-800 px-2 py-0.5 rounded max-w-[120px] truncate"
+                            className="inline-block text-xs bg-orange-100 text-orange-800 px-2 py-1 rounded max-w-[140px] truncate whitespace-nowrap"
                             title={allergen}
                           >
                             {allergen}

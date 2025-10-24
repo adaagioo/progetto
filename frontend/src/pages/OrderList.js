@@ -301,51 +301,46 @@ function OrderList() {
               <div className="flex gap-2">
                 <button
                   onClick={async () => {
+                    const token = localStorage.getItem('token');
+                    const locale = localStorage.getItem('i18nextLng') || 'en';
+                    const url = `${process.env.REACT_APP_BACKEND_URL}/api/order-list/export?date=${targetDate}&format=pdf&locale=${locale}`;
+                    
+                    console.log('Exporting OrderList PDF:', url);
+                    
                     try {
-                      const token = localStorage.getItem('token');
-                      const locale = localStorage.getItem('i18nextLng') || 'en';
-                      const url = `${process.env.REACT_APP_BACKEND_URL}/api/order-list/export?date=${targetDate}&format=pdf&locale=${locale}`;
-                      
                       const response = await fetch(url, {
+                        method: 'GET',
                         headers: {
                           'Authorization': `Bearer ${token}`
                         }
                       });
                       
                       const requestId = response.headers.get('x-request-id') || 'unknown';
-                      console.log(`OrderList PDF export - Status: ${response.status}, RequestId: ${requestId}`);
                       
-                      if (response.ok) {
-                        const blob = await response.blob();
-                        const downloadUrl = window.URL.createObjectURL(blob);
-                        const a = document.createElement('a');
-                        a.href = downloadUrl;
-                        a.download = `PurchaseOrders_${targetDate}.pdf`;
-                        document.body.appendChild(a);
-                        a.click();
-                        window.URL.revokeObjectURL(downloadUrl);
-                        document.body.removeChild(a);
-                        toast.success(t('export.success') || 'Export successful');
-                      } else if (response.status === 404) {
-                        console.warn('No orders to export. RequestId:', requestId);
-                        toast.warning(t('export.noData') || `No orders to export for ${targetDate}`);
-                      } else {
-                        console.error('Export failed. RequestId:', requestId, 'Status:', response.status);
-                        const contentType = response.headers.get('content-type');
-                        let errorMsg = 'Export failed';
-                        if (contentType && contentType.includes('application/json')) {
-                          try {
-                            const error = await response.json();
-                            errorMsg = error.detail || errorMsg;
-                          } catch (e) {
-                            console.error('Could not parse error JSON:', e);
-                          }
+                      if (!response.ok) {
+                        console.error(`Export failed - Status: ${response.status}, RequestId: ${requestId}`);
+                        if (response.status === 404) {
+                          toast.warning(t('export.noData') || 'No orders to export for selected date');
+                        } else {
+                          toast.error(`Export failed (Request ID: ${requestId})`);
                         }
-                        toast.error(`${errorMsg} (Request ID: ${requestId})`);
+                        return;
                       }
+                      
+                      console.log(`Export success - Status: ${response.status}, RequestId: ${requestId}`);
+                      const blob = await response.blob();
+                      const downloadUrl = window.URL.createObjectURL(blob);
+                      const a = document.createElement('a');
+                      a.href = downloadUrl;
+                      a.download = `PurchaseOrders_${targetDate}.pdf`;
+                      document.body.appendChild(a);
+                      a.click();
+                      window.URL.revokeObjectURL(downloadUrl);
+                      document.body.removeChild(a);
+                      toast.success(t('export.success') || 'Export successful');
                     } catch (error) {
                       console.error('Export error:', error);
-                      toast.error(t('export.error') || 'Export failed');
+                      toast.error('Export failed: ' + error.message);
                     }
                   }}
                   className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 flex items-center gap-2"
@@ -354,51 +349,46 @@ function OrderList() {
                 </button>
                 <button
                   onClick={async () => {
+                    const token = localStorage.getItem('token');
+                    const locale = localStorage.getItem('i18nextLng') || 'en';
+                    const url = `${process.env.REACT_APP_BACKEND_URL}/api/order-list/export?date=${targetDate}&format=xlsx&locale=${locale}`;
+                    
+                    console.log('Exporting OrderList XLSX:', url);
+                    
                     try {
-                      const token = localStorage.getItem('token');
-                      const locale = localStorage.getItem('i18nextLng') || 'en';
-                      const url = `${process.env.REACT_APP_BACKEND_URL}/api/order-list/export?date=${targetDate}&format=xlsx&locale=${locale}`;
-                      
                       const response = await fetch(url, {
+                        method: 'GET',
                         headers: {
                           'Authorization': `Bearer ${token}`
                         }
                       });
                       
                       const requestId = response.headers.get('x-request-id') || 'unknown';
-                      console.log(`OrderList XLSX export - Status: ${response.status}, RequestId: ${requestId}`);
                       
-                      if (response.ok) {
-                        const blob = await response.blob();
-                        const downloadUrl = window.URL.createObjectURL(blob);
-                        const a = document.createElement('a');
-                        a.href = downloadUrl;
-                        a.download = `PurchaseOrders_${targetDate}.xlsx`;
-                        document.body.appendChild(a);
-                        a.click();
-                        window.URL.revokeObjectURL(downloadUrl);
-                        document.body.removeChild(a);
-                        toast.success(t('export.success') || 'Export successful');
-                      } else if (response.status === 404) {
-                        console.warn('No orders to export. RequestId:', requestId);
-                        toast.warning(t('export.noData') || `No orders to export for ${targetDate}`);
-                      } else {
-                        console.error('Export failed. RequestId:', requestId, 'Status:', response.status);
-                        const contentType = response.headers.get('content-type');
-                        let errorMsg = 'Export failed';
-                        if (contentType && contentType.includes('application/json')) {
-                          try {
-                            const error = await response.json();
-                            errorMsg = error.detail || errorMsg;
-                          } catch (e) {
-                            console.error('Could not parse error JSON:', e);
-                          }
+                      if (!response.ok) {
+                        console.error(`Export failed - Status: ${response.status}, RequestId: ${requestId}`);
+                        if (response.status === 404) {
+                          toast.warning(t('export.noData') || 'No orders to export for selected date');
+                        } else {
+                          toast.error(`Export failed (Request ID: ${requestId})`);
                         }
-                        toast.error(`${errorMsg} (Request ID: ${requestId})`);
+                        return;
                       }
+                      
+                      console.log(`Export success - Status: ${response.status}, RequestId: ${requestId}`);
+                      const blob = await response.blob();
+                      const downloadUrl = window.URL.createObjectURL(blob);
+                      const a = document.createElement('a');
+                      a.href = downloadUrl;
+                      a.download = `PurchaseOrders_${targetDate}.xlsx`;
+                      document.body.appendChild(a);
+                      a.click();
+                      window.URL.revokeObjectURL(downloadUrl);
+                      document.body.removeChild(a);
+                      toast.success(t('export.success') || 'Export successful');
                     } catch (error) {
                       console.error('Export error:', error);
-                      toast.error(t('export.error') || 'Export failed');
+                      toast.error('Export failed: ' + error.message);
                     }
                   }}
                   className="px-4 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 flex items-center gap-2"

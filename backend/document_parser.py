@@ -196,34 +196,54 @@ class DocumentParser:
     
     def _parse_single_line_item(self, line: str, document_type: str) -> Optional[Dict[str, Any]]:
         """
-        Parse a single line item
+        Parse a single line item - enhanced for Italian invoices
         Expected formats:
-        - Invoice: "Description Qty Unit Price"
-        - Italian format: "CODE QTY\DESCRIPTION UNIT %IVA | UM PRICE PRICE"
-        - Price list: "Product Code Price Unit"
+        - Italian: "L0347 1 AMARO DEL CAPO 1LT 22 | N 14,96 14,96"
+        - Italian: "V1933 6 VINO CHARDONNAY ATTEMS 2023 75CL 22 | N 7,2373 43,42"
+        - Generic: "Description Qty Unit Price"
         """
-        # Italian invoice pattern: "L0347 1\AMARO DEL CAPO 1LT 22 | N 14,96 14,96"
-        # Variations: 1\ or 1. or 1 or 6|
-        italian_pattern = r'^([A-Z]\d{4})\s+(\d+)[\\.\s|]+(.+?)\s+(\d+)\s+\|\s+\w+\s+([\d,]+(?:\.?\d+)?)\s+([\d,]+(?:\.?\d+)?)$'
-        match = re.match(italian_pattern, line)
-        if match:
-            code, qty, description, iva, unit_price, total = match.groups()
-            # Clean up description (remove size info at end if present)
-            desc_clean = re.sub(r'\s+(1LT|70CL\.?|75CL\.?|ML|LT|KG|G|\d+CL\.?)$', '', description.strip(), flags=re.IGNORECASE)
-            
-            return {
-                "description": desc_clean.strip(),
-                "qty": float(qty),
-                "unit": self._extract_unit_from_description(description) or 'unit',
-                "price": float(unit_price.replace(',', '.')),
-                "code": code,
-                "line_text": line
-            }
+        
+        # Enhanced Italian invoice pattern
+        # Format: CODE QTY DESCRIPTION SIZE IVA% | UM UNIT_PRICE LINE_TOTAL
+        # Example: "L0347 1 AMARO DEL CAPO 1LT 22 | N 14,96 14,96"
+        italian_patterns = [
+            # With pipe separator
+            r'^([A-Z]\d{4})\s+(\d+)\s+(.+?)\s+(\d{2})\s*\|\s*\w+\s+([\d,]+(?:\.?\d*)?)\s+([\d,]+(?:\.?\d*)?)$',
+            # With comma in qty (12, SP.TOSO BRUT...)
+            r'^([A-Z]\d{4})\s+(\d+),?\s+(.+?)\s+(\d{2})\s*\|\s*\w+\s+([\d,]+(?:\.?\d*)?)\s+([\d,]+(?:\.?\d*)?)$',
+        ]
+        
+        for pattern in italian_patterns:
+            match = re.match(pattern, line)
+            if match:
+                code, qty, description, iva, unit_price, total = match.groups()
+                
+                # Clean quantity (remove trailing comma if present)
+                qty_clean = qty.rstrip(',')
+                
+                # Extract unit from description (1LT, 75CL, etc.)
+                unit = self._extract_unit_from_description(description) or 'unit'
+                
+                # Clean description - remove size info at end
+                desc_clean = re.sub(r'\s+(1LT|70CL\.?|75CL\.?|ML|LT|KG|G|\d+CL\.?|2023|2024|doc)$', '', description.strip(), flags=re.IGNORECASE)
+                desc_clean = desc_clean.strip()
+                
+                # Convert comma decimals to dots
+                unit_price_float = float(unit_price.replace(',', '.'))
+                total_float = float(total.replace(',', '.'))
+                
+                return {
+                    "description": desc_clean,
+                    "qty": float(qty_clean),
+                    "unit": unit,
+                    "unit_price": unit_price_float,
+                    "line_total": total_float,
+                    "code": code,
+                    "vat_percent": int(iva),
+                    "line_text": line
+                }
         
         # Generic pattern: capture description, numbers, and currency
-        # Example: "San Marzano Tomatoes 10.0 kg €3.40"
-        
-        # Try to extract components
         parts = line.split()
         if len(parts) < 3:
             return None
@@ -267,8 +287,8 @@ class DocumentParser:
             "description": description,
             "qty": qty,
             "unit": unit or 'unit',
-            "price": price,
-            "line_text": line  # Keep original for review
+            "unit_price": price,
+            "line_text": line
         }
     
     def _extract_unit_from_description(self, description: str) -> Optional[str]:

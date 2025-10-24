@@ -3147,7 +3147,7 @@ async def export_purchase_orders(
     
     supplier_map = {sup["id"]: sup for sup in suppliers}
     
-    # Group by supplier
+    # Group by supplier with ALL required fields
     grouped_data = {}
     
     for item in order_list.get("items", []):
@@ -3159,17 +3159,24 @@ async def export_purchase_orders(
         if supplier_name not in grouped_data:
             grouped_data[supplier_name] = []
         
-        # Get last price
+        # Get last price and calculate unit price
         last_price = ingredient.get("lastPrice", 0)
-        unit_price = last_price / max(ingredient.get("lastPackSize", 1), 1)
+        last_pack_size = max(ingredient.get("lastPackSize", 1), 1)
+        unit_price = last_price / last_pack_size
+        
+        qty_to_order = item.get("suggestedQty", 0)
+        extended_cost = unit_price * qty_to_order
         
         grouped_data[supplier_name].append({
+            "supplier": supplier_name,
             "itemName": ingredient.get("name", "Unknown"),
-            "qtyToOrder": item.get("suggestedQty", 0),
+            "code": ingredient.get("internalCode", ""),  # Item code
+            "qtyToOrder": qty_to_order,
             "unit": ingredient.get("unit", ""),
             "unitPrice": unit_price,
+            "extendedCost": extended_cost,
             "deliveryDate": item.get("deliveryDate", ""),
-            "driver": item.get("driver", "")[:50] if item.get("driver") else "",
+            "driver": item.get("driver", "")[:80] if item.get("driver") else "",  # Reason/driver
             "notes": item.get("notes", "")
         })
     

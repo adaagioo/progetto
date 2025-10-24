@@ -183,11 +183,11 @@ class RistoBrainV1P3Tester:
         print("\n📊 Testing Dashboard Endpoints...")
         
         dashboard_endpoints = [
-            "/api/inventory/valuation/food",
-            "/api/inventory/valuation/beverage", 
-            "/api/inventory/valuation/nonfood",
-            "/api/inventory/valuation/total",
-            "/api/inventory/expiring?days=3"
+            "/inventory/valuation/food",
+            "/inventory/valuation/beverage", 
+            "/inventory/valuation/nonfood",
+            "/inventory/valuation/total",
+            "/inventory/expiring?days=3"
         ]
         
         for endpoint in dashboard_endpoints:

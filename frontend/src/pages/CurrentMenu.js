@@ -65,21 +65,44 @@ function CurrentMenu() {
   const fetchCurrentMenu = async () => {
     try {
       setLoading(true);
-      const response = await fetch(`${backendUrl}/api/menu/current`, {
+      
+      const url = `${backendUrl}/api/menu/current`;
+      console.log('[CurrentMenu] Fetching:', url);
+      
+      if (!token) {
+        throw new Error('No authentication token available');
+      }
+
+      const response = await fetch(url, {
+        method: 'GET',
         headers: {
-          Authorization: `Bearer ${token}`,
+          'Authorization': `Bearer ${token}`,
         },
       });
 
+      const requestId = response.headers.get('x-request-id');
+      console.log('[CurrentMenu] GET /api/menu/current - RequestId:', requestId || 'undefined');
+
+      if (response.status === 401) {
+        alert('Session expired or unauthorized. Please re-authenticate.');
+        setError('Unauthorized');
+        setLoading(false);
+        return;
+      }
+
       if (!response.ok) {
+        const errorText = await response.text();
+        console.error('[CurrentMenu] Load failed:', errorText, 'RequestId:', requestId);
         throw new Error('Failed to load menu');
       }
 
       const data = await response.json();
+      console.log('[CurrentMenu] Current menu loaded successfully. RequestId:', requestId);
       setCurrentMenu(data.menu);
       setMenuItems(data.items || []);
       setError(null);
     } catch (err) {
+      console.error('[CurrentMenu] fetchCurrentMenu error:', err);
       setError(err.message);
     } finally {
       setLoading(false);

@@ -576,6 +576,7 @@ function CurrentMenu() {
           {!currentMenu && (
             <Button
               onClick={() => {
+                console.log('[CurrentMenu] Create Menu button clicked');
                 setMenuForm({
                   name: '',
                   description: '',
@@ -585,7 +586,6 @@ function CurrentMenu() {
                 });
                 setShowCreateMenu(true);
               }}
-              disabled={!token || !user}
               className="bg-gradient-to-r from-emerald-500 to-teal-600 text-white"
             >
               <Plus className="w-4 h-4 mr-2" />

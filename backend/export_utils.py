@@ -129,10 +129,10 @@ def generate_daily_prep_xlsx(
     restaurant_name: str,
     locale: str = 'en'
 ) -> bytes:
-    """Generate Daily Preparations XLSX export"""
+    """Generate Daily Preparations XLSX export with ALL required columns"""
     wb = Workbook()
     ws = wb.active
-    ws.title = f"DailyPreparations_{date}"
+    ws.title = f"DailyPrep_{date}"
     
     # Styles
     header_font = Font(bold=True, color="FFFFFF", size=11)
@@ -146,7 +146,7 @@ def generate_daily_prep_xlsx(
     )
     
     # Title and date
-    ws.merge_cells('A1:H1')
+    ws.merge_cells('A1:J1')
     ws['A1'] = f"{restaurant_name} - Daily Preparations"
     ws['A1'].font = Font(bold=True, size=14)
     ws['A1'].alignment = Alignment(horizontal='center')
@@ -154,11 +154,11 @@ def generate_daily_prep_xlsx(
     ws['A2'] = f"Date: {date}"
     ws['A2'].font = Font(bold=True)
     
-    # Headers
+    # Headers with ALL required columns
     if locale == 'en':
-        headers = ['Preparation', 'Planned Portions', 'To Prepare', 'Unit', 'Shelf Life', 'Cost/Portion', 'Total Cost', 'Notes']
+        headers = ['Date', 'Preparation', 'Forecast', 'Available', 'To Make', 'Unit', 'Shelf Life', 'Cost/Portion', 'Est. Total', 'Notes']
     else:
-        headers = ['Preparazione', 'Porzioni Pianif.', 'Da Preparare', 'Unità', 'Scadenza', 'Costo/Porzione', 'Costo Totale', 'Note']
+        headers = ['Data', 'Preparazione', 'Previsto', 'Disponibile', 'Da Fare', 'Unità', 'Scadenza', 'Costo/Porz.', 'Tot. Stim.', 'Note']
     
     for col, header in enumerate(headers, 1):
         cell = ws.cell(row=4, column=col, value=header)
@@ -169,35 +169,60 @@ def generate_daily_prep_xlsx(
     
     # Data rows
     total_cost = 0
-    total_portions = 0
+    total_to_make = 0
     
     for idx, item in enumerate(data, 5):
-        ws.cell(row=idx, column=1, value=item.get('name', ''))
-        ws.cell(row=idx, column=2, value=item.get('plannedPortions', 0))
-        ws.cell(row=idx, column=3, value=item.get('toPrepare', 0))
-        ws.cell(row=idx, column=4, value=item.get('unit', 'portions'))
-        ws.cell(row=idx, column=5, value=item.get('shelfLife', '-'))
+        ws.cell(row=idx, column=1, value=item.get('date', date))
+        ws.cell(row=idx, column=2, value=item.get('name', ''))
+        ws.cell(row=idx, column=3, value=round(item.get('forecast', 0), 1))
+        ws.cell(row=idx, column=4, value=round(item.get('available', 0), 1))
+        ws.cell(row=idx, column=5, value=round(item.get('toMake', 0), 1))
+        ws.cell(row=idx, column=6, value=item.get('unit', 'portions'))
+        ws.cell(row=idx, column=7, value=item.get('shelfLife', '-'))
         
         cost_per = item.get('costPerPortion', 0)
         total_item = item.get('totalCost', 0)
         
-        ws.cell(row=idx, column=6, value=cost_per)
-        ws.cell(row=idx, column=6).number_format = '€#,##0.00'
+        ws.cell(row=idx, column=8, value=cost_per)
+        ws.cell(row=idx, column=8).number_format = '€#,##0.00'
         
-        ws.cell(row=idx, column=7, value=total_item)
-        ws.cell(row=idx, column=7).number_format = '€#,##0.00'
+        ws.cell(row=idx, column=9, value=total_item)
+        ws.cell(row=idx, column=9).number_format = '€#,##0.00'
         
-        ws.cell(row=idx, column=8, value=item.get('notes', ''))
+        ws.cell(row=idx, column=10, value=item.get('notes', ''))
         
         total_cost += total_item
-        total_portions += item.get('toPrepare', 0)
+        total_to_make += item.get('toMake', 0)
         
         # Borders
-        for col in range(1, 9):
+        for col in range(1, 11):
             ws.cell(row=idx, column=col).border = border
     
     # Totals row
     totals_row = len(data) + 5
+    totals_label = 'TOTALS' if locale == 'en' else 'TOTALI'
+    ws.cell(row=totals_row, column=1, value=totals_label)
+    ws.cell(row=totals_row, column=5, value=round(total_to_make, 1))
+    ws.cell(row=totals_row, column=9, value=total_cost)
+    ws.cell(row=totals_row, column=9).number_format = '€#,##0.00'
+    
+    for col in range(1, 11):
+        cell = ws.cell(row=totals_row, column=col)
+        cell.font = Font(bold=True)
+        cell.fill = total_fill
+        cell.border = border
+    
+    # Column widths
+    ws.column_dimensions['A'].width = 12
+    ws.column_dimensions['B'].width = 25
+    ws.column_dimensions['C'].width = 10
+    ws.column_dimensions['D'].width = 10
+    ws.column_dimensions['E'].width = 10
+    ws.column_dimensions['F'].width = 10
+    ws.column_dimensions['G'].width = 12
+    ws.column_dimensions['H'].width = 14
+    ws.column_dimensions['I'].width = 12
+    ws.column_dimensions['J'].width = 20
     totals_label = 'TOTALS' if locale == 'en' else 'TOTALI'
     ws.cell(row=totals_row, column=1, value=totals_label)
     ws.cell(row=totals_row, column=1).font = Font(bold=True)

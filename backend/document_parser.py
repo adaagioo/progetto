@@ -313,21 +313,55 @@ class DocumentParser:
     
     def parse_invoice(self, ocr_text: str) -> Dict[str, Any]:
         """
-        Parse invoice from OCR text
+        Parse invoice from OCR text - enhanced for Italian invoices
         
         Returns:
-            Structured invoice data
+            Structured invoice data with line items, totals, and VAT
         """
+        line_items = self.parse_line_items(ocr_text, document_type='invoice')
+        
+        # Extract VAT/IVA information
+        vat_info = self._extract_vat_info(ocr_text)
+        
         return {
             "document_type": "invoice",
             "invoice_number": self.parse_invoice_number(ocr_text),
             "date": self.parse_date(ocr_text),
-            "supplier_name": self.parse_supplier_name(ocr_text),
+            "supplier": self.parse_supplier_name(ocr_text),
             "vat_number": self.parse_vat_number(ocr_text),
-            "line_items": self.parse_line_items(ocr_text, document_type='invoice'),
+            "lines": line_items,
+            "subtotal": vat_info.get('subtotal'),
+            "vat_amount": vat_info.get('vat_amount'),
+            "vat_rate": vat_info.get('vat_rate'),
             "total": self._extract_total(ocr_text),
-            "raw_text": ocr_text
+            "line_count": len(line_items)
         }
+    
+    def _extract_vat_info(self, text: str) -> Dict[str, Any]:
+        """Extract VAT/IVA information from Italian invoice"""
+        vat_info = {}
+        
+        # Italian pattern: "imponibile IVA aliquota IVA importo IVA\n219,86 219,86 219,86 22,00% 48,37"
+        # Look for: subtotal, VAT rate, VAT amount
+        patterns = {
+            'subtotal': r'imponibile.*?IVA.*?\n\s*([\d,]+)',
+            'vat_rate': r'(\d{1,2})[,.](\d{2})%',
+            'vat_amount': r'importo\s+IVA\s*[\n\s]+([\d,]+)',
+        }
+        
+        for key, pattern in patterns.items():
+            match = re.search(pattern, text, re.IGNORECASE)
+            if match:
+                try:
+                    if key == 'vat_rate':
+                        vat_info[key] = float(f"{match.group(1)}.{match.group(2)}")
+                    else:
+                        value_str = match.group(1).replace(',', '.')
+                        vat_info[key] = float(value_str)
+                except:
+                    pass
+        
+        return vat_info
     
     def parse_price_list(self, ocr_text: str) -> Dict[str, Any]:
         """

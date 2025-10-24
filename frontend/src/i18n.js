@@ -761,6 +761,7 @@ const resources = {
       'nav.orderList': 'Lista Ordini',
       'nav.pl': 'P&L',
       'nav.settings': 'Impostazioni',
+      'nav.currentMenu': 'Menù Corrente',
       
       // Auth
       'auth.login': 'Accedi',

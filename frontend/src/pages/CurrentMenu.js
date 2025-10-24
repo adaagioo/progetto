@@ -69,14 +69,14 @@ function CurrentMenu() {
     try {
       setLoading(true);
       
-      if (!token || !user) {
-        console.log('[CurrentMenu] Auth not ready yet');
+      if (!isAuthReady) {
+        console.log('[CurrentMenu] Auth not ready - user:', !!user, 'token:', !!token);
         setLoading(false);
         return;
       }
 
       const url = `${API}/menu/current`;
-      console.log('[CurrentMenu] GET', url);
+      console.log('[CurrentMenu] GET', url, 'isAuthReady:', isAuthReady);
 
       const response = await fetch(url, {
         method: 'GET',
@@ -88,7 +88,7 @@ function CurrentMenu() {
       const requestId = response.headers.get('x-request-id') || 'undefined';
       const contentType = response.headers.get('content-type') || '';
       
-      console.log('[CurrentMenu] Response:', { status: response.status, requestId });
+      console.log('[CurrentMenu] Response:', { url, status: response.status, requestId, isAuthReady, hasToken: !!token });
 
       if (response.status === 401) {
         console.error('[CurrentMenu] 401 Unauthorized. RequestId:', requestId);

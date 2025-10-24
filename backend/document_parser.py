@@ -41,28 +41,32 @@ class DocumentParser:
         ]
     
     def parse_invoice_number(self, text: str) -> Optional[str]:
-        """Extract invoice number - enhanced for Italian invoices"""
-        # Italian patterns - "Fattura Accompagnatora ; 33124 26.09.2025"
-        italian_patterns = [
-            r'Fattura\s+Accompagnatora\s*[;:]\s*(\d+)',
-            r'(?:Fattura|Invoice|Documento).*?(?:numero|n\.|#)\s*[:\s]*(\d+)',
-            r'(?:numero|n\.|#)\s*[:\s]*(\d+)',
-            r'(?:N\.\s*)?(\d{5,})',  # 5+ digit number (common for invoices)
-        ]
-        
-        for pattern in italian_patterns:
-            match = re.search(pattern, text, re.IGNORECASE)
-            if match:
-                inv_num = match.group(1).strip()
-                # Validate it's not a VAT or phone number
-                if len(inv_num) <= 10 and not re.match(r'^0[36]', inv_num):  # Not phone
-                    return inv_num
-        
-        # Try original patterns
-        for pattern in self.invoice_number_patterns:
-            match = re.search(pattern, text, re.IGNORECASE)
-            if match:
-                return match.group(1).strip()
+        """Extract invoice number - enhanced for Italian invoices
+        SAFE: Falls back gracefully if enhanced patterns don't match
+        """
+        try:
+            # Italian patterns - "Fattura Accompagnatora ; 33124 26.09.2025"
+            italian_patterns = [
+                r'Fattura\s+Accompagnatora\s*[;:]\s*(\d+)',
+                r'(?:Fattura|Invoice|Documento).*?(?:numero|n\.|#)\s*[:\s]*(\d+)',
+                r'(?:numero|n\.|#)\s*[:\s]*(\d+)',
+            ]
+            
+            for pattern in italian_patterns:
+                match = re.search(pattern, text, re.IGNORECASE)
+                if match:
+                    inv_num = match.group(1).strip()
+                    # Validate it's not a VAT or phone number
+                    if len(inv_num) <= 10 and not re.match(r'^0[36]', inv_num):
+                        return inv_num
+            
+            # Try original patterns
+            for pattern in self.invoice_number_patterns:
+                match = re.search(pattern, text, re.IGNORECASE)
+                if match:
+                    return match.group(1).strip()
+        except Exception as e:
+            logger.warning(f"Invoice number extraction error: {e}")
         return None
     
     def parse_date(self, text: str) -> Optional[str]:

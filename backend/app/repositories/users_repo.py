@@ -15,3 +15,8 @@ async def find_by_email(email: str) -> Optional[dict[str, Any]]:
 async def insert_user(doc: dict) -> str:
 	res = await _col().insert_one(doc)
 	return str(res.inserted_id)
+
+
+async def find_by_id(user_id: str):
+	from bson import ObjectId  # runtime import to avoid hard dep if unused
+	return await _col().find_one({"_id": ObjectId(user_id)})

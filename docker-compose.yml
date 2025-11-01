@@ -1,10 +1,8 @@
-version: "3.9"
-
 services:
   api:
     build:
       context: ./backend
-      dockerfile: Dockerfile
+#      dockerfile: Dockerfile
     command: uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
     env_file:
       - ./backend/.env

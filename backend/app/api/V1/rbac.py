@@ -1,8 +1,9 @@
 # backend/app/api/v1/rbac.py
 from __future__ import annotations
-from fastapi import APIRouter, HTTPException, status
+from fastapi import APIRouter, HTTPException, status, Depends
 from app.schemas.rbac import RolePermissions
 from app.services.rbac_service import get_permissions, set_permissions
+from app.deps.auth import get_current_user
 
 router = APIRouter()
 
@@ -16,6 +17,6 @@ async def get_role(role_key: str):
 
 
 @router.post("/rbac/roles/{role_key}")
-async def update_role(role_key: str, body: RolePermissions):
+async def update_role(role_key: str, body: RolePermissions, user: dict = Depends(get_current_user)):
 	await set_permissions(role_key, body.permissions)
 	return {"success": True}

@@ -5,6 +5,7 @@ from fastapi import FastAPI
 from starlette.middleware.cors import CORSMiddleware
 
 from .core.config import settings
+from .db.indexes import ensure_indexes
 from .db.mongo import init_mongo, close_mongo
 from .api.router import api_router
 
@@ -13,6 +14,7 @@ from .api.router import api_router
 async def lifespan(app: FastAPI):
     # Startup
     await init_mongo()
+    await ensure_indexes()
     yield
     # Shutdown
     await close_mongo()

@@ -1,10 +1,11 @@
 # backend/app/services/validation.py
 from __future__ import annotations
 from typing import Iterable
-from app.repositories.ingredients_repo import find_one as find_ing
-from app.repositories.preparations_repo import find_one as find_prep
+from backend.app.repositories.ingredients_repo import find_one as find_ing
+from backend.app.repositories.preparations_repo import find_one as find_prep
 
 ALLOWED_TYPES = {"ingredient", "preparation"}
+
 
 async def validate_items(restaurant_id: str, items: Iterable[dict]) -> None:
 	for item in items or []:

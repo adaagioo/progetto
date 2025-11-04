@@ -1,6 +1,6 @@
 # backend/app/utils/email_templates.py
 from __future__ import annotations
-from app.core.config import settings
+from backend.app.core.config import settings
 
 
 def render_welcome_email(user_email: str) -> tuple[str, str]:

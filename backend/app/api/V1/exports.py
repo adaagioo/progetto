@@ -3,10 +3,10 @@ from __future__ import annotations
 from fastapi import APIRouter, Depends, HTTPException, status
 from fastapi.responses import StreamingResponse
 from io import BytesIO
-from app.deps.auth import get_current_user
-from app.core.rbac_utils import get_resource_access
-from app.repositories.recipes_repo import find_many as find_recipes
-from app.repositories.ingredients_repo import find_many as find_ingredients
+from backend.app.deps.auth import get_current_user
+from backend.app.core.rbac_utils import get_resource_access
+from backend.app.repositories.recipes_repo import find_many as find_recipes
+from backend.app.repositories.ingredients_repo import find_many as find_ingredients
 from openpyxl import Workbook
 from reportlab.pdfgen import canvas
 

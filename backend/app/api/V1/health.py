@@ -2,7 +2,7 @@
 from __future__ import annotations
 
 from fastapi import APIRouter
-from app.db.mongo import get_db
+from backend.app.db.mongo import get_db
 
 router = APIRouter()
 
@@ -18,7 +18,7 @@ async def ready():
 	"""Readiness probe: checks database connectivity."""
 	try:
 		db = get_db()
-		# A lightweight ping. With Motor you can call command on the database.
+		# A lightweight ping. With Motor, you can call command on the database.
 		await db.command("ping")
 		return {"ok": True, "db": "ok"}
 	except Exception as e:

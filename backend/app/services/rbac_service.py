@@ -1,6 +1,6 @@
 # backend/app/services/rbac_service.py
 from __future__ import annotations
-from app.repositories.rbac_repo import find_role, upsert_role
+from backend.app.repositories.rbac_repo import find_role, upsert_role
 
 
 async def get_permissions(role_key: str) -> dict | None:

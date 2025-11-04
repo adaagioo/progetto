@@ -1,7 +1,7 @@
 # backend/app/repositories/rbac_repo.py
 from __future__ import annotations
 from typing import Optional, Any
-from app.db.mongo import get_db
+from backend.app.db.mongo import get_db
 
 
 def _col():

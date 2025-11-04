@@ -3,8 +3,8 @@ from __future__ import annotations
 
 from fastapi import Depends
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
-from app.core.security import decode_access_token, TokenError
-from app.repositories.users_repo import find_by_email, find_by_id
+from backend.app.core.security import decode_access_token, TokenError
+from backend.app.repositories.users_repo import find_by_email, find_by_id
 from typing import Any, Dict
 
 bearer_scheme = HTTPBearer(auto_error=True)

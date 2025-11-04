@@ -1,9 +1,9 @@
 # backend/app/api/v1/rbac.py
 from __future__ import annotations
 from fastapi import APIRouter, HTTPException, status, Depends
-from app.schemas.rbac import RolePermissions
-from app.services.rbac_service import get_permissions, set_permissions
-from app.deps.auth import get_current_user
+from backend.app.schemas.rbac import RolePermissions
+from backend.app.services.rbac_service import get_permissions, set_permissions
+from backend.app.deps.auth import get_current_user
 
 router = APIRouter()
 

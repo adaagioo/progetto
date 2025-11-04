@@ -5,7 +5,7 @@ from datetime import datetime, timezone
 from typing import Any, Dict, Optional
 import jwt
 from fastapi import HTTPException, status
-from app.core.config import settings
+from backend.app.core.config import settings
 
 ALGORITHM = "HS256"
 

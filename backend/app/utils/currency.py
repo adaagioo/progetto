@@ -1,6 +1,6 @@
 # backend/app/utils/currency.py
 from __future__ import annotations
-from app.core.config import settings
+from backend.app.core.config import settings
 
 
 def normalize_minor_units(amount: float, currency: str | None = None) -> int:

@@ -2,7 +2,7 @@
 from __future__ import annotations
 from typing import Optional, Any, List
 from bson import ObjectId  # type: ignore
-from app.db.mongo import get_db
+from backend.app.db.mongo import get_db
 
 
 def _col():

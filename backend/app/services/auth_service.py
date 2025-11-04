@@ -2,8 +2,8 @@
 from __future__ import annotations
 from datetime import datetime, timedelta, timezone
 import bcrypt, jwt
-from app.core.config import settings
-from app.repositories.users_repo import find_by_email
+from backend.app.core.config import settings
+from backend.app.repositories.users_repo import find_by_email
 
 
 def _hash_verify(plain: str, hashed: bytes) -> bool:

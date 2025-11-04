@@ -1,5 +1,6 @@
 from __future__ import annotations
-from app.db.mongo import get_db
+from backend.app.db.mongo import get_db
+
 
 async def ensure_indexes() -> None:
 	db = get_db()

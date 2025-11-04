@@ -1,7 +1,8 @@
 from __future__ import annotations
 from pathlib import Path
-from typing import BinaryIO
-from app.core.config import settings
+from typing import BinaryIO, Optional
+from backend.app.core.config import settings
+from backend.app.repositories.files_repo import save_stream, open_download_stream, find_file_meta
 
 
 class StorageDriver:
@@ -83,3 +84,15 @@ def get_storage() -> StorageDriver:
 			region=settings.S3_REGION,
 		)
 	return LocalStorage(settings.STORAGE_LOCAL_PATH)
+
+
+async def store_file(filename: str, content_type: Optional[str], stream) -> tuple[str, int]:
+	return await save_stream(filename, content_type, stream)
+
+
+async def open_file_stream(file_id: str):
+	return await open_download_stream(file_id)
+
+
+async def get_file_meta(file_id: str):
+	return await find_file_meta(file_id)

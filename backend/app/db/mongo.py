@@ -3,7 +3,7 @@ from __future__ import annotations
 
 from typing import Optional
 from motor.motor_asyncio import AsyncIOMotorClient
-from ..core.config import settings
+from backend.app.core.config import settings
 
 _client: Optional[AsyncIOMotorClient] = None
 

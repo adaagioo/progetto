@@ -2,12 +2,15 @@
 from __future__ import annotations
 from fastapi import APIRouter, HTTPException, status, Depends
 from typing import List
-from app.schemas.preparations import Preparation, PreparationCreate, PreparationUpdate
-from app.services.preparations_service import (
+
+from backend.app.schemas.dependencies import PreparationDependencies
+from backend.app.schemas.preparations import Preparation, PreparationCreate, PreparationUpdate
+from backend.app.services.dependencies_service import get_preparation_dependencies
+from backend.app.services.preparations_service import (
 	list_preparations, get_preparation, create_preparation, update_preparation, delete_preparation
 )
-from app.deps.auth import get_current_user
-from app.core.rbac_utils import get_resource_access
+from backend.app.deps.auth import get_current_user
+from backend.app.core.rbac_utils import get_resource_access
 
 router = APIRouter()
 RESOURCE = "preparations"
@@ -65,3 +68,12 @@ async def delete(prep_id: str, user: dict = Depends(get_current_user)):
 	if not ok:
 		raise HTTPException(status_code=404, detail="Preparation not found")
 	return None
+
+
+@router.get("/preparations/{prep_id}/dependencies", response_model=PreparationDependencies)
+async def preparation_dependencies(prep_id: str, user: dict = Depends(get_current_user)):
+	access = await get_resource_access(user, "preparations")
+	if not access.get("canView"):
+		raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Forbidden")
+	deps = await get_preparation_dependencies(prep_id)
+	return PreparationDependencies(**deps)

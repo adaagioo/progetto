@@ -1,27 +1,25 @@
 # backend/app/repositories/files_repo.py
 from __future__ import annotations
-from typing import Optional, Tuple
+from typing import Dict, Any, Optional, List
+from datetime import datetime
 from bson import ObjectId
-from motor.motor_asyncio import AsyncIOMotorGridFSBucket
 from backend.app.db.mongo import get_db
 
+def _col():
+    return get_db()["files"]
 
-def _bucket() -> AsyncIOMotorGridFSBucket:
-	return AsyncIOMotorGridFSBucket(get_db())
+async def insert_meta(meta: Dict[str, Any]) -> str:
+    meta = {**meta, "createdAt": datetime.utcnow()}
+    res = await _col().insert_one(meta)
+    return str(res.inserted_id)
 
+async def get_meta(file_id: str) -> Optional[Dict[str, Any]]:
+    return await _col().find_one({"_id": ObjectId(file_id)})
 
-async def save_stream(filename: str, content_type: Optional[str], stream) -> Tuple[str, int]:
-	bucket = _bucket()
-	file_id = await bucket.upload_from_stream(filename, stream, metadata={"contentType": content_type})
-	# gridfs does not directly return length; we can fetch it:
-	file_doc = await get_db()["fs.files"].find_one({"_id": file_id})
-	length = int(file_doc.get("length", 0)) if file_doc else 0
-	return str(file_id), length
+async def delete_meta(file_id: str) -> bool:
+    res = await _col().delete_one({"_id": ObjectId(file_id)})
+    return res.deleted_count == 1
 
-
-async def open_download_stream(file_id: str):
-	return await _bucket().open_download_stream(ObjectId(file_id))
-
-
-async def find_file_meta(file_id: str):
-	return await get_db()["fs.files"].find_one({"_id": ObjectId(file_id)})
+async def list_files(limit: int = 200) -> List[Dict[str, Any]]:
+    cur = _col().find({}).limit(limit)
+    return [doc async for doc in cur]

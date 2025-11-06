@@ -26,11 +26,17 @@ for mod, tag in [
 	("auth", "auth"),
 	("users", "users"),
 	("rbac_meta", "rbac"),
+	("dependencies", "dependencies"),
 	("files", "files"),
 	("ocr", "ocr"),
 	("receiving", "receiving"),
 	("suppliers", "suppliers"),
 	("menu", "menu"),
+	("sales", "sales"),
+	("wastage", "wastage"),
+	("pl", "pl"),
+	("dashboard", "dashboard"),
+	("inventory_admin", "inventory"),
 ]:
 	try:
 		module = __import__(f"app.api.V1.{mod}", fromlist=["router"])

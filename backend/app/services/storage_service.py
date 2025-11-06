@@ -1,98 +1,46 @@
+# backend/app/services/storage_service.py
 from __future__ import annotations
+from typing import Optional, Tuple
 from pathlib import Path
-from typing import BinaryIO, Optional
 from backend.app.core.config import settings
-from backend.app.repositories.files_repo import save_stream, open_download_stream, find_file_meta
 
 
-class StorageDriver:
-	async def save(self, key: str, stream: BinaryIO) -> str: ...
+class LocalStorage:
+	def __init__(self, root: Optional[str] = None):
+		root_path = root or getattr(settings, "FILES_STORAGE_DIR", "/tmp/storage")
+		self.root = Path(root_path)
+		self.root.mkdir(parents=True, exist_ok=True)
 
-	async def read(self, key: str) -> bytes: ...
+	def save_file(self, filename: str, content_type: Optional[str], data: bytes) -> Tuple[str, int]:
+		# Returns (path, size)
+		safe_name = filename.replace("/", "_")
+		path = self.root / safe_name
+		with open(path, "wb") as f:
+			f.write(data)
+		size = path.stat().st_size
+		return str(path), size
 
-	async def delete(self, key: str) -> None: ...
+	def open_file(self, path: str) -> bytes:
+		with open(path, "rb") as f:
+			return f.read()
 
+	def delete_file(self, path: str) -> bool:
+		p = Path(path)
+		if p.exists():
+			p.unlink()
+			return True
+		return False
 
-class LocalStorage(StorageDriver):
-	def __init__(self, base: str) -> None:
-		self.base = Path(base)
-		self.base.mkdir(parents=True, exist_ok=True)
-
-	async def save(self, key: str, stream: BinaryIO) -> str:
-		p = self.base / key
-		p.parent.mkdir(parents=True, exist_ok=True)
-		with open(p, "wb") as f: f.write(stream.read())
-		return str(p)
-
-	async def read(self, key: str) -> bytes:
-		return (self.base / key).read_bytes()
-
-	async def delete(self, key: str) -> None:
-		p = self.base / key
-		if p.exists(): p.unlink()
-
-
-try:
-	import aiohttp
-	import aioboto3
-except Exception:
-	aioboto3 = None
+	def get_public_url(self, path: str) -> str:
+		# For local dev we just return the filesystem path.
+		return path
 
 
-class S3Storage(StorageDriver):
-	def __init__(self, bucket: str, endpoint: str | None, access: str | None, secret: str | None, region: str | None):
-		self.bucket = bucket
-		self.endpoint = endpoint
-		self.access = access
-		self.secret = secret
-		self.region = region
-
-	async def save(self, key: str, stream: BinaryIO) -> str:
-		if aioboto3 is None:
-			raise RuntimeError("aioboto3 not installed")
-		session = aioboto3.Session()
-		async with session.client("s3", endpoint_url=self.endpoint, aws_access_key_id=self.access,
-		                          aws_secret_access_key=self.secret, region_name=self.region) as s3:
-			await s3.put_object(Bucket=self.bucket, Key=key, Body=stream.read())
-		return f"s3://{self.bucket}/{key}"
-
-	async def read(self, key: str) -> bytes:
-		if aioboto3 is None:
-			raise RuntimeError("aioboto3 not installed")
-		session = aioboto3.Session()
-		async with session.client("s3", endpoint_url=self.endpoint, aws_access_key_id=self.access,
-		                          aws_secret_access_key=self.secret, region_name=self.region) as s3:
-			obj = await s3.get_object(Bucket=self.bucket, Key=key)
-			return await obj["Body"].read()
-
-	async def delete(self, key: str) -> None:
-		if aioboto3 is None:
-			raise RuntimeError("aioboto3 not installed")
-		session = aioboto3.Session()
-		async with session.client("s3", endpoint_url=self.endpoint, aws_access_key_id=self.access,
-		                          aws_secret_access_key=self.secret, region_name=self.region) as s3:
-			await s3.delete_object(Bucket=self.bucket, Key=key)
+_storage: Optional[LocalStorage] = None
 
 
-def get_storage() -> StorageDriver:
-	if settings.STORAGE_DRIVER == "s3":
-		return S3Storage(
-			bucket=settings.S3_BUCKET or "ristobrain",
-			endpoint=str(settings.S3_ENDPOINT_URL) if settings.S3_ENDPOINT_URL else None,
-			access=settings.S3_ACCESS_KEY,
-			secret=settings.S3_SECRET_KEY,
-			region=settings.S3_REGION,
-		)
-	return LocalStorage(settings.STORAGE_LOCAL_PATH)
-
-
-async def store_file(filename: str, content_type: Optional[str], stream) -> tuple[str, int]:
-	return await save_stream(filename, content_type, stream)
-
-
-async def open_file_stream(file_id: str):
-	return await open_download_stream(file_id)
-
-
-async def get_file_meta(file_id: str):
-	return await find_file_meta(file_id)
+def get_storage() -> LocalStorage:
+	global _storage
+	if _storage is None:
+		_storage = LocalStorage()
+	return _storage

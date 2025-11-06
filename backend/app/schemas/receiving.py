@@ -1,29 +1,23 @@
 # backend/app/schemas/receiving.py
 from __future__ import annotations
-from datetime import datetime, date
 from typing import List, Optional
-from pydantic import BaseModel
-
+from datetime import date
+from pydantic import BaseModel, Field
 
 class ReceivingItem(BaseModel):
-	inventoryId: str
-	quantity: float
-	unitCost: float
-
+    inventoryId: str
+    quantity: float = Field(..., ge=0)
+    unit: Optional[str] = None
+    unitCost: Optional[float] = None
+    supplierId: Optional[str] = None
+    notes: Optional[str] = None
 
 class ReceivingCreate(BaseModel):
-	supplierId: str
-	date: date
-	items: List[ReceivingItem]
-
+    date: date
+    items: List[ReceivingItem]
 
 class Receiving(BaseModel):
-	id: str
-	supplierId: str
-	date: date
-	items: List[ReceivingItem]
-	createdAt: datetime
-
-
-class ReceivingAttachFileRequest(BaseModel):
-	fileId: str
+    id: str
+    date: date
+    items: List[ReceivingItem]
+    createdAt: str

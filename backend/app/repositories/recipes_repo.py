@@ -1,6 +1,6 @@
 # backend/app/repositories/recipes_repo.py
 from __future__ import annotations
-from typing import Optional, List
+from typing import Optional, List, Dict, Any
 from bson import ObjectId  # type: ignore
 from backend.app.db.mongo import get_db
 
@@ -40,23 +40,45 @@ async def delete_one(restaurant_id: str, recipe_id: str) -> bool:
 	return res.deleted_count > 0
 
 
-async def lookup_recipe_dependencies(recipe_id: str) -> dict:
-	from bson import ObjectId
-	db = get_db()
+async def count_sales_refs(recipe_id: str) -> int:
+	s = _sales()
+	if s is None:
+		return 0
 	rid = ObjectId(recipe_id)
+	return await s.count_documents({"items.recipeId": rid})
 
-	names = await db.list_collection_names()
-	used_in_menus = await db.get_collection("menus").count_documents({"items.recipeId": rid}) if "menus" in names else 0
-	used_in_preplist = await db.get_collection("preplists").count_documents(
-		{"tasks.recipeId": rid}) if "preplists" in names else 0
-	used_in_orderlist = await db.get_collection("orderlists").count_documents(
-		{"items.recipeId": rid}) if "orderlists" in names else 0
 
+async def lookup_recipe_dependencies(recipe_id: str) -> Dict[str, Any]:
+	rid = ObjectId(recipe_id)
+	menus = _menus()
+	prepl = _preplist()
+	ordl = _orderlist()
+	used_in_menus = await menus.count_documents({"items.recipeId": rid}) if menus is not None else 0
+	used_in_preplist = await prepl.count_documents({"tasks.recipeId": rid}) if prepl is not None else 0
+	used_in_orderlist = await ordl.count_documents({"items.recipeId": rid}) if ordl is not None else 0
+	sales_refs = await count_sales_refs(recipe_id)
 	return {
 		"recipeId": recipe_id,
 		"usedInMenus": int(used_in_menus),
 		"usedInPrepList": int(used_in_preplist),
 		"usedInOrderList": int(used_in_orderlist),
+		"salesRefs": int(sales_refs),
 		"preparationRefs": 0,
 		"preparationIds": [],
 	}
+
+
+def _sales():
+	return get_db().get_collection("sales")
+
+
+def _menus():
+	return get_db().get_collection("menus")
+
+
+def _preplist():
+	return get_db().get_collection("preplists")
+
+
+def _orderlist():
+	return get_db().get_collection("orderlists")

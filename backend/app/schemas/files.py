@@ -1,16 +1,13 @@
 # backend/app/schemas/files.py
 from __future__ import annotations
-from typing import Optional
 from pydantic import BaseModel
+from typing import Optional
 
-
-class FileUploadResponse(BaseModel):
-	id: str
-	filename: str
-	contentType: Optional[str] = None
-	length: int
-
-
-class FileRef(BaseModel):
-	id: str
-	filename: str
+class FileMeta(BaseModel):
+    id: str
+    filename: str
+    contentType: Optional[str] = None
+    size: int
+    path: str
+    ownerId: Optional[str] = None
+    createdAt: str

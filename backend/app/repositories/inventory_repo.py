@@ -134,3 +134,28 @@ async def lookup_inventory_dependencies(inventory_id: str) -> Dict[str, Any]:
 		"recipeIds": recipe_ids,
 		"preparationIds": prep_ids,
 	}
+
+
+async def bulk_update_inventory(items: list[dict]) -> tuple[bool, int, int]:
+	ok, processed, failed = True, 0, 0
+	col = _col()
+	for it in items:
+		try:
+			inv_id = _ObjectId(it["inventoryId"])
+			patch = {}
+			for k in ("reorderLevel", "targetLevel", "unit", "defaultSupplierId", "name"):
+				if it.get(k) is not None:
+					patch[k] = it[k]
+			if not patch:
+				processed += 1
+				continue
+			res = await col.update_one({"_id": inv_id}, {"$set": patch})
+			if res.matched_count != 1:
+				ok = False
+				failed += 1
+			else:
+				processed += 1
+		except Exception:
+			ok = False
+			failed += 1
+	return ok, processed, failed

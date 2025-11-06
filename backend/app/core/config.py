@@ -39,7 +39,8 @@ class Settings(BaseSettings):
 	MONGO_DB_NAME: str = "ristobrain"
 
 	# Auth / JWT
-	JWT_SECRET: str = os.getenv("JWT_SECRET")
+	# JWT_SECRET: str = os.getenv("JWT_SECRET")
+	JWT_SECRET: str = "JWT_SECRET"
 	ACCESS_TOKEN_EXPIRE_MINUTES: int = 60 * 24  # 1 day
 	REFRESH_TOKEN_EXPIRE_DAYS: int = 30
 

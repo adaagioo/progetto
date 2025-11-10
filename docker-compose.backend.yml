@@ -1,0 +1,23 @@
+services:
+  mongo:
+    image: mongo:7
+    container_name: rb-mongo
+    ports: ["27017:27017"]
+    volumes:
+      - mongo_data:/data/db
+
+  api:
+    build: ./backend
+    container_name: rb-api
+    env_file: ./backend/.env
+    ports: ["8000:8000"]
+    depends_on:
+      - mongo
+    volumes:
+      - risto_storage:/data/storage
+    environment:
+      - UVICORN_WORKERS=1
+
+volumes:
+  mongo_data:
+  risto_storage:

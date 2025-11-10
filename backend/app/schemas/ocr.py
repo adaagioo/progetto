@@ -23,3 +23,35 @@ class OCRResult(BaseModel):
 class OCRMappingSuggestion(BaseModel):
 	key: str
 	value: str
+
+
+class OCRMappingRule(BaseModel):
+	key: str
+	inventoryId: str
+	defaultUnit: Optional[str] = None
+
+
+class OCRSaveMappingsRequest(BaseModel):
+	supplierId: Optional[str] = None
+	rules: List[OCRMappingRule]
+
+
+class OCRReceivingLine(BaseModel):
+	inventoryId: str
+	quantity: float
+	unit: Optional[str] = None
+	unitCost: Optional[float] = None
+	notes: Optional[str] = None
+	supplierId: Optional[str] = None
+
+
+class OCRCreateReceivingRequest(BaseModel):
+	date: date
+	items: List[OCRReceivingLine]
+
+
+class OCRMappingRecord(BaseModel):
+	key: str
+	inventoryId: str
+	defaultUnit: Optional[str] = None
+	supplierId: Optional[str] = None

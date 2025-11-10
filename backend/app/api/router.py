@@ -1,45 +1,45 @@
 # backend/app/api/router.py
 from __future__ import annotations
 from fastapi import APIRouter
+import importlib
 
 api_router = APIRouter()
 
-# Wire V1 modules if present
-try:
-	from V1 import health
+MODULES: list[tuple[str, str]] = [
+    ("health", "health"),
+    ("rbac", "rbac"),
+    ("rbac_admin", "rbac"),
+    ("rbac_meta", "rbac"),
+    ("dependencies", "dependencies"),
+    ("ingredients", "ingredients"),
+    ("inventory", "inventory"),
+    ("inventory_admin", "inventory"),
+    ("inventory_valuation", "inventory"),
+    ("preparations", "preparations"),
+    ("prep_list", "preparations"),
+    ("recipes", "recipes"),
+    ("order_list", "orders"),
+    ("menu", "menu"),
+    ("exports", "exports"),
+    ("ocr", "ocr"),
+    ("files", "files"),
+    ("receiving", "receiving"),
+    ("suppliers", "suppliers"),
+    ("sales", "sales"),
+    ("wastage", "wastage"),
+    ("pl", "pl"),
+    ("dashboard", "dashboard"),
+    ("user", "users"),
+    ("auth", "auth"),
+]
 
-	api_router.include_router(health.router, prefix="/v1", tags=["health"])
-except Exception:
-	pass
+BASE = "backend.app.api.V1"
 
-for mod, tag in [
-	("rbac", "rbac"),
-	("ingredients", "ingredients"),
-	("inventory", "inventory"),
-	("inventory_valuation", "inventory"),
-	("preparations", "preparations"),
-	("recipes", "recipes"),
-	("prep_list", "prep-list"),
-	("order_list", "order-list"),
-	("exports", "exports"),
-	("rbac_admin", "rbac-admin"),
-	("auth", "auth"),
-	("users", "users"),
-	("rbac_meta", "rbac"),
-	("dependencies", "dependencies"),
-	("files", "files"),
-	("ocr", "ocr"),
-	("receiving", "receiving"),
-	("suppliers", "suppliers"),
-	("menu", "menu"),
-	("sales", "sales"),
-	("wastage", "wastage"),
-	("pl", "pl"),
-	("dashboard", "dashboard"),
-	("inventory_admin", "inventory"),
-]:
-	try:
-		module = __import__(f"app.api.V1.{mod}", fromlist=["router"])
-		api_router.include_router(module.router, prefix="/v1", tags=[tag])
-	except Exception:
-		continue
+for mod_name, tag in MODULES:
+    try:
+        module = importlib.import_module(f"{BASE}.{mod_name}")
+        router = getattr(module, "router", None)
+        if router is not None:
+            api_router.include_router(router, prefix="/v1", tags=[tag])
+    except Exception:
+        continue

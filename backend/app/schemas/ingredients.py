@@ -2,6 +2,7 @@
 from __future__ import annotations
 from typing import Optional, List
 from pydantic import BaseModel, Field
+from datetime import date
 
 
 class IngredientBase(BaseModel):
@@ -25,3 +26,10 @@ class IngredientUpdate(BaseModel):
 
 class Ingredient(IngredientBase):
 	id: str
+
+
+# TODO (af): normalization
+class PricePoint(BaseModel):
+	date: date
+	unitCost: float | None = None
+	receivingId: str | None = None

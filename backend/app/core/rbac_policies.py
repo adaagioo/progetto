@@ -2,6 +2,8 @@
 from __future__ import annotations
 from typing import Dict, Any, List
 
+from backend.app.db.mongo import get_db
+
 # Define supported capabilities
 _CAPABILITIES = ["canView", "canCreate", "canUpdate", "canDelete", "canManagePermissions"]
 
@@ -92,3 +94,35 @@ def list_capabilities() -> List[str]:
 def get_role_policies() -> Dict[str, Any]:
 	# Intended for introspection; safe to return
 	return _DEFAULT_POLICIES
+
+
+def _roles():
+	return get_db()["rbac_roles"]
+
+
+async def list_roles() -> List[Dict[str, Any]]:
+	cur = _roles().find({})
+	return [doc async for doc in cur]
+
+
+async def get_role(role: str) -> Dict[str, Any] | None:
+	return await _roles().find_one({"role": role})
+
+
+async def upsert_role(role: str, grants: List[Dict[str, Any]]) -> bool:
+	res = await _roles().update_one(
+		{"role": role},
+		{"$set": {"role": role, "grants": grants}},
+		upsert=True
+	)
+	return res.matched_count == 1 or res.upserted_id is not None
+
+
+async def get_capabilities_for_role(role: str, resource: str) -> Dict[str, bool] | None:
+	doc = await get_role(role)
+	if not doc:
+		return None
+	for g in doc.get("grants", []):
+		if g.get("resource") == resource:
+			return g.get("capabilities", {})
+	return {}

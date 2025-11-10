@@ -7,7 +7,7 @@ from backend.app.core.config import settings
 
 class LocalStorage:
 	def __init__(self, root: Optional[str] = None):
-		root_path = root or getattr(settings, "FILES_STORAGE_DIR", "/tmp/storage")
+		root_path = root or getattr(settings, "STORAGE_LOCAL_PATH", "/tmp/storage")
 		self.root = Path(root_path)
 		self.root.mkdir(parents=True, exist_ok=True)
 

@@ -4,20 +4,26 @@ from typing import List, Optional
 from datetime import date
 from pydantic import BaseModel, Field
 
+from backend.app.schemas.files import FileRef
+
+
 class ReceivingItem(BaseModel):
-    inventoryId: str
-    quantity: float = Field(..., ge=0)
-    unit: Optional[str] = None
-    unitCost: Optional[float] = None
-    supplierId: Optional[str] = None
-    notes: Optional[str] = None
+	inventoryId: str
+	quantity: float = Field(..., ge=0)
+	unit: Optional[str] = None
+	unitCost: Optional[float] = None
+	supplierId: Optional[str] = None
+	notes: Optional[str] = None
+
 
 class ReceivingCreate(BaseModel):
-    date: date
-    items: List[ReceivingItem]
+	date: date
+	items: List[ReceivingItem]
+
 
 class Receiving(BaseModel):
-    id: str
-    date: date
-    items: List[ReceivingItem]
-    createdAt: str
+	id: str
+	date: date
+	items: List[ReceivingItem]
+	createdAt: str
+	files: Optional[List[FileRef]] = None

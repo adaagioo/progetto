@@ -7,11 +7,6 @@ from backend.app.db.mongo import get_db
 
 
 async def get_user_permissions(current_user: dict) -> dict:
-	"""Compute effective permissions for a user.
-	- Loads role-based defaults from rbac_roles collection (if any override),
-	  otherwise falls back to DEFAULT_PERMISSIONS from schema.
-	- Applies restaurant-specific overrides from rbac_overrides collection.
-	"""
 	db = get_db()
 	role_key = current_user.get("role", "guest")
 	restaurant_id = current_user.get("restaurantId")

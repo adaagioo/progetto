@@ -66,6 +66,12 @@ class Settings(BaseSettings):
 	SUPPORTED_CURRENCIES: List[str] = Field(default_factory=lambda: ["EUR", "USD"])
 	SUPPORTED_LOCALES: List[str] = Field(default_factory=lambda: ["en-US", "it-IT"])
 
+	OCR_ENGINE: str = "tesseract"
+	TESSERACT_CMD: str = "tesseract"
+	TESSERACT_TIMEOUT_MS: int = 12000
+	OCR_MAX_PAGES: int = 5  # safety for very large PDFs
+	OCR_LANG_WHITELIST: List[str] = Field(default_factory=lambda: ["eng", "ita"])
+
 	@classmethod
 	def from_env(cls) -> "Settings":
 		s = cls()

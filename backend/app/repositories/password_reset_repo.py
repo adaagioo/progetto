@@ -6,31 +6,57 @@ from secrets import token_urlsafe
 from bson import ObjectId
 from backend.app.db.mongo import get_db
 
-COLLECTION = "password_resets"
+_COLLECTION = "password_resets"
 TTL_HOURS = 2
 
 
-def _col():
-	return get_db()[COLLECTION]
+async def _col():
+	return get_db()[_COLLECTION]
 
 
-async def create_token(user_id: str, email: str) -> str:
-	tok = token_urlsafe(32)
+async def _ensure_indexes():
+	col = await _col()
+	try:
+		await col.create_index("token", unique=True)
+	except Exception:
+		pass
+	try:
+		await col.create_index("expiresAt", expireAfterSeconds=0)
+	except Exception:
+		pass
+
+
+def _to_object_id(maybe_id: str):
+	try:
+		return ObjectId(maybe_id)
+	except Exception:
+		return maybe_id
+
+
+async def pr_create(user_id: str, email: str, ttl_minutes: int = 30) -> str:
+	await _ensure_indexes()
+	col = await _col()
+	token = token_urlsafe(32)
+	now = datetime.utcnow()
 	doc = {
-		"token": tok,
-		"userId": ObjectId(user_id),
+		"token": token,
+		"userId": _to_object_id(user_id),
 		"email": email,
-		"createdAt": datetime.utcnow(),
-		"expiresAt": datetime.utcnow() + timedelta(hours=TTL_HOURS),
+		"createdAt": now,
+		"expiresAt": now + timedelta(minutes=ttl_minutes),
 		"used": False,
+		"usedAt": None,
 	}
-	await _col().insert_one(doc)
-	return tok
+	await col.insert_one(doc)
+	return token
 
 
-async def find_by_token(token: str) -> Optional[Dict[str, Any]]:
-	return await _col().find_one({"token": token})
+async def pr_find(token: str) -> Optional[Dict[str, Any]]:
+	col = await _col()
+	return await col.find_one({"token": token})
 
 
-async def mark_used(token: str) -> None:
-	await _col().update_one({"token": token}, {"$set": {"used": True, "usedAt": datetime.utcnow()}})
+async def pr_used(token: str) -> bool:
+	col = await _col()
+	res = await col.update_one({"token": token}, {"$set": {"used": True, "usedAt": datetime.utcnow()}})
+	return res.matched_count == 1

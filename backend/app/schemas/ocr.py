@@ -1,7 +1,7 @@
 # backend/app/schemas/ocr.py
 from __future__ import annotations
 from typing import List, Optional, Dict, Any
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 
 
 class OCRStartRequest(BaseModel):
@@ -45,13 +45,44 @@ class OCRReceivingLine(BaseModel):
 	supplierId: Optional[str] = None
 
 
-class OCRCreateReceivingRequest(BaseModel):
-	date: date
-	items: List[OCRReceivingLine]
-
-
 class OCRMappingRecord(BaseModel):
 	key: str
 	inventoryId: str
 	defaultUnit: Optional[str] = None
 	supplierId: Optional[str] = None
+
+
+class OCRItemMatch(BaseModel):
+	inventoryId: str
+	name: str
+	score: float = Field(ge=0.0, le=1.0)
+
+
+class OCRParsedItem(BaseModel):
+	name: str
+	qty: float
+	unit: str
+	unitCost: float
+	matches: List[OCRItemMatch] = []
+
+
+class OCRParsedDocument(BaseModel):
+	date: Optional[str] = None
+	supplier: Optional[str] = None
+	currency: Optional[str] = None
+	items: List[OCRParsedItem] = []
+
+
+class OCRCreateReceivingRequest(BaseModel):
+	fileId: str
+	language: Optional[str] = None
+	items: List[OCRParsedItem]
+
+
+def rebuild_models() -> None:
+	OCRLine.model_rebuild()
+	OCRResult.model_rebuild()
+	OCRItemMatch.model_rebuild()
+	OCRParsedItem.model_rebuild()
+	OCRParsedDocument.model_rebuild()
+	OCRCreateReceivingRequest.model_rebuild()

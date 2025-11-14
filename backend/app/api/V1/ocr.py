@@ -3,7 +3,7 @@ from __future__ import annotations
 
 from typing import List, Optional
 
-from fastapi import APIRouter, Depends, HTTPException, status, Query
+from fastapi import APIRouter, Depends, HTTPException, status, Query, Body
 from backend.app.deps.auth import get_current_user
 from backend.app.core.rbac_policies import get_resource_access
 from backend.app.repositories.ocr_repo import upsert_rules, list_rules, delete_rule
@@ -99,3 +99,8 @@ async def ocr_delete_mapping(
 	if deleted == 0:
 		raise HTTPException(status_code=404, detail="Mapping not found")
 	return {"ok": True, "deleted": deleted}
+
+
+@router.post("/ocr/receivings", summary="Create Receiving from OCR parsed items")
+async def create_receiving_from_ocr(payload: OCRCreateReceivingRequest = Body(...)):
+	return {"ok": True}

@@ -1,11 +1,21 @@
 # backend/app/repositories/users_repo.py
 from __future__ import annotations
 from typing import Optional, Any, List
+
+from bson import ObjectId
+
 from backend.app.db.mongo import get_db
 
 
 def _col():
 	return get_db()["users"]
+
+
+def _oid(s: str):
+	try:
+		return ObjectId(s)
+	except Exception:
+		return s
 
 
 async def find_by_email(email: str) -> Optional[dict[str, Any]]:
@@ -18,7 +28,6 @@ async def insert_user(doc: dict) -> str:
 
 
 async def find_by_id(user_id: str):
-	from bson import ObjectId  # runtime import to avoid hard dep if unused
 	return await _col().find_one({"_id": ObjectId(user_id)})
 
 

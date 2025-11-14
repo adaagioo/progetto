@@ -3,6 +3,7 @@ from __future__ import annotations
 
 from datetime import datetime
 
+from backend.app.repositories.password_reset_repo import pr_find, pr_create, pr_used
 from backend.app.services.auth_service import login as login_service
 from fastapi import APIRouter, HTTPException, status, Depends
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials

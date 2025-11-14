@@ -1,13 +1,10 @@
 # backend/app/services/auth_service.py
 from __future__ import annotations
 from datetime import datetime, timedelta, timezone
-import bcrypt, jwt
+import jwt
 from backend.app.core.config import settings
+from backend.app.core.security import verify_password
 from backend.app.repositories.users_repo import find_by_email
-
-
-def _hash_verify(plain: str, hashed: bytes) -> bool:
-	return bcrypt.checkpw(plain.encode("utf-8"), hashed)
 
 
 def create_access_token(sub: str) -> str:
@@ -21,7 +18,7 @@ async def login(email: str, password: str) -> dict:
 	user = await find_by_email(email)
 	if not user:
 		return {"ok": False, "reason": "INVALID_CREDENTIALS"}
-	if not _hash_verify(password, user["passwordHash"]):
+	if not verify_password(password, user["password"]):
 		return {"ok": False, "reason": "INVALID_CREDENTIALS"}
 	token = create_access_token(str(user["_id"]))
 	return {"ok": True, "accessToken": token, "user": user}

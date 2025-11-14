@@ -7,6 +7,8 @@ from typing import Dict, Any
 from datetime import datetime, timedelta, date, timezone
 from bson import ObjectId as _ObjectId
 
+from backend.app.utils.text_norm import tokenize
+
 
 def _col():
 	return get_db()["inventory"]
@@ -159,3 +161,29 @@ async def bulk_update_inventory(items: list[dict]) -> tuple[bool, int, int]:
 			ok = False
 			failed += 1
 	return ok, processed, failed
+
+
+def _regex_all_tokens(tokens: List[str]) -> Dict[str, Any]:
+	ors = []
+	for tk in tokens:
+		ors.append({
+			"$or": [
+				{"name": {"$regex": tk, "$options": "i"}},
+				{"aliases": {"$elemMatch": {"$regex": tk, "$options": "i"}}},
+			]
+		})
+	return {"$and": ors} if ors else {}
+
+
+async def find_candidates_by_name(name: str, limit: int = 8) -> List[Dict[str, Any]]:
+	col = _col()
+	tokens = tokenize(name)
+	if not tokens:
+		return []
+	q = _regex_all_tokens(tokens)
+	docs = list(col.find(q, {"name": 1, "aliases": 1}).limit(limit * 3))
+	if not docs:
+		q = {"$or": [{"name": {"$regex": tk, "$options": "i"}}
+		             for tk in tokens]}
+		docs = list(col.find(q, {"name": 1, "aliases": 1}).limit(limit * 3))
+	return docs[: limit * 3]

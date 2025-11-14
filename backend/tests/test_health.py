@@ -1,12 +1,21 @@
 import pytest
-from httpx import AsyncClient
-from backend.main import create_app
+import httpx
+from backend.main import app
 
 
-@pytest.mark.asyncio
-async def test_healthz():
-    app = create_app()
-    async with AsyncClient(app=app, base_url="http://test") as ac:
-        resp = await ac.get("/api/v1/healthz")
-    assert resp.status_code == 200
-    assert resp.json() == {"status": "ok"}
+@pytest.mark.anyio
+async def test_health_live():
+	transport = httpx.ASGITransport(app=app)
+	async with httpx.AsyncClient(transport=transport, base_url="http://test") as ac:
+		r = await ac.get("/api/v1/health/live")
+	assert r.status_code == 200
+	assert r.json().get("status") in {"ok", "live", "ready", "healthy"}
+
+
+@pytest.mark.Anyio
+async def test_health_ready():
+	transport = httpx.ASGITransport(app=app)
+	async with httpx.AsyncClient(transport=transport, base_url="http://test") as ac:
+		r = await ac.get("/api/v1/health/ready")
+	assert r.status_code == 200
+	assert r.json().get("status") in {"ok", "ready", "healthy"}

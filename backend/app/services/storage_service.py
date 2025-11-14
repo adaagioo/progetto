@@ -35,6 +35,9 @@ class LocalStorage:
 		# For local dev we just return the filesystem path.
 		return path
 
+	def read_file(self, path: str) -> bytes:
+		return Path(path).read_bytes()
+
 
 _storage: Optional[LocalStorage] = None
 

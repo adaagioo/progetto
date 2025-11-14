@@ -6,7 +6,7 @@ Test document parsing pipeline
 import sys
 sys.path.insert(0, '/app/backend')
 
-from document_parser import get_parser
+from backend.app.services.document_parser import get_parser
 
 
 def test_invoice_parsing():

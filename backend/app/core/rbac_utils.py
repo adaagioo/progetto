@@ -8,7 +8,7 @@ from backend.app.db.mongo import get_db
 
 async def get_user_permissions(current_user: dict) -> dict:
 	db = get_db()
-	role_key = current_user.get("role", "guest")
+	role_key = current_user.get("roleKey", "guest")
 	restaurant_id = current_user.get("restaurantId")
 
 	# Default permissions: either stored in DB or static defaults

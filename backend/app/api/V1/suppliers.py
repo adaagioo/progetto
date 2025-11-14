@@ -28,7 +28,7 @@ async def create_supplier(payload: SupplierCreate, user: dict = Depends(get_curr
 @router.get("/suppliers", response_model=List[Supplier])
 async def list_suppliers(user: dict = Depends(get_current_user)):
 	access = await get_resource_access(user, RESOURCE)
-	if not access.get("canRead", True):
+	if not access.get("canView", True):
 		raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Forbidden")
 	docs = await repo.list_all()
 	return [Supplier(id=str(d["_id"]), **{k: v for k, v in d.items() if k != "_id"}) for d in docs]
@@ -37,7 +37,7 @@ async def list_suppliers(user: dict = Depends(get_current_user)):
 @router.get("/suppliers/{supplier_id}", response_model=Supplier)
 async def get_supplier(supplier_id: str, user: dict = Depends(get_current_user)):
 	access = await get_resource_access(user, RESOURCE)
-	if not access.get("canRead", True):
+	if not access.get("canView", True):
 		raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Forbidden")
 	doc = await repo.get_by_id(supplier_id)
 	if not doc:
@@ -71,7 +71,7 @@ async def delete_supplier(supplier_id: str, user: dict = Depends(get_current_use
 @router.get("/suppliers/{supplier_id}/dependencies", response_model=SupplierDependencies)
 async def supplier_dependencies(supplier_id: str, user: dict = Depends(get_current_user)):
 	access = await get_resource_access(user, RESOURCE)
-	if not access.get("canRead", True):
+	if not access.get("canView", True):
 		raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Forbidden")
 
 	inv_defaults, recv_refs = await summarize_supplier_dependencies(supplier_id)

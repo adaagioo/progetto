@@ -25,7 +25,7 @@ async def upload_file(f: UploadFile = File(...), user: dict = Depends(get_curren
 		"contentType": f.content_type,
 		"size": size,
 		"path": path,
-		"ownerId": (user.get("id") if isinstance(user, dict) else None),
+		"ownerId": str(user["_id"]) if user else None,
 	})
 	doc = await get_meta(meta_id)
 	return FileMeta(
@@ -42,7 +42,7 @@ async def upload_file(f: UploadFile = File(...), user: dict = Depends(get_curren
 @router.get("/files", response_model=List[FileMeta])
 async def list_files_api(user: dict = Depends(get_current_user)):
 	access = await get_resource_access(user, RESOURCE)
-	if not access.get("canRead", True):
+	if not access.get("canView", True):
 		raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Forbidden")
 	docs = await list_files()
 	out = []
@@ -62,7 +62,7 @@ async def list_files_api(user: dict = Depends(get_current_user)):
 @router.get("/files/{file_id}")
 async def download_file(file_id: str, user: dict = Depends(get_current_user)):
 	access = await get_resource_access(user, RESOURCE)
-	if not access.get("canRead", True):
+	if not access.get("canView", True):
 		raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Forbidden")
 	doc = await get_meta(file_id)
 	if not doc:

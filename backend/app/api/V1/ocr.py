@@ -30,9 +30,7 @@ async def ocr_save_mappings(payload: OCRSaveMappingsRequest, user: dict = Depend
 	if not access.get("canUpdate", False):
 		raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Forbidden")
 
-	user_id = user.get("id")
-	if not user_id:
-		raise HTTPException(status_code=400, detail="Missing user id")
+	user_id = str(user["_id"])
 
 	rules = []
 	for r in payload.rules:
@@ -62,12 +60,10 @@ async def ocr_list_mappings(
 		user: dict = Depends(get_current_user)
 ):
 	access = await get_resource_access(user, RESOURCE)
-	if not access.get("canRead", False):
+	if not access.get("canView", False):
 		raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Forbidden")
 
-	user_id = user.get("id")
-	if not user_id:
-		raise HTTPException(status_code=400, detail="Missing user id")
+	user_id = str(user["_id"])
 
 	docs = await list_rules(user_id, supplier_id=supplierId, limit=500)
 	out: List[OCRMappingRecord] = []
@@ -91,9 +87,7 @@ async def ocr_delete_mapping(
 	if not access.get("canUpdate", False):
 		raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Forbidden")
 
-	user_id = user.get("id")
-	if not user_id:
-		raise HTTPException(status_code=400, detail="Missing user id")
+	user_id = str(user["_id"])
 
 	deleted = await delete_rule(user_id, key, supplier_id=supplierId)
 	if deleted == 0:

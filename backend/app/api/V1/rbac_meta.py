@@ -16,7 +16,7 @@ def _safe_get(attr: str, default):
 @router.get("/rbac/meta")
 async def rbac_meta(user: dict = Depends(get_current_user)):
 	resources = _safe_get("RESOURCES", [])
-	actions = _safe_get("ACTIONS", ["canRead", "canCreate", "canUpdate", "canDelete"])
+	actions = _safe_get("ACTIONS", ["canView", "canCreate", "canUpdate", "canDelete"])
 	role_matrix = _safe_get("ROLE_MATRIX", {})
 	eff = {}
 	get_access = getattr(rbac, "get_resource_access", None)

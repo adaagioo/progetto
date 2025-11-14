@@ -43,7 +43,7 @@ DEFAULTS = {
 
 @router.post("/rbac/seed-defaults")
 async def seed_defaults(user: dict = Depends(get_current_user)):
-	if user.get("role") != "admin":
+	if user.get("roleKey") != "admin":
 		raise HTTPException(status_code=403, detail="Admin only")
 	db = get_db()
 	for role_key, permissions in DEFAULTS.items():
@@ -63,7 +63,7 @@ def _require_admin(access: Dict[str, Any]):
 @router.get("/rbac/meta/roles", response_model=List[RoleDefinition])
 async def rbac_list_roles(user: dict = Depends(get_current_user)):
 	access = await get_resource_access(user, RESOURCE)
-	if not access.get("canRead", False):
+	if not access.get("canView", False):
 		raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Forbidden")
 	roles = await policies.list_roles()
 	out: List[RoleDefinition] = []
@@ -78,7 +78,7 @@ async def rbac_list_roles(user: dict = Depends(get_current_user)):
 @router.get("/rbac/meta/capabilities/{role}/{resource}", response_model=ResourceCapabilities)
 async def rbac_get_caps(role: str, resource: str, user: dict = Depends(get_current_user)):
 	access = await get_resource_access(user, RESOURCE)
-	if not access.get("canRead", False):
+	if not access.get("canView", False):
 		raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Forbidden")
 	caps = await policies.get_capabilities_for_role(role, resource)
 	if caps is None:

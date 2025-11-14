@@ -20,7 +20,7 @@ async def wastage_create(payload: WastageCreate, user: dict = Depends(get_curren
 		raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Forbidden")
 	items = [i.model_dump() for i in payload.items]
 	wid = await create_wastage(payload.date, items)
-	await deduct_stock_for_wastage(items, actor_id=str(user.get("id")) if isinstance(user, dict) else None)
+	await deduct_stock_for_wastage(items, actor_id=str(user["_id"]))
 	doc = await get_wastage(wid)
 	return Wastage(id=str(doc["_id"]), date=doc["date"], items=doc["items"], createdAt=doc["createdAt"])
 

@@ -24,7 +24,7 @@ async def sales_create(payload: SaleCreate, user: dict = Depends(get_current_use
         rid = it.get("recipeId")
         qty = float(it.get("quantity", 0.0))
         if rid and qty > 0:
-            await deduct_stock_for_recipe(rid, qty, actor_id=str(user.get("id")) if isinstance(user, dict) else None)
+            await deduct_stock_for_recipe(rid, qty, actor_id=str(user["_id"]))
     doc = await get_sale(sid)
     return Sale(id=str(doc["_id"]), date=doc["date"], items=doc["items"], createdAt=doc["createdAt"])
 

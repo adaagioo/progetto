@@ -181,9 +181,9 @@ async def find_candidates_by_name(name: str, limit: int = 8) -> List[Dict[str, A
 	if not tokens:
 		return []
 	q = _regex_all_tokens(tokens)
-	docs = list(col.find(q, {"name": 1, "aliases": 1}).limit(limit * 3))
+	docs = await col.find(q, {"name": 1, "aliases": 1}).limit(limit * 3).to_list(length=limit * 3)
 	if not docs:
 		q = {"$or": [{"name": {"$regex": tk, "$options": "i"}}
 		             for tk in tokens]}
-		docs = list(col.find(q, {"name": 1, "aliases": 1}).limit(limit * 3))
+		docs = await col.find(q, {"name": 1, "aliases": 1}).limit(limit * 3).to_list(length=limit * 3)
 	return docs[: limit * 3]

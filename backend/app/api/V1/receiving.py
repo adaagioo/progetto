@@ -25,7 +25,7 @@ async def create_receiving_api(payload: ReceivingCreate, user: dict = Depends(ge
 	if not access.get("canCreate", False):
 		raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Forbidden")
 	rid = await create_receiving(payload.date, [i.model_dump() for i in payload.items],
-	                             actor_id=str(user.get("id")) if isinstance(user, dict) else None)
+	                             actor_id=str(user["_id"]))
 	doc = await get_receiving(rid)
 	return Receiving(id=str(doc["_id"]), date=doc["date"], items=doc["items"], createdAt=doc["createdAt"].isoformat())
 
@@ -33,7 +33,7 @@ async def create_receiving_api(payload: ReceivingCreate, user: dict = Depends(ge
 @router.get("/receiving/{rec_id}", response_model=Receiving)
 async def get_receiving_api(rec_id: str, user: dict = Depends(get_current_user)):
 	access = await get_resource_access(user, RESOURCE)
-	if not access.get("canRead", True):
+	if not access.get("canView", True):
 		raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Forbidden")
 	doc = await get_receiving(rec_id)
 	if not doc:
@@ -48,7 +48,7 @@ async def list_receiving_api(
 		user: dict = Depends(get_current_user),
 ):
 	access = await get_resource_access(user, RESOURCE)
-	if not access.get("canRead", True):
+	if not access.get("canView", True):
 		raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Forbidden")
 	docs = await list_receiving(start=start, end=end, limit=200)
 	return [Receiving(id=str(d["_id"]), date=d["date"], items=d["items"], createdAt=d["createdAt"].isoformat()) for d in

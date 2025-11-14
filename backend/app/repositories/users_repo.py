@@ -48,6 +48,7 @@ async def insert_with_defaults(email: str, password_hash: str, locale: str | Non
 		"password": password_hash,
 		"roleKey": "owner",
 		"locale": locale,
+		"restaurantId": "default",
 	}
 	res = await _col().insert_one(doc)
 	return str(res.inserted_id)
@@ -65,6 +66,7 @@ async def create_user(email: str, password_hash: str, role_key: str = "user", lo
 		"password": password_hash,
 		"roleKey": role_key,
 		"locale": locale,
+		"restaurantId": "default",
 	}
 	res = await _col().insert_one(doc)
 	return str(res.inserted_id)

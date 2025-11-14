@@ -78,7 +78,7 @@ async def delete(ingredient_id: str, user: dict = Depends(get_current_user)):
 @router.get("/ingredients/{ingredient_id}/price-history", response_model=List[PricePoint])
 async def ingredient_price_history(ingredient_id: str, user: dict = Depends(get_current_user)):
 	access = await get_resource_access(user, RESOURCE)
-	if not access.get("canRead", True):
+	if not access.get("canView", True):
 		raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Forbidden")
 
 	# TODO (af): In the current model, price is associated with Inventory (not Ingredient directly).

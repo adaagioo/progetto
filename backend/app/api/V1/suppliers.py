@@ -1,10 +1,10 @@
 # backend/app/api/V1/suppliers.py
 from __future__ import annotations
 from typing import List
-from fastapi import APIRouter, HTTPException, Depends, status
+from fastapi import APIRouter, HTTPException, Depends, status, UploadFile, File
 from backend.app.deps.auth import get_current_user
 from backend.app.core.rbac_policies import get_resource_access
-from backend.app.repositories.files_repo import get_meta
+from backend.app.repositories.files_repo import get_meta, insert_meta
 from backend.app.repositories.suppliers_deps_repo import summarize_supplier_dependencies
 from backend.app.schemas.files import FileRef
 from backend.app.schemas.suppliers import Supplier, SupplierCreate, SupplierUpdate, SupplierDependencies
@@ -89,18 +89,34 @@ async def supplier_dependencies(supplier_id: str, user: dict = Depends(get_curre
 @router.post("/suppliers/{supplier_id}/files", response_model=FileRef, status_code=201)
 async def suppliers_attach_file(
 		supplier_id: str,
-		file_id: str,  # come query/body semplice; se preferisci body JSON, dimmelo
+		file: UploadFile = File(...),
 		user: dict = Depends(get_current_user)
 ):
+	"""Upload and attach a file to a supplier"""
 	access = await get_resource_access(user, RESOURCE)
 	if not access.get("canUpdate", False):
 		raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Forbidden")
 
-	meta = await get_meta(file_id)
-	if not meta:
-		raise HTTPException(status_code=404, detail="File not found")
-
+	# Upload file to storage
+	data = await file.read()
 	storage = get_storage()
+	path, size = storage.save_file(file.filename, file.content_type, data)
+
+	# Create file metadata
+	meta_id = await insert_meta({
+		"filename": file.filename,
+		"contentType": file.content_type,
+		"size": size,
+		"path": path,
+		"ownerId": str(user.get("_id")) if user.get("_id") else None,
+	})
+
+	# Get the created metadata
+	meta = await get_meta(meta_id)
+	if not meta:
+		raise HTTPException(status_code=500, detail="Failed to create file metadata")
+
+	# Get public URL for the file
 	url = storage.get_public_url(meta["path"])
 
 	file_ref = {
@@ -125,11 +141,17 @@ async def suppliers_detach_file(
 		file_id: str,
 		user: dict = Depends(get_current_user)
 ):
+	print(f"[SUPPLIER DELETE FILE] supplier_id={supplier_id}, file_id={file_id}, user={user.get('email')}")
+
+	# Validate file_id
+	if not file_id or file_id == "undefined":
+		raise HTTPException(status_code=400, detail="Invalid file_id. Frontend is not sending the correct file ID.")
+
 	access = await get_resource_access(user, RESOURCE)
 	if not access.get("canUpdate", False):
 		raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Forbidden")
 
 	ok = await repo.detach_file(supplier_id, file_id)
 	if not ok:
-		raise HTTPException(status_code=404, detail="Supplier not found")
+		raise HTTPException(status_code=404, detail="Supplier or file not found")
 	return {"ok": True}

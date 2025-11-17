@@ -4,7 +4,7 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from fastapi.responses import StreamingResponse
 from io import BytesIO
 from backend.app.deps.auth import get_current_user
-from backend.app.core.rbac_utils import get_resource_access
+from backend.app.core.rbac_policies import get_resource_access
 from backend.app.repositories.recipes_repo import find_many as find_recipes
 from backend.app.repositories.ingredients_repo import find_many as find_ingredients
 from openpyxl import Workbook

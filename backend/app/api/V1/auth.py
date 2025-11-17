@@ -9,7 +9,7 @@ from fastapi import APIRouter, HTTPException, status, Depends
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from backend.app.schemas.auth import (
 	LoginRequest, TokenResponse, RegisterRequest, MeResponse,
-	ForgotPasswordRequest, ResetPasswordRequest, LocaleUpdateRequest
+	ForgotPasswordRequest, ResetPasswordRequest, LocaleUpdateRequest, UserData
 )
 from backend.app.core.security import hash_password, decode_access_token, TokenError
 from backend.app.repositories.users_repo import find_by_email, find_by_id, insert_with_defaults, update_password
@@ -24,7 +24,17 @@ async def login(payload: LoginRequest):
 	res = await login_service(payload.email, payload.password)
 	if not res["ok"]:
 		raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid credentials")
-	return TokenResponse(accessToken=res["accessToken"], refreshToken=None)
+
+	user = res["user"]
+	user_data = UserData(
+		id=str(user["_id"]),
+		email=user["email"],
+		roleKey=user.get("roleKey", "user"),
+		restaurantId=user.get("restaurantId", "default"),
+		locale=user.get("locale")
+	)
+
+	return TokenResponse(access_token=res["accessToken"], refresh_token=None, user=user_data)
 
 
 @router.post("/auth/register", response_model=TokenResponse, status_code=201)
@@ -37,7 +47,17 @@ async def register(payload: RegisterRequest):
 	res = await login_service(payload.email, payload.password)
 	if not res["ok"]:
 		raise HTTPException(status_code=500, detail="Registration ok but login failed")
-	return TokenResponse(accessToken=res["accessToken"], refreshToken=None)
+
+	user = res["user"]
+	user_data = UserData(
+		id=str(user["_id"]),
+		email=user["email"],
+		roleKey=user.get("roleKey", "user"),
+		restaurantId=user.get("restaurantId", "default"),
+		locale=user.get("locale")
+	)
+
+	return TokenResponse(access_token=res["accessToken"], refresh_token=None, user=user_data)
 
 
 @router.get("/auth/me", response_model=MeResponse)

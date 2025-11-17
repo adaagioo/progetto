@@ -165,14 +165,33 @@ async def add_menu_items(menu_id: str, items: List[MenuItemCreate], user: dict =
 		raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Forbidden")
 
 	# Check if menu exists and belongs to restaurant
+	print(f"[MENU DEBUG] Looking for menu_id={menu_id}, restaurantId={user['restaurantId']}")
+	print(f"[MENU DEBUG] User full data: {user}")
+
 	menu = await repo.get_menu(menu_id, user["restaurantId"])
+	print(f"[MENU DEBUG] Query result: menu={menu}")
+
 	if not menu:
-		raise HTTPException(status_code=404, detail="Menu not found")
+		# Debug: check if menu exists at all (without restaurant filter)
+		db = get_db()
+		any_menu = await db["menus"].find_one({"id": menu_id}, {"_id": 0})
+		print(f"[MENU DEBUG] Menu not found! menu_id={menu_id}, any_menu={any_menu}, user_restaurantId={user['restaurantId']}")
+
+		if any_menu:
+			msg = f"Menu exists but wrong restaurant. Menu.restaurantId={any_menu.get('restaurantId')}, user.restaurantId={user['restaurantId']}"
+			print(f"[MENU ERROR] {msg}")
+			raise HTTPException(status_code=404, detail=msg)
+
+		msg = f"Menu {menu_id} does not exist in database"
+		print(f"[MENU ERROR] {msg}")
+		raise HTTPException(status_code=404, detail=msg)
 
 	db = get_db()
 	created_items = []
 
 	for item in items:
+		print(f"[MENU DEBUG] Processing item: refType={item.refType}, refId={item.refId}")
+
 		# Validate refType
 		if item.refType not in ["ingredient", "preparation", "recipe"]:
 			raise HTTPException(status_code=400, detail=f"Invalid refType: {item.refType}")
@@ -184,11 +203,28 @@ async def add_menu_items(menu_id: str, items: List[MenuItemCreate], user: dict =
 			"recipe": "recipes"
 		}
 		collection_name = collection_map[item.refType]
-		ref_entity = await db[collection_name].find_one(
-			{"id": item.refId, "restaurantId": user["restaurantId"]}
-		)
+		print(f"[MENU DEBUG] Looking for {item.refType} with id={item.refId} in collection {collection_name}")
+
+		# Try both _id (ObjectId) and id (string) fields for compatibility
+		from bson import ObjectId
+		try:
+			ref_entity = await db[collection_name].find_one({
+				"_id": ObjectId(item.refId),
+				"restaurantId": user["restaurantId"]
+			})
+		except:
+			# Fallback to string id field
+			ref_entity = await db[collection_name].find_one({
+				"id": item.refId,
+				"restaurantId": user["restaurantId"]
+			})
+
+		print(f"[MENU DEBUG] Found entity: {ref_entity}")
+
 		if not ref_entity:
-			raise HTTPException(status_code=404, detail=f"{item.refType.capitalize()} {item.refId} not found")
+			msg = f"{item.refType.capitalize()} with id '{item.refId}' not found in {collection_name} for restaurantId='{user['restaurantId']}'"
+			print(f"[MENU ERROR] {msg}")
+			raise HTTPException(status_code=404, detail=msg)
 
 		# Check for duplicates
 		existing = await repo.find_duplicate_menu_item(menu_id, item.refType, item.refId)

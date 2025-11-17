@@ -16,7 +16,9 @@ def _preps(): return get_db()["preparations"]
 
 
 async def _load_menu(for_date: date) -> Dict[str, Any] | None:
-	return await _menus().find_one({"date": for_date})
+	# MongoDB stores dates as strings in ISO format, so convert for query
+	date_str = for_date.isoformat()
+	return await _menus().find_one({"date": date_str})
 
 
 async def _map_preparation_names(ids: List[ObjectId]) -> Dict[str, str]:

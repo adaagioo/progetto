@@ -11,7 +11,7 @@ from backend.app.services.ingredients_service import (
 )
 from backend.app.repositories.movements_repo import find_receiving_price_history
 from backend.app.deps.auth import get_current_user
-from backend.app.core.rbac_utils import get_resource_access
+from backend.app.core.rbac_policies import get_resource_access
 
 router = APIRouter()
 
@@ -52,7 +52,9 @@ async def create(body: IngredientCreate, user: dict = Depends(get_current_user))
 
 
 @router.patch("/ingredients/{ingredient_id}", response_model=Ingredient)
+@router.put("/ingredients/{ingredient_id}", response_model=Ingredient)
 async def update(ingredient_id: str, body: IngredientUpdate, user: dict = Depends(get_current_user)):
+	"""Update ingredient (supports both PATCH and PUT for compatibility)"""
 	access = await get_resource_access(user, RESOURCE)
 	if not access["canUpdate"]:
 		raise HTTPException(status_code=403, detail="Forbidden")

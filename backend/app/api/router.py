@@ -12,9 +12,10 @@ MODULES: list[tuple[str, str]] = [
 	("rbac_meta", "rbac"),
 	("dependencies", "dependencies"),
 	("ingredients", "ingredients"),
-	("inventory", "inventory"),
-	("inventory_admin", "inventory"),
+	# Load specific inventory routes BEFORE generic ones to avoid path conflicts
 	("inventory_valuation", "inventory"),
+	("inventory_admin", "inventory"),
+	("inventory", "inventory"),
 	("preparations", "preparations"),
 	("prep_list", "preparations"),
 	("recipes", "recipes"),
@@ -29,6 +30,7 @@ MODULES: list[tuple[str, str]] = [
 	("wastage", "wastage"),
 	("pl", "pl"),
 	("dashboard", "dashboard"),
+	("restaurant", "restaurant"),
 	("user", "users"),
 	("auth", "auth"),
 ]

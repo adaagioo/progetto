@@ -74,7 +74,7 @@ async def create_user(email: str, password_hash: str, role_key: str = "user", lo
 
 async def update_user(user_id: str, patch: dict) -> bool:
 	from bson import ObjectId
-	allowed = {k: v for k, v in patch.items() if k in {"email", "roleKey", "locale"}}
+	allowed = {k: v for k, v in patch.items() if k in {"email", "roleKey", "locale", "restaurantId"}}
 	if not allowed:
 		return True
 	res = await _col().update_one({"_id": ObjectId(user_id)}, {"$set": allowed})

@@ -10,7 +10,7 @@ from backend.app.services.preparations_service import (
 	list_preparations, get_preparation, create_preparation, update_preparation, delete_preparation
 )
 from backend.app.deps.auth import get_current_user
-from backend.app.core.rbac_utils import get_resource_access
+from backend.app.core.rbac_policies import get_resource_access
 
 router = APIRouter()
 RESOURCE = "preparations"

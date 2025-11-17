@@ -56,7 +56,7 @@ async def create_pl_snapshot(payload: PLSnapshotCreate, user: dict = Depends(get
 	return PLSnapshot(**snapshot)
 
 
-@router.get("/pl/snapshots", response_model=List[PLSnapshot])
+@router.get("/pl/snapshot", response_model=List[PLSnapshot])
 async def list_pl_snapshots(
 		start_date: Optional[str] = None,
 		end_date: Optional[str] = None,

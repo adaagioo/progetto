@@ -76,7 +76,8 @@ class Settings(BaseSettings):
 	def from_env(cls) -> "Settings":
 		s = cls()
 		import os
-		s.ALLOW_ORIGINS = _csv(os.getenv("ALLOW_ORIGINS"), s.ALLOW_ORIGINS)
+		# ALLOW_ORIGINS is parsed as JSON by Pydantic Settings directly
+		# Only parse SUPPORTED_CURRENCIES and SUPPORTED_LOCALES as CSV
 		s.SUPPORTED_CURRENCIES = _csv(os.getenv("SUPPORTED_CURRENCIES"), s.SUPPORTED_CURRENCIES)
 		s.SUPPORTED_LOCALES = _csv(os.getenv("SUPPORTED_LOCALES"), s.SUPPORTED_LOCALES)
 		return s

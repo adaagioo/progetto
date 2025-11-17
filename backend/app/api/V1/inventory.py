@@ -7,7 +7,7 @@ from backend.app.services.inventory_service import (
 	list_inventory, get_inventory, create_inventory, delete_inventory_by_receiving
 )
 from backend.app.deps.auth import get_current_user
-from backend.app.core.rbac_utils import get_resource_access
+from backend.app.core.rbac_policies import get_resource_access
 
 router = APIRouter()
 
@@ -20,6 +20,50 @@ async def list_all(user: dict = Depends(get_current_user)):
 	if not access["canView"]:
 		raise HTTPException(status_code=403, detail="Forbidden")
 	return await list_inventory(user["restaurantId"])
+
+
+@router.get("/inventory/expiring")
+async def get_expiring_inventory(days: int = 3, user: dict = Depends(get_current_user)):
+	"""Get count of items expiring within specified days (bucketed by day)"""
+	access = await get_resource_access(user, RESOURCE)
+	if not access["canView"]:
+		raise HTTPException(status_code=403, detail="Forbidden")
+
+	from datetime import date, timedelta
+	from backend.app.db.mongo import get_db
+
+	db = get_db()
+	inventory_items = await db.inventory.find({
+		"restaurantId": user["restaurantId"],
+		"expiryDate": {"$exists": True, "$ne": None}
+	}).to_list(10000)
+
+	today = date.today()
+	buckets = {f"day{i}": 0 for i in range(1, days + 1)}
+
+	for item in inventory_items:
+		expiry_str = item.get("expiryDate")
+		if not expiry_str:
+			continue
+
+		try:
+			if isinstance(expiry_str, str):
+				expiry_date = date.fromisoformat(expiry_str.split('T')[0])
+			else:
+				continue
+
+			days_until_expiry = (expiry_date - today).days
+
+			# Bucket items by days (1, 2, 3, etc.)
+			if 0 <= days_until_expiry < days:
+				bucket_key = f"day{days_until_expiry + 1}"
+				if bucket_key in buckets:
+					buckets[bucket_key] += 1
+
+		except (ValueError, AttributeError):
+			continue
+
+	return {"buckets": buckets, "total": sum(buckets.values())}
 
 
 @router.get("/inventory/{inv_id}", response_model=Inventory)

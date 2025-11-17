@@ -63,6 +63,51 @@ async def valuation_by_category(
 	return ValuationByCategoryResponse(items=items)
 
 
+@router.get("/inventory/valuation/{category}")
+async def valuation_by_specific_category(
+		category: str,
+		asOf: Optional[date] = Query(None, description="Valuation date; defaults to today"),
+		user: dict = Depends(get_current_user),
+):
+	"""Get inventory valuation for a specific category (food, beverage, nonfood)"""
+	access = await get_resource_access(user, RESOURCE)
+	if not access.get("canView"):
+		raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Forbidden")
+
+	# Validate category
+	valid_categories = ["food", "beverage", "nonfood"]
+	if category not in valid_categories:
+		raise HTTPException(status_code=400, detail=f"Invalid category. Must be one of: {', '.join(valid_categories)}")
+
+	# Get all items by category
+	items = await get_valuation_by_category(asOf)
+
+	# Filter by requested category
+	category_items = [item for item in items if item.get("category") == category]
+
+	# Calculate total for this category
+	total_value = sum(item.get("value", 0.0) for item in category_items)
+
+	return {
+		"category": category,
+		"totalValue": total_value,
+		"itemCount": len(category_items),
+		"items": category_items
+	}
+
+
+@router.get("/inventory/valuation", response_model=ValuationTotalResponse)
+async def valuation_default(
+		asOf: Optional[date] = Query(None, description="Valuation date; defaults to today"),
+		user: dict = Depends(get_current_user),
+):
+	"""Get total inventory valuation (same as /inventory/valuation/total)"""
+	access = await get_resource_access(user, RESOURCE)
+	if not access.get("canView"):
+		raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Forbidden")
+	return await get_valuation_total(asOf)
+
+
 @router.get("/inventory/expiring", response_model=List[ExpiringItem])
 async def inventory_expiring(
 		days: int = Query(7, ge=1, le=90, description="Window in days to consider as expiring"),
@@ -74,11 +119,22 @@ async def inventory_expiring(
 	return await get_expiring_items(days)
 
 
+@router.get("/inventory/adjustments")
+async def inventory_adjustments_list(user: dict = Depends(get_current_user)):
+	"""Get list of inventory adjustments (placeholder - not yet implemented)"""
+	access = await get_resource_access(user, RESOURCE)
+	if not access.get("canView"):
+		raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Forbidden")
+	# TODO: Implement adjustments history
+	return {"adjustments": [], "message": "Adjustments history not yet implemented"}
+
+
 @router.post("/inventory/adjustments", response_model=AdjustmentResult)
 async def inventory_adjustments(
 		payload: AdjustmentRequest,
 		user: dict = Depends(get_current_user),
 ):
+	"""Apply inventory adjustments"""
 	access = await get_resource_access(user, RESOURCE)
 	if not access.get("canUpdate"):
 		raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Forbidden")

@@ -13,11 +13,18 @@ RESOURCE = "order-list"
 
 
 @router.get("/order-list", response_model=OrderListResponse)
-async def order_list(forDate: date = Query(...), user: dict = Depends(get_current_user)):
+async def order_list(
+	forDate: Optional[date] = Query(None, description="Date for order list; defaults to tomorrow"),
+	user: dict = Depends(get_current_user)
+):
 	access = await get_resource_access(user, RESOURCE)
 	if not access.get("canView"):
 		raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Forbidden")
-	doc = await compute_order_list(forDate)
+
+	from datetime import timedelta
+	target_date = forDate or (date.today() + timedelta(days=1))
+
+	doc = await compute_order_list(target_date)
 	return OrderListResponse(**doc)
 
 

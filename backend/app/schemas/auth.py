@@ -1,6 +1,7 @@
 # backend/app/schemas/auth.py
 from __future__ import annotations
-from pydantic import BaseModel, EmailStr
+from typing import Optional
+from pydantic import BaseModel, EmailStr, Field, ConfigDict
 
 
 class LoginRequest(BaseModel):
@@ -8,9 +9,20 @@ class LoginRequest(BaseModel):
 	password: str
 
 
+class UserData(BaseModel):
+	"""User data returned on login/register"""
+	model_config = ConfigDict(extra="ignore")
+	id: str
+	email: str
+	roleKey: str
+	restaurantId: str
+	locale: Optional[str] = None
+
+
 class TokenResponse(BaseModel):
-	accessToken: str
-	refreshToken: str | None = None
+	access_token: str
+	refresh_token: Optional[str] = None
+	user: Optional[UserData] = None
 
 
 class RegisterRequest(BaseModel):

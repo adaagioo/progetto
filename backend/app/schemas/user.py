@@ -24,3 +24,4 @@ class UserUpdate(BaseModel):
 	email: EmailStr | None = None
 	roleKey: str | None = None
 	locale: str | None = None
+	restaurantId: str | None = None

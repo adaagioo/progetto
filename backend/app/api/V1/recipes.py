@@ -10,7 +10,7 @@ from backend.app.services.recipes_service import (
 	list_recipes, get_recipe, create_recipe, update_recipe, delete_recipe
 )
 from backend.app.deps.auth import get_current_user
-from backend.app.core.rbac_utils import get_resource_access
+from backend.app.core.rbac_policies import get_resource_access
 
 router = APIRouter()
 RESOURCE = "recipes"

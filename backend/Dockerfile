@@ -19,6 +19,10 @@ COPY . /app/backend
 
 # Create a non-root user
 RUN useradd -m appuser && chown -R appuser:appuser /app
+
+# Create storage directory with correct permissions
+RUN mkdir -p /data/storage && chown -R appuser:appuser /data
+
 USER appuser
 
 EXPOSE 8000

@@ -3,25 +3,48 @@ from __future__ import annotations
 
 from typing import List, Optional
 
-from fastapi import APIRouter, Depends, HTTPException, status, Query, Body
+from fastapi import APIRouter, Depends, HTTPException, status, Query, Body, UploadFile, File, Form
 from backend.app.deps.auth import get_current_user
 from backend.app.core.rbac_policies import get_resource_access
 from backend.app.repositories.ocr_repo import upsert_rules, list_rules, delete_rule
+from backend.app.repositories.files_repo import insert_meta
 from backend.app.schemas.ocr import OCRStartRequest, OCRResult, OCRSaveMappingsRequest, OCRCreateReceivingRequest, \
 	OCRMappingRecord
 from backend.app.services.ocr_receiving_service import create_receiving_from_ocr
 from backend.app.services.ocr_service import run_ocr
+from backend.app.services.storage_service import get_storage
 
 router = APIRouter()
 RESOURCE = "ocr"
 
 
 @router.post("/ocr/process", response_model=OCRResult)
-async def ocr_process(payload: OCRStartRequest, user: dict = Depends(get_current_user)):
+async def ocr_process(
+	file: UploadFile = File(...),
+	language: str = Form("eng"),
+	user: dict = Depends(get_current_user)
+):
+	"""Upload and process a file with OCR"""
 	access = await get_resource_access(user, RESOURCE)
 	if not access.get("canCreate"):
 		raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Forbidden")
-	return await run_ocr(payload.fileId, payload.language)
+
+	# Upload file to storage
+	data = await file.read()
+	storage = get_storage()
+	path, size = storage.save_file(file.filename, file.content_type, data)
+
+	# Create file metadata
+	meta_id = await insert_meta({
+		"filename": file.filename,
+		"contentType": file.content_type,
+		"size": size,
+		"path": path,
+		"ownerId": str(user.get("_id")) if user.get("_id") else None,
+	})
+
+	# Run OCR on the uploaded file
+	return await run_ocr(meta_id, language)
 
 
 @router.post("/ocr/mappings")
@@ -54,11 +77,36 @@ async def ocr_create_receiving(payload: OCRCreateReceivingRequest, user: dict = 
 	return {"ok": True, "id": rec_id}
 
 
+@router.get("/ocr/mappings/{supplier_id}", response_model=List[OCRMappingRecord])
+async def ocr_list_mappings_by_supplier(
+		supplier_id: str,
+		user: dict = Depends(get_current_user)
+):
+	"""Get OCR mappings for a specific supplier (path parameter)"""
+	access = await get_resource_access(user, RESOURCE)
+	if not access.get("canView", False):
+		raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Forbidden")
+
+	user_id = str(user["_id"])
+
+	docs = await list_rules(user_id, supplier_id=supplier_id, limit=500)
+	out: List[OCRMappingRecord] = []
+	for d in docs:
+		out.append(OCRMappingRecord(
+			key=d["key"],
+			inventoryId=str(d["inventoryId"]),
+			defaultUnit=d.get("defaultUnit"),
+			supplierId=(str(d["supplierId"]) if d.get("supplierId") else None),
+		))
+	return out
+
+
 @router.get("/ocr/mappings", response_model=List[OCRMappingRecord])
 async def ocr_list_mappings(
 		supplierId: Optional[str] = Query(default=None),
 		user: dict = Depends(get_current_user)
 ):
+	"""Get OCR mappings (query parameter, for backwards compatibility)"""
 	access = await get_resource_access(user, RESOURCE)
 	if not access.get("canView", False):
 		raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Forbidden")

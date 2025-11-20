@@ -28,36 +28,21 @@ async def _log(kind: str, payload: Dict[str, Any]) -> None:
 	await _movements().insert_one({"kind": kind, "at": datetime.utcnow(), **payload})
 
 
-async def create_receiving(date, items: List[Dict[str, Any]], actor_id: Optional[str] = None) -> str:
-	# Persist doc first
+async def create_receiving(date, items: List[Dict[str, Any]], actor_id: Optional[str] = None, metadata: Optional[Dict[str, Any]] = None) -> str:
+	# Convert date to datetime if needed (MongoDB requires datetime, not date)
+	from datetime import date as date_type
+	if isinstance(date, date_type) and not isinstance(date, datetime):
+		date = datetime.combine(date, datetime.min.time())
+
+	# Persist doc only (inventory updates handled by caller)
 	doc = {"date": date, "items": items, "createdAt": datetime.utcnow()}
+
+	# Add metadata fields if provided
+	if metadata:
+		doc.update({k: v for k, v in metadata.items() if v is not None})
+
 	res = await _receiving().insert_one(doc)
 	rid = res.inserted_id
-
-	# Apply stock increments with unit alignment
-	for it in items:
-		inv = it.get("inventoryId")
-		qty = float(it.get("quantity", 0.0))
-		unit = it.get("unit")
-		if not inv or qty <= 0:
-			continue
-		inv_id = ObjectId(inv)
-		inv_doc = await _inventory().find_one({"_id": inv_id}, projection={"unit": 1})
-		inv_unit = inv_doc.get("unit") if inv_doc else None
-		qty_inc = qty
-		if unit and inv_unit:
-			qty_inc = convert_quantity(qty, unit, inv_unit)
-		ok = await _inc_stock(inv_id, qty_inc)
-		if ok:
-			payload = {
-				"inventoryId": inv_id,
-				"qty": qty_inc,
-				"unitCost": it.get("unitCost"),
-				"supplierId": (ObjectId(it["supplierId"]) if it.get("supplierId") else None),
-				"actorId": (ObjectId(actor_id) if actor_id else None),
-				"receivingId": rid,
-			}
-			await _log("receiving", payload)
 	return str(rid)
 
 
@@ -73,6 +58,20 @@ async def list_receiving(start=None, end=None, limit: int = 200) -> List[Dict[st
 		if end: q["date"]["$lte"] = end
 	cur = _receiving().find(q).limit(limit)
 	return [doc async for doc in cur]
+
+
+async def update_receiving(rec_id: str, updates: Dict[str, Any]) -> bool:
+	# Convert date to datetime if present
+	if "date" in updates:
+		from datetime import date as date_type
+		if isinstance(updates["date"], date_type) and not isinstance(updates["date"], datetime):
+			updates["date"] = datetime.combine(updates["date"], datetime.min.time())
+
+	res = await _receiving().update_one(
+		{"_id": ObjectId(rec_id)},
+		{"$set": updates}
+	)
+	return res.matched_count == 1
 
 
 async def delete_receiving(rec_id: str) -> bool:

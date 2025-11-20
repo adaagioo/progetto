@@ -6,9 +6,10 @@ from pydantic import BaseModel
 
 
 class PrepTask(BaseModel):
-	preparationId: str
+	preparationId: Optional[str] = None  # Can be None when grouped by ingredient name
 	recipeId: Optional[str] = None
 	name: str
+	preparationName: Optional[str] = None  # Frontend expects this field
 	quantity: float
 	unit: str | None = None
 

@@ -21,8 +21,9 @@ async def prep_list(
 	if not access.get("canView"):
 		raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Forbidden")
 	d = forDate or date.today()
+	print(f"[PREP_LIST API] Computing prep list for date: {d}")
 	doc = await compute_prep_list(d)
-
+	print(f"[PREP_LIST API] Result: {doc}")
 	return PrepListResponse(**doc)
 
 
@@ -36,7 +37,13 @@ async def prep_list_forecast(
 	if not access.get("canView"):
 		raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Forbidden")
 	s = start or date.today()
+	print(f"[PREP_LIST FORECAST] Computing forecast from {s} for {days} days")
 	items: List[PrepForecastItem] = []
 	for i in range(days):
-		items.append(PrepForecastItem(date=s + timedelta(days=i), tasksCount=0))
+		current_date = s + timedelta(days=i)
+		# Actually compute the prep list to get real task counts
+		result = await compute_prep_list(current_date)
+		tasks_count = len(result.get("tasks", []))
+		print(f"[PREP_LIST FORECAST] Date {current_date}: {tasks_count} tasks")
+		items.append(PrepForecastItem(date=current_date, tasksCount=tasks_count))
 	return PrepForecastResponse(items=items)

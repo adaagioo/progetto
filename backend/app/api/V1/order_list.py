@@ -24,7 +24,7 @@ async def order_list(
 	from datetime import timedelta
 	target_date = forDate or (date.today() + timedelta(days=1))
 
-	doc = await compute_order_list(target_date)
+	doc = await compute_order_list(target_date, user["restaurantId"])
 	return OrderListResponse(**doc)
 
 
@@ -34,5 +34,5 @@ async def order_list_forecast(start: date = Query(...), days: int = Query(7, ge=
 	access = await get_resource_access(user, RESOURCE)
 	if not access.get("canView"):
 		raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Forbidden")
-	items = await compute_order_forecast(start, days)
+	items = await compute_order_forecast(start, days, user["restaurantId"])
 	return OrderForecastResponse(items=items)

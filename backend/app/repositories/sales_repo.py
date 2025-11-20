@@ -1,7 +1,7 @@
 # backend/app/repositories/sales_repo.py
 from __future__ import annotations
 from typing import List, Dict, Any, Optional
-from datetime import datetime, date
+from datetime import datetime, date, timezone
 from bson import ObjectId
 from backend.app.db.mongo import get_db
 
@@ -11,7 +11,7 @@ def _col():
 
 
 async def create_sale(d: date, items: List[dict]) -> str:
-	res = await _col().insert_one({"date": d, "items": items, "createdAt": datetime.utcnow()})
+	res = await _col().insert_one({"date": d, "items": items, "createdAt": datetime.now(tz=timezone.utc)})
 	return str(res.inserted_id)
 
 

@@ -1,6 +1,7 @@
 # backend/app/api/V1/inventory.py
 from __future__ import annotations
 from fastapi import APIRouter, HTTPException, status, Depends
+from fastapi.responses import JSONResponse
 from typing import List
 from backend.app.schemas.inventory import Inventory, InventoryCreate
 from backend.app.services.inventory_service import (
@@ -14,12 +15,34 @@ router = APIRouter()
 RESOURCE = "inventory"
 
 
-@router.get("/inventory", response_model=List[Inventory])
-async def list_all(user: dict = Depends(get_current_user)):
+@router.get("/inventory")
+async def list_all(
+	user: dict = Depends(get_current_user),
+	flat: bool = False
+):
+	"""
+	Get inventory items.
+	By default, returns grouped by category {food: [...], beverage: [...], other: [...]}.
+	Use ?flat=true to get a flat list instead.
+	"""
 	access = await get_resource_access(user, RESOURCE)
 	if not access["canView"]:
 		raise HTTPException(status_code=403, detail="Forbidden")
-	return await list_inventory(user["restaurantId"])
+
+	items = await list_inventory(user["restaurantId"])
+
+	# Convert all items to list of dicts
+	from fastapi.encoders import jsonable_encoder
+
+	all_items = []
+	for item in items:
+		item_dict = item.model_dump() if hasattr(item, 'model_dump') else item
+		all_items.append(item_dict)
+
+	print(f"[INVENTORY DEBUG] Returning {len(all_items)} items as flat array")
+
+	# Simply return the flat array - this is what the frontend expects for iteration
+	return JSONResponse(content=jsonable_encoder(all_items))
 
 
 @router.get("/inventory/expiring")
@@ -82,10 +105,24 @@ async def create(body: InventoryCreate, user: dict = Depends(get_current_user)):
 	access = await get_resource_access(user, RESOURCE)
 	if not access["canCreate"]:
 		raise HTTPException(status_code=403, detail="Forbidden")
+
 	doc = body.model_dump()
 	doc["restaurantId"] = user["restaurantId"]
+
+	# Add createdAt timestamp
+	from datetime import datetime
+	doc["createdAt"] = datetime.utcnow()
+
+	print(f"[INVENTORY DEBUG] Creating inventory with: {doc}")
+
 	new_id = await create_inventory(doc)
 	created = await get_inventory(user["restaurantId"], new_id)
+
+	# Ensure createdAt is serialized as string
+	if created and "createdAt" in created:
+		if hasattr(created["createdAt"], "isoformat"):
+			created["createdAt"] = created["createdAt"].isoformat()
+
 	return created
 
 

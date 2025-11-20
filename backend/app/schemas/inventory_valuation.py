@@ -2,15 +2,24 @@
 from __future__ import annotations
 from datetime import date, datetime
 from typing import Optional, List
-from pydantic import BaseModel
+from pydantic import BaseModel, field_serializer
+
+
+class ValuationCategories(BaseModel):
+	food: float = 0.0
+	beverage: float = 0.0
+	nofood: float = 0.0  # Frontend expects "nofood", not "other"
 
 
 class ValuationSummaryResponse(BaseModel):
 	asOf: date
 	total: float
-	food: float
-	beverage: float
-	other: float
+	categories: ValuationCategories
+	itemCount: int = 0
+
+	@field_serializer('asOf')
+	def serialize_as_of(self, value: date) -> str:
+		return value.isoformat()
 
 
 class ValuationTotalResponse(BaseModel):

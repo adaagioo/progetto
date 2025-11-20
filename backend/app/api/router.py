@@ -18,6 +18,7 @@ MODULES: list[tuple[str, str]] = [
 	("inventory", "inventory"),
 	("preparations", "preparations"),
 	("prep_list", "preparations"),
+	("production_plan", "production"),
 	("recipes", "recipes"),
 	("order_list", "orders"),
 	("menu", "menu"),

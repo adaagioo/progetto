@@ -1,8 +1,34 @@
 # backend/app/services/menu_service.py
 from __future__ import annotations
 from typing import Dict, Any
+from bson import ObjectId
 from backend.app.db.mongo import get_db
 from backend.app.utils.units import normalize_quantity_to_base_unit
+
+
+async def _find_by_id(collection, entity_id: str, additional_filters: dict = None):
+	"""
+	Try to find entity by both _id (ObjectId) and id (string) for compatibility.
+	"""
+	db = get_db()
+	coll = db[collection]
+
+	# Try _id as ObjectId first
+	try:
+		query = {"_id": ObjectId(entity_id)}
+		if additional_filters:
+			query.update(additional_filters)
+		result = await coll.find_one(query, {"_id": 0})
+		if result:
+			return result
+	except:
+		pass
+
+	# Fallback to string id field
+	query = {"id": entity_id}
+	if additional_filters:
+		query.update(additional_filters)
+	return await coll.find_one(query, {"_id": 0})
 
 
 async def populate_menu_item_data(menu_item: dict) -> dict:
@@ -34,7 +60,7 @@ async def populate_menu_item_data(menu_item: dict) -> dict:
 
 	try:
 		if ref_type == "ingredient":
-			ingredient = await db.ingredients.find_one({"id": ref_id}, {"_id": 0})
+			ingredient = await _find_by_id("ingredients", ref_id)
 			if ingredient:
 				populated["name"] = ingredient["name"]
 				populated["category"] = ingredient.get("category", "food")
@@ -59,7 +85,7 @@ async def populate_menu_item_data(menu_item: dict) -> dict:
 					populated["feasiblePortions"] = int(qty_on_hand)
 
 		elif ref_type == "preparation":
-			preparation = await db.preparations.find_one({"id": ref_id}, {"_id": 0})
+			preparation = await _find_by_id("preparations", ref_id)
 			if preparation:
 				populated["name"] = preparation["name"]
 				populated["category"] = "food"
@@ -72,7 +98,7 @@ async def populate_menu_item_data(menu_item: dict) -> dict:
 				min_portions = float('inf')
 
 				for item in preparation.get("items", []):
-					ingredient = await db.ingredients.find_one({"id": item["ingredientId"]}, {"_id": 0})
+					ingredient = await _find_by_id("ingredients", item["ingredientId"])
 					if not ingredient:
 						can_make = False
 						break
@@ -108,7 +134,7 @@ async def populate_menu_item_data(menu_item: dict) -> dict:
 					populated["feasiblePortions"] = min_portions
 
 		elif ref_type == "recipe":
-			recipe = await db.recipes.find_one({"id": ref_id}, {"_id": 0})
+			recipe = await _find_by_id("recipes", ref_id)
 			if recipe:
 				populated["name"] = recipe["name"]
 				populated["category"] = "food"

@@ -37,7 +37,10 @@ async def valuation_summary(
 	access = await get_resource_access(user, RESOURCE)
 	if not access.get("canView"):
 		raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Forbidden")
-	return await get_valuation_summary(asOf)
+	result = await get_valuation_summary(asOf)
+	print(f"[VALUATION DEBUG] Returning summary: {result}")
+	print(f"[VALUATION DEBUG] Summary model_dump: {result.model_dump()}")
+	return result
 
 
 @router.get("/inventory/valuation/total", response_model=ValuationTotalResponse)
@@ -82,17 +85,17 @@ async def valuation_by_specific_category(
 	# Get all items by category
 	items = await get_valuation_by_category(asOf)
 
-	# Filter by requested category
-	category_items = [item for item in items if item.get("category") == category]
+	# Filter by requested category (items are ValuationByCategoryItem objects)
+	category_items = [item for item in items if item.category == category]
 
 	# Calculate total for this category
-	total_value = sum(item.get("value", 0.0) for item in category_items)
+	total_value = sum(item.total for item in category_items)
 
 	return {
 		"category": category,
 		"totalValue": total_value,
 		"itemCount": len(category_items),
-		"items": category_items
+		"items": [item.model_dump() for item in category_items]
 	}
 
 

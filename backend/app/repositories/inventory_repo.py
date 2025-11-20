@@ -51,20 +51,28 @@ def _preps():
 async def aggregate_valuation_summary(as_of: date) -> Dict[str, Any]:
 	pipeline = [
 		{"$project": {
-			"category": {"$ifNull": ["$category", "other"]},
+			"category": {"$ifNull": ["$category", "nofood"]},
 			"value": {"$multiply": [{"$ifNull": ["$quantity", 0]}, {"$ifNull": ["$unitCost", 0]}]}
 		}},
-		{"$group": {"_id": "$category", "total": {"$sum": "$value"}}},
+		{"$group": {"_id": "$category", "total": {"$sum": "$value"}, "count": {"$sum": 1}}},
 	]
-	totals = {"food": 0.0, "beverage": 0.0, "other": 0.0}
+	totals = {"food": 0.0, "beverage": 0.0, "nofood": 0.0}
+	item_count = 0
 	async for g in _col().aggregate(pipeline):
-		cat = (g.get("_id") or "other")
+		cat = (g.get("_id") or "nofood")
+		count = g.get("count", 0)
+		item_count += count
 		if cat not in totals:
-			totals["other"] += float(g.get("total", 0.0))
+			totals["nofood"] += float(g.get("total", 0.0))
 		else:
 			totals[cat] = float(g.get("total", 0.0))
-	grand = totals["food"] + totals["beverage"] + totals["other"]
-	return {"asOf": as_of, "total": grand, **totals}
+	grand = totals["food"] + totals["beverage"] + totals["nofood"]
+	return {
+		"asOf": as_of,
+		"total": grand,
+		"categories": totals,
+		"itemCount": item_count
+	}
 
 
 async def aggregate_valuation_by_category(as_of: date) -> list[dict]:

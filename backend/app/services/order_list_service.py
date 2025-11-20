@@ -67,8 +67,7 @@ async def compute_order_list(for_date: date) -> Dict[str, Any]:
 
 		# Convert required to inventory unit if possible
 		req_in_inv_unit = required
-		# TODO (af):
-		# We don't have ingredient unit here (aggregated), assume ingredient units already match recipe units.
+		# Note: We don't have ingredient unit here (aggregated), assume ingredient units already match recipe units.
 		# For robustness, if inv_unit is known and ingredients had units, you'd convert per-ingredient before summing.
 		on_hand = float(meta.get("onHand", 0.0))
 

@@ -1,7 +1,7 @@
 # backend/app/repositories/files_repo.py
 from __future__ import annotations
 from typing import Dict, Any, Optional, List
-from datetime import datetime
+from datetime import datetime, timezone
 from bson import ObjectId
 from backend.app.db.mongo import get_db
 
@@ -9,7 +9,7 @@ def _col():
     return get_db()["files"]
 
 async def insert_meta(meta: Dict[str, Any]) -> str:
-    meta = {**meta, "createdAt": datetime.utcnow()}
+    meta = {**meta, "createdAt": datetime.now(tz=timezone.utc)}
     res = await _col().insert_one(meta)
     return str(res.inserted_id)
 

@@ -62,7 +62,6 @@ class Ingredient(IngredientFull):
 	createdAt: Optional[str] = None
 
 
-# TODO (af): normalization
 class PricePoint(BaseModel):
 	date: date
 	unitCost: float | None = None

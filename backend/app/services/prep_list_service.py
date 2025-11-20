@@ -4,6 +4,9 @@ from datetime import date
 from typing import Dict, Any, List, Tuple
 from bson import ObjectId
 from backend.app.db.mongo import get_db
+from backend.app.utils.logger import get_logger
+
+logger = get_logger(__name__)
 
 
 def _production_plans(): return get_db()["production_plans"]
@@ -39,10 +42,10 @@ async def compute_prep_list(for_date: date) -> Dict[str, Any]:
 	"""
 	plan = await _load_production_plan(for_date)
 	if not plan or not plan.get("items"):
-		print(f"[PREP_LIST DEBUG] No production plan found for date {for_date}")
+		logger.debug(f"No production plan found for date {for_date}")
 		return {"date": for_date, "tasks": []}
 
-	print(f"[PREP_LIST DEBUG] Found production plan with {len(plan['items'])} items")
+	logger.debug(f"Found production plan with {len(plan['items'])} items")
 
 	# Collect all recipe ids
 	recipe_ids = [ObjectId(i["recipeId"]) for i in plan["items"] if i.get("recipeId")]
@@ -85,6 +88,6 @@ async def compute_prep_list(for_date: date) -> Dict[str, Any]:
 		})
 	# Sort by name for stable output
 	tasks.sort(key=lambda x: (x["name"] or "", x.get("unit") or ""))
-	print(f"[PREP_LIST DEBUG] Computed {len(tasks)} tasks for date {for_date}")
-	print(f"[PREP_LIST DEBUG] First task: {tasks[0] if tasks else 'none'}")
+	logger.debug(f"Computed {len(tasks)} tasks for date {for_date}")
+	logger.debug(f"First task: {tasks[0] if tasks else 'none'}")
 	return {"date": for_date, "tasks": tasks}

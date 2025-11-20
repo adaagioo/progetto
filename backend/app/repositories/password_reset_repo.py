@@ -1,7 +1,7 @@
 # backend/app/repositories/password_reset_repo.py
 from __future__ import annotations
 from typing import Optional, Dict, Any
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from secrets import token_urlsafe
 from bson import ObjectId
 from backend.app.db.mongo import get_db
@@ -37,7 +37,7 @@ async def pr_create(user_id: str, email: str, ttl_minutes: int = 30) -> str:
 	await _ensure_indexes()
 	col = await _col()
 	token = token_urlsafe(32)
-	now = datetime.utcnow()
+	now = datetime.now(tz=timezone.utc)
 	doc = {
 		"token": token,
 		"userId": _to_object_id(user_id),
@@ -58,5 +58,5 @@ async def pr_find(token: str) -> Optional[Dict[str, Any]]:
 
 async def pr_used(token: str) -> bool:
 	col = await _col()
-	res = await col.update_one({"token": token}, {"$set": {"used": True, "usedAt": datetime.utcnow()}})
+	res = await col.update_one({"token": token}, {"$set": {"used": True, "usedAt": datetime.now(tz=timezone.utc)}})
 	return res.matched_count == 1

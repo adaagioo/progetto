@@ -83,9 +83,9 @@ async def ingredient_price_history(ingredient_id: str, user: dict = Depends(get_
 	if not access.get("canView", True):
 		raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Forbidden")
 
-	# TODO (af): In the current model, price is associated with Inventory (not Ingredient directly).
+	# Note: In the current model, price is associated with Inventory (not Ingredient directly).
 	# For consistency with the old endpoint, I interpret ingredient_id = inventoryId.
-	# It is possible to map Ingredient -> Inventory first. If so, we can add a lookup.
+	# It is possible to map Ingredient -> Inventory first if needed.
 	rows = await find_receiving_price_history(ingredient_id, limit=200)
 	out: List[PricePoint] = []
 	for r in rows:

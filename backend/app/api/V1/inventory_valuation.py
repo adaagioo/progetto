@@ -24,7 +24,9 @@ from backend.app.services.inventory_valuation_service import (
 	apply_adjustments,
 	find_inventory_dependencies,
 )
+from backend.app.utils.logger import get_logger
 
+logger = get_logger(__name__)
 router = APIRouter()
 RESOURCE = "inventory"
 
@@ -38,8 +40,8 @@ async def valuation_summary(
 	if not access.get("canView"):
 		raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Forbidden")
 	result = await get_valuation_summary(asOf)
-	print(f"[VALUATION DEBUG] Returning summary: {result}")
-	print(f"[VALUATION DEBUG] Summary model_dump: {result.model_dump()}")
+	logger.debug(f"Returning valuation summary: {result}")
+	logger.debug(f"Summary model_dump: {result.model_dump()}")
 	return result
 
 

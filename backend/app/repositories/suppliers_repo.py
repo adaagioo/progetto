@@ -1,7 +1,7 @@
 # backend/app/repositories/suppliers_repo.py
 from __future__ import annotations
 
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import List, Optional, Dict, Any
 from bson import ObjectId
 from backend.app.db.mongo import get_db
@@ -41,7 +41,7 @@ async def attach_file(supplier_id: str, file_ref: Dict[str, Any]) -> bool:
 		{
 			"$addToSet": {"files": {
 				**file_ref,
-				"attachedAt": datetime.utcnow()
+				"attachedAt": datetime.now(tz=timezone.utc)
 			}}
 		}
 	)

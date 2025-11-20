@@ -1,7 +1,7 @@
 from __future__ import annotations
 from typing import Dict, Any, List, Tuple, Optional
 from bson import ObjectId
-from datetime import datetime
+from datetime import datetime, timezone
 from backend.app.db.mongo import get_db
 from backend.app.repositories.inventory_repo import find_all, find_by_id, insert_one, delete_by_receiving
 from backend.app.services.unit_conversion import convert_quantity
@@ -38,7 +38,7 @@ async def _dec(inv_id: ObjectId, qty: float) -> bool:
 
 
 async def log_movement(kind: str, payload: Dict[str, Any]) -> None:
-	doc = {"kind": kind, "at": datetime.utcnow(), **payload}
+	doc = {"kind": kind, "at": datetime.now(tz=timezone.utc), **payload}
 	await _movements().insert_one(doc)
 
 

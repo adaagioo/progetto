@@ -32,7 +32,8 @@ async def rbac_meta(user: dict = Depends(get_current_user)):
 
 @router.get("/rbac/resources")
 async def rbac_resources(user: dict = Depends(get_current_user)):
-	# TODO (af): We could restrict this to admins if desired; for now, any authenticated user can introspect.
+	# Note: This endpoint is accessible to all authenticated users for introspection.
+	# Could be restricted to admins in the future if needed.
 	return {"resources": list_resources(), "capabilities": list_capabilities()}
 
 

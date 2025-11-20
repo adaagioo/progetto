@@ -1,7 +1,7 @@
 # backend/app/repositories/ocr_repo.py
 from __future__ import annotations
 from typing import Dict, Any, List, Optional
-from datetime import datetime
+from datetime import datetime, timezone
 from bson import ObjectId
 from backend.app.db.mongo import get_db
 
@@ -20,13 +20,13 @@ async def upsert_rules(user_id: str, supplier_id: Optional[str], rules: List[Dic
 			"key": key,
 			"inventoryId": ObjectId(r["inventoryId"]),
 			"defaultUnit": r.get("defaultUnit"),
-			"updatedAt": datetime.utcnow(),
+			"updatedAt": datetime.now(tz=timezone.utc),
 		}
 		#  TODO (af): upsert by unique tuple (userId, supplierId, key).
 		#   if not necessary (globally) it is necessary to remove userId as a key
 		res = await _col().update_one(
 			{"userId": doc["userId"], "supplierId": doc["supplierId"], "key": key},
-			{"$set": doc, "$setOnInsert": {"createdAt": datetime.utcnow()}},
+			{"$set": doc, "$setOnInsert": {"createdAt": datetime.now(tz=timezone.utc)}},
 			upsert=True
 		)
 		# count as touched if modified or upserted

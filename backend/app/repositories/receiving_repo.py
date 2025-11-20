@@ -1,7 +1,7 @@
 # backend/app/repositories/receiving_repo.py
 from __future__ import annotations
 from typing import List, Dict, Any, Optional
-from datetime import datetime
+from datetime import datetime, timezone
 from bson import ObjectId
 from backend.app.db.mongo import get_db
 from backend.app.services.unit_conversion import convert_quantity
@@ -25,7 +25,7 @@ async def _inc_stock(inv_id: ObjectId, qty: float) -> bool:
 
 
 async def _log(kind: str, payload: Dict[str, Any]) -> None:
-	await _movements().insert_one({"kind": kind, "at": datetime.utcnow(), **payload})
+	await _movements().insert_one({"kind": kind, "at": datetime.now(tz=timezone.utc), **payload})
 
 
 async def create_receiving(date, items: List[Dict[str, Any]], actor_id: Optional[str] = None, metadata: Optional[Dict[str, Any]] = None) -> str:
@@ -35,7 +35,7 @@ async def create_receiving(date, items: List[Dict[str, Any]], actor_id: Optional
 		date = datetime.combine(date, datetime.min.time())
 
 	# Persist doc only (inventory updates handled by caller)
-	doc = {"date": date, "items": items, "createdAt": datetime.utcnow()}
+	doc = {"date": date, "items": items, "createdAt": datetime.now(tz=timezone.utc)}
 
 	# Add metadata fields if provided
 	if metadata:
@@ -85,7 +85,7 @@ async def attach_file(rec_id: str, file_ref: Dict[str, Any]) -> bool:
 		{
 			"$addToSet": {"files": {
 				**file_ref,
-				"attachedAt": datetime.utcnow()
+				"attachedAt": datetime.now(tz=timezone.utc)
 			}}
 		}
 	)

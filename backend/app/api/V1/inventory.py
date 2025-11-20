@@ -9,7 +9,9 @@ from backend.app.services.inventory_service import (
 )
 from backend.app.deps.auth import get_current_user
 from backend.app.core.rbac_policies import get_resource_access
+from backend.app.utils.logger import get_logger
 
+logger = get_logger(__name__)
 router = APIRouter()
 
 RESOURCE = "inventory"
@@ -39,7 +41,7 @@ async def list_all(
 		item_dict = item.model_dump() if hasattr(item, 'model_dump') else item
 		all_items.append(item_dict)
 
-	print(f"[INVENTORY DEBUG] Returning {len(all_items)} items as flat array")
+	logger.debug(f"Returning {len(all_items)} items as flat array")
 
 	# Simply return the flat array - this is what the frontend expects for iteration
 	return JSONResponse(content=jsonable_encoder(all_items))
@@ -110,10 +112,10 @@ async def create(body: InventoryCreate, user: dict = Depends(get_current_user)):
 	doc["restaurantId"] = user["restaurantId"]
 
 	# Add createdAt timestamp
-	from datetime import datetime
-	doc["createdAt"] = datetime.utcnow()
+	from datetime import datetime, timezone
+	doc["createdAt"] = datetime.now(tz=timezone.utc)
 
-	print(f"[INVENTORY DEBUG] Creating inventory with: {doc}")
+	logger.debug(f"Creating inventory with: {doc}")
 
 	new_id = await create_inventory(doc)
 	created = await get_inventory(user["restaurantId"], new_id)

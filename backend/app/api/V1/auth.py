@@ -1,7 +1,7 @@
 # backend/app/api/v1/auth.py
 from __future__ import annotations
 
-from datetime import datetime
+from datetime import datetime, timezone
 
 from backend.app.repositories.password_reset_repo import pr_find, pr_create, pr_used
 from backend.app.services.auth_service import login as login_service
@@ -87,7 +87,7 @@ async def reset_password(payload: ResetPasswordRequest):
 		raise HTTPException(status_code=400, detail="Invalid token")
 	if rec.get("used"):
 		raise HTTPException(status_code=400, detail="Token already used")
-	if rec.get("expiresAt") and rec["expiresAt"] < datetime.utcnow():
+	if rec.get("expiresAt") and rec["expiresAt"] < datetime.now(tz=timezone.utc):
 		raise HTTPException(status_code=400, detail="Token expired")
 	uid = str(rec["userId"])
 	ok = await update_password(uid, hash_password(payload.new_password))

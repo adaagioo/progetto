@@ -15,7 +15,9 @@ from backend.app.repositories.receiving_repo import (
 	attach_file as receiving_attach_file_repo,
 	detach_file as receiving_detach_file_repo,
 )
+from backend.app.utils.logger import get_logger
 
+logger = get_logger(__name__)
 router = APIRouter()
 RESOURCE = "receiving"
 
@@ -25,18 +27,18 @@ async def create_receiving_api(request: Request, user: dict = Depends(get_curren
 	# Debug: log raw request body
 	try:
 		body = await request.json()
-		print(f"[RECEIVING DEBUG] Raw body received: {body}")
+		logger.debug(f"Raw body received: {body}")
 	except Exception as e:
-		print(f"[RECEIVING ERROR] Failed to parse request body: {e}")
+		logger.error(f"Failed to parse request body: {e}")
 		raise HTTPException(status_code=400, detail="Invalid JSON")
 
 	# Validate payload
 	try:
 		payload = ReceivingPost(**body)
-		print(f"[RECEIVING DEBUG] Validated payload: {payload}")
+		logger.debug(f"Validated payload: {payload}")
 	except ValidationError as e:
-		print(f"[RECEIVING ERROR] Validation error: {e}")
-		print(f"[RECEIVING ERROR] Validation errors detail: {e.errors()}")
+		logger.error(f"Validation error: {e}")
+		logger.error(f"Validation errors detail: {e.errors()}")
 		raise HTTPException(status_code=422, detail=e.errors())
 
 	access = await get_resource_access(user, RESOURCE)
@@ -69,11 +71,11 @@ async def create_receiving_api(request: Request, user: dict = Depends(get_curren
 
 				if inventory:
 					inventory_id = str(inventory["_id"])
-					print(f"[RECEIVING DEBUG] Mapped ingredientId {ingredient_id} to inventoryId {inventory_id}")
+					logger.debug(f"Mapped ingredientId {ingredient_id} to inventoryId {inventory_id}")
 				else:
 					# No inventory found - use ingredient ID directly
 					inventory_id = ingredient_id
-					print(f"[RECEIVING WARNING] No inventory found for ingredientId {ingredient_id}, using ingredient ID as inventoryId")
+					logger.warning(f"No inventory found for ingredientId {ingredient_id}, using ingredient ID as inventoryId")
 
 				# Store for inventory update with backend field names
 				inventory_updates.append({
@@ -85,7 +87,7 @@ async def create_receiving_api(request: Request, user: dict = Depends(get_curren
 					"notes": item_dict.get("notes"),
 				})
 			except Exception as e:
-				print(f"[RECEIVING ERROR] Failed to map ingredientId to inventoryId: {e}")
+				logger.error(f"Failed to map ingredientId to inventoryId: {e}")
 
 	# Create receiving with frontend field names and metadata
 	receiving_data = {

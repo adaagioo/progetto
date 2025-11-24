@@ -1,0 +1,46 @@
+services:
+  mongo:
+    image: mongo:7
+    container_name: rb-mongo
+    ports: [ "27017:27017" ]
+    volumes:
+      - mongo_data:/data/db
+
+  api:
+    build: ./backend
+    container_name: rb-api
+    env_file: ./backend/.env
+    ports: [ "8000:8000" ]
+    depends_on:
+      - mongo
+    volumes:
+      - risto_storage:/data/storage
+    environment:
+      - UVICORN_WORKERS=1
+
+  mailhog:
+    image: mailhog/mailhog
+    ports:
+      - "8025:8025"
+
+  minio:
+    image: minio/minio
+    command: server /data --console-address ":9001"
+    environment:
+      - MINIO_ROOT_USER=minio
+      - MINIO_ROOT_PASSWORD=minio123
+    ports:
+      - "9000:9000"
+      - "9001:9001"
+    volumes:
+      - minio_data:/data
+    healthcheck:
+      test: [ "CMD", "curl", "-f", "http://localhost:9000/minio/health/ready" ]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
+volumes:
+  mongo_data:
+  minio_data:
+  risto_storage:

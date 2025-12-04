@@ -9,7 +9,7 @@ services:
     environment:
       # Fallbacks for dev if .env is missing some keys
       - MONGO_URI=mongodb://mongo:27017/ristobrain
-      - JWT_SECRET=devsecret
+      # JWT_SECRET must be set in .env (min 32 chars required)
       - DEFAULT_LOCALE=it-IT
       - DEFAULT_CURRENCY=EUR
       # SMTP config now comes from .env file

@@ -3,7 +3,7 @@ from __future__ import annotations
 
 from datetime import datetime, timezone
 
-from backend.app.repositories.password_reset_repo import pr_find, pr_create, pr_used
+from backend.app.repositories.password_reset_repo import pr_find, pr_create, pr_used, pr_check_rate_limit
 from backend.app.services.auth_service import login as login_service
 from fastapi import APIRouter, HTTPException, status, Depends
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
@@ -75,7 +75,16 @@ async def me(user: dict = Depends(get_current_user)):
 
 @router.post("/auth/forgot")
 async def forgot_password(payload: ForgotPasswordRequest):
-	# Return 200 regardless to avoid email enumeration
+	# Rate limiting: prevent abuse (max 3 requests per 5 minutes per email)
+	rate_limited = await pr_check_rate_limit(payload.email, max_requests=3, window_minutes=5)
+	if rate_limited:
+		# Return 429 Too Many Requests
+		raise HTTPException(
+			status_code=status.HTTP_429_TOO_MANY_REQUESTS,
+			detail="Too many password reset requests. Please try again later."
+		)
+
+	# Return 200 regardless to avoid email enumeration (even if user doesn't exist)
 	user = await find_by_email(payload.email)
 	if user:
 		# Create password reset token
@@ -105,11 +114,18 @@ async def forgot_password(payload: ForgotPasswordRequest):
 
 @router.post("/auth/reset")
 async def reset_password(payload: ResetPasswordRequest):
+	# Token validation with security logging
 	rec = await pr_find(payload.token)
 	if not rec:
+		logger.warning(f"Password reset attempt with invalid token: {payload.token[:10]}...")
 		raise HTTPException(status_code=400, detail="Invalid token")
+
+	email = rec.get("email")  # Get email for logging
+
 	if rec.get("used"):
+		logger.warning(f"Password reset attempt with already-used token for email: {email}")
 		raise HTTPException(status_code=400, detail="Token already used")
+
 	# Handle both timezone-aware and naive datetimes
 	expires_at = rec.get("expiresAt")
 	if expires_at:
@@ -118,16 +134,18 @@ async def reset_password(payload: ResetPasswordRequest):
 		if expires_at.tzinfo is None:
 			expires_at = expires_at.replace(tzinfo=timezone.utc)
 		if expires_at < now:
+			logger.warning(f"Password reset attempt with expired token for email: {email}")
 			raise HTTPException(status_code=400, detail="Token expired")
 
 	uid = str(rec["userId"])
-	email = rec.get("email")  # Save email for confirmation
 
 	ok = await update_password(uid, hash_password(payload.new_password))
 	if not ok:
+		logger.error(f"Failed to update password for user {uid} during password reset")
 		raise HTTPException(status_code=404, detail="User not found")
 
 	await pr_used(payload.token)
+	logger.info(f"Password successfully reset for email: {email}")
 
 	# Send confirmation email (best effort - don't block if it fails)
 	if email:

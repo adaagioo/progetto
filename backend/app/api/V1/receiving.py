@@ -133,7 +133,7 @@ async def create_receiving_api(request: Request, user: dict = Depends(get_curren
 					}
 					await _log("receiving", payload_log)
 			except Exception as e:
-				print(f"[RECEIVING ERROR] Failed to update inventory: {e}")
+				logger.error(f"Failed to update inventory: {e}")
 	doc = await get_receiving(rid)
 	return Receiving(
 		id=str(doc["_id"]),
@@ -233,13 +233,13 @@ async def list_receiving_api(
 				files=d.get("files", [])
 			)
 			result.append(receiving)
-			print(f"[RECEIVING DEBUG] Python repr: {receiving.model_dump()}")
-			print(f"[RECEIVING DEBUG] JSON mode: {receiving.model_dump(mode='json')}")
+			logger.debug(f"Python repr: {receiving.model_dump()}")
+			logger.debug(f"JSON mode: {receiving.model_dump(mode='json')}")
 		except Exception as e:
-			print(f"[RECEIVING ERROR] Failed to serialize receiving {d.get('_id')}: {e}")
-			print(f"[RECEIVING ERROR] Document: {d}")
+			logger.error(f"Failed to serialize receiving {d.get('_id')}: {e}")
+			logger.error(f"Document: {d}")
 
-	print(f"[RECEIVING DEBUG] Returning {len(result)} receivings")
+	logger.debug(f"Returning {len(result)} receivings")
 	return result
 
 

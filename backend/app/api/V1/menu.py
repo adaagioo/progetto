@@ -1,13 +1,19 @@
 # backend/app/api/V1/menu.py
 from __future__ import annotations
+import logging
 from typing import List
 from fastapi import APIRouter, Depends, HTTPException, status
 from backend.app.deps.auth import get_current_user
 from backend.app.core.rbac_policies import get_resource_access
 from backend.app.schemas.menu import Menu, MenuCreate, MenuUpdate, MenuItem, MenuItemCreate, MenuItemUpdate
 from backend.app.repositories import menu_repo as repo
+from backend.app.repositories import ingredients_repo
+from backend.app.repositories import preparations_repo
+from backend.app.repositories import recipes_repo
 from backend.app.services.menu_service import populate_menu_item_data
 from backend.app.db.mongo import get_db
+
+logger = logging.getLogger(__name__)
 
 router = APIRouter()
 RESOURCE = "menu"
@@ -165,65 +171,57 @@ async def add_menu_items(menu_id: str, items: List[MenuItemCreate], user: dict =
 		raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Forbidden")
 
 	# Check if menu exists and belongs to restaurant
-	print(f"[MENU DEBUG] Looking for menu_id={menu_id}, restaurantId={user['restaurantId']}")
-	print(f"[MENU DEBUG] User full data: {user}")
+	logger.debug(f"Looking for menu_id={menu_id}, restaurantId={user['restaurantId']}")
+	logger.debug(f"User full data: {user}")
 
 	menu = await repo.get_menu(menu_id, user["restaurantId"])
-	print(f"[MENU DEBUG] Query result: menu={menu}")
+	logger.debug(f"Query result: menu={menu}")
 
 	if not menu:
 		# Debug: check if menu exists at all (without restaurant filter)
 		db = get_db()
 		any_menu = await db["menus"].find_one({"id": menu_id}, {"_id": 0})
-		print(f"[MENU DEBUG] Menu not found! menu_id={menu_id}, any_menu={any_menu}, user_restaurantId={user['restaurantId']}")
+		logger.debug(f"Menu not found! menu_id={menu_id}, any_menu={any_menu}, user_restaurantId={user['restaurantId']}")
 
 		if any_menu:
 			msg = f"Menu exists but wrong restaurant. Menu.restaurantId={any_menu.get('restaurantId')}, user.restaurantId={user['restaurantId']}"
-			print(f"[MENU ERROR] {msg}")
+			logger.error(msg)
 			raise HTTPException(status_code=404, detail=msg)
 
 		msg = f"Menu {menu_id} does not exist in database"
-		print(f"[MENU ERROR] {msg}")
+		logger.error(msg)
 		raise HTTPException(status_code=404, detail=msg)
 
 	db = get_db()
 	created_items = []
 
 	for item in items:
-		print(f"[MENU DEBUG] Processing item: refType={item.refType}, refId={item.refId}")
+		logger.debug(f"Processing item: refType={item.refType}, refId={item.refId}")
 
 		# Validate refType
 		if item.refType not in ["ingredient", "preparation", "recipe"]:
 			raise HTTPException(status_code=400, detail=f"Invalid refType: {item.refType}")
 
-		# Validate that referenced entity exists
-		collection_map = {
-			"ingredient": "ingredients",
-			"preparation": "preparations",
-			"recipe": "recipes"
-		}
-		collection_name = collection_map[item.refType]
-		print(f"[MENU DEBUG] Looking for {item.refType} with id={item.refId} in collection {collection_name}")
-
-		# Try both _id (ObjectId) and id (string) fields for compatibility
-		from bson import ObjectId
+		# Validate that referenced entity exists using proper repositories
+		# This prevents NoSQL injection by using type-safe repository methods
+		ref_entity = None
 		try:
-			ref_entity = await db[collection_name].find_one({
-				"_id": ObjectId(item.refId),
-				"restaurantId": user["restaurantId"]
-			})
-		except:
-			# Fallback to string id field
-			ref_entity = await db[collection_name].find_one({
-				"id": item.refId,
-				"restaurantId": user["restaurantId"]
-			})
+			if item.refType == "ingredient":
+				ref_entity = await ingredients_repo.find_one(user["restaurantId"], item.refId)
+			elif item.refType == "preparation":
+				ref_entity = await preparations_repo.find_one(user["restaurantId"], item.refId)
+			elif item.refType == "recipe":
+				ref_entity = await recipes_repo.find_one(user["restaurantId"], item.refId)
+		except Exception as e:
+			# Log error but continue to validation check below
+			logger.error(f"Error looking up {item.refType} with id {item.refId}: {e}")
+			ref_entity = None
 
-		print(f"[MENU DEBUG] Found entity: {ref_entity}")
+		logger.debug(f"Found entity: {ref_entity}")
 
 		if not ref_entity:
-			msg = f"{item.refType.capitalize()} with id '{item.refId}' not found in {collection_name} for restaurantId='{user['restaurantId']}'"
-			print(f"[MENU ERROR] {msg}")
+			msg = f"{item.refType.capitalize()} with id '{item.refId}' not found for restaurantId='{user['restaurantId']}'"
+			logger.error(msg)
 			raise HTTPException(status_code=404, detail=msg)
 
 		# Check for duplicates

@@ -1,5 +1,6 @@
 # backend/app/api/V1/suppliers.py
 from __future__ import annotations
+import logging
 from typing import List
 from fastapi import APIRouter, HTTPException, Depends, status, UploadFile, File
 from backend.app.deps.auth import get_current_user
@@ -10,6 +11,8 @@ from backend.app.schemas.files import FileRef
 from backend.app.schemas.suppliers import Supplier, SupplierCreate, SupplierUpdate, SupplierDependencies
 from backend.app.repositories import suppliers_repo as repo
 from backend.app.services.storage_service import get_storage
+
+logger = logging.getLogger(__name__)
 
 router = APIRouter()
 RESOURCE = "suppliers"
@@ -141,7 +144,7 @@ async def suppliers_detach_file(
 		file_id: str,
 		user: dict = Depends(get_current_user)
 ):
-	print(f"[SUPPLIER DELETE FILE] supplier_id={supplier_id}, file_id={file_id}, user={user.get('email')}")
+	logger.debug(f"Deleting file from supplier: supplier_id={supplier_id}, file_id={file_id}, user={user.get('email')}")
 
 	# Validate file_id
 	if not file_id or file_id == "undefined":

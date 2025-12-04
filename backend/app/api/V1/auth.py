@@ -14,9 +14,12 @@ from backend.app.schemas.auth import (
 from backend.app.core.security import hash_password, decode_access_token, TokenError
 from backend.app.repositories.users_repo import find_by_email, find_by_id, insert_with_defaults, update_password
 from backend.app.deps.auth import get_current_user
+from backend.app.services.email_service import send_email, reset_password_email, password_changed_email
+from backend.app.utils.logger import get_logger
 
 router = APIRouter()
 bearer_scheme = HTTPBearer(auto_error=True)
+logger = get_logger(__name__)
 
 
 @router.post("/auth/login", response_model=TokenResponse)
@@ -75,8 +78,28 @@ async def forgot_password(payload: ForgotPasswordRequest):
 	# Return 200 regardless to avoid email enumeration
 	user = await find_by_email(payload.email)
 	if user:
-		# create token and (in real deployment) send via email
-		await pr_create(str(user["_id"]), user["email"])
+		# Create password reset token
+		token = await pr_create(str(user["_id"]), user["email"])
+
+		# Generate email content
+		subject, plain_body, html_body = reset_password_email(
+			to_email=user["email"],
+			token=token,
+			reset_url=None  # Uses settings.APP_URL
+		)
+
+		# Send email (non-blocking for security - no email enumeration)
+		success = send_email(
+			to_email=user["email"],
+			subject=subject,
+			body=plain_body,
+			html=html_body
+		)
+
+		if not success:
+			# Log warning but don't fail (security: prevent email enumeration)
+			logger.warning(f"Failed to send password reset email to {user['email']}")
+
 	return {"ok": True}
 
 
@@ -87,13 +110,38 @@ async def reset_password(payload: ResetPasswordRequest):
 		raise HTTPException(status_code=400, detail="Invalid token")
 	if rec.get("used"):
 		raise HTTPException(status_code=400, detail="Token already used")
-	if rec.get("expiresAt") and rec["expiresAt"] < datetime.now(tz=timezone.utc):
-		raise HTTPException(status_code=400, detail="Token expired")
+	# Handle both timezone-aware and naive datetimes
+	expires_at = rec.get("expiresAt")
+	if expires_at:
+		now = datetime.now(tz=timezone.utc)
+		# If expiresAt is naive, assume it's UTC
+		if expires_at.tzinfo is None:
+			expires_at = expires_at.replace(tzinfo=timezone.utc)
+		if expires_at < now:
+			raise HTTPException(status_code=400, detail="Token expired")
+
 	uid = str(rec["userId"])
+	email = rec.get("email")  # Save email for confirmation
+
 	ok = await update_password(uid, hash_password(payload.new_password))
 	if not ok:
 		raise HTTPException(status_code=404, detail="User not found")
+
 	await pr_used(payload.token)
+
+	# Send confirmation email (best effort - don't block if it fails)
+	if email:
+		subject, plain_body, html_body = password_changed_email(to_email=email)
+		success = send_email(
+			to_email=email,
+			subject=subject,
+			body=plain_body,
+			html=html_body
+		)
+		if not success:
+			# Log warning but don't fail (password already changed successfully)
+			logger.warning(f"Failed to send password change confirmation to {email}")
+
 	return {"ok": True}
 
 

@@ -21,7 +21,10 @@ class IngredientBase(BaseModel):
 	allergens: Optional[List[str]] = []
 	otherAllergens: Optional[List[str]] = []
 	minStockQty: float = Field(default=0.0)
-	category: Optional[str] = "food"
+	category: Optional[str] = Field(
+		default="food",
+		description="Category: 'food', 'beverage', or 'supplies' (non-food items like packaging)"
+	)
 	wastePct: Optional[float] = Field(default=0.0, ge=0, le=100)
 	shelfLife: Optional[ShelfLife] = None
 	sku: Optional[str] = None

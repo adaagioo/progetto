@@ -6,6 +6,7 @@ from backend.app.db.mongo import get_db
 
 # Define supported capabilities
 _CAPABILITIES = ["canView", "canCreate", "canUpdate", "canDelete", "canManagePermissions"]
+ACTIONS = _CAPABILITIES  # Public export for rbac_meta
 
 # Define resources exposed by the API
 _RESOURCES = [
@@ -13,6 +14,7 @@ _RESOURCES = [
 	"rbac", "files", "ocr", "receiving", "suppliers", "menu", "prep-list",
 	"order-list", "sales", "wastage", "pl", "restaurant", "dashboard"
 ]
+RESOURCES = _RESOURCES  # Public export for rbac_meta
 
 # Role policy map: roleKey -> resource -> caps
 _DEFAULT_POLICIES: Dict[str, Dict[str, Dict[str, bool]]] = {
@@ -76,6 +78,7 @@ _DEFAULT_POLICIES: Dict[str, Dict[str, Dict[str, bool]]] = {
 		       "canManagePermissions": False} for r in _RESOURCES},
 	},
 }
+ROLE_MATRIX = _DEFAULT_POLICIES  # Public export for rbac_meta
 
 
 async def get_resource_access(user: dict, resource: str) -> Dict[str, bool]:

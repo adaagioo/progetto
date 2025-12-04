@@ -1,6 +1,6 @@
 # backend/app/schemas/order_list.py
 from __future__ import annotations
-from datetime import date, timedelta
+from datetime import date as DateType, timedelta
 from typing import List, Optional
 from pydantic import BaseModel, Field, ConfigDict
 
@@ -41,7 +41,7 @@ class OrderListResponse(BaseModel):
 		}
 	})
 
-	date: date = Field(..., description="Date for this order list")
+	date: DateType = Field(..., description="Date for this order list")
 	items: List[OrderItem] = Field(..., description="Items that need ordering")
 
 
@@ -54,7 +54,7 @@ class OrderForecastItem(BaseModel):
 		}
 	})
 
-	date: date = Field(..., description="Forecast date")
+	date: DateType = Field(..., description="Forecast date")
 	itemsCount: int = Field(..., description="Number of items to order", ge=0)
 
 

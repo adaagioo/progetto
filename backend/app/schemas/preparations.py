@@ -28,3 +28,5 @@ class Preparation(BaseModel):
     portions: int
     items: List[PreparationItem] = []
     notes: Optional[str] = None
+    cost: Optional[float] = Field(None, description="Total cost for all portions")
+    costPerPortion: Optional[float] = Field(None, description="Cost per single portion")

@@ -82,9 +82,108 @@ async def _compute_recipe_costs(doc: dict) -> dict:
 	return doc
 
 
+async def _compute_recipe_costs_batch(recipes: List[dict]) -> List[dict]:
+	"""
+	Optimized batch version of _compute_recipe_costs to avoid N+1 queries.
+
+	Collects all item IDs, fetches ingredients/preparations in 2 queries,
+	then computes costs for all recipes using in-memory lookups.
+	"""
+	if not recipes:
+		return []
+
+	db = get_db()
+
+	# Collect all unique ingredient and preparation IDs from all recipes
+	ingredient_ids = set()
+	preparation_ids = set()
+
+	for recipe in recipes:
+		for item in recipe.get("items", []):
+			item_type = item.get("type")
+			item_id = item.get("itemId")
+			try:
+				if item_type == "ingredient":
+					ingredient_ids.add(ObjectId(item_id))
+				elif item_type == "preparation":
+					preparation_ids.add(ObjectId(item_id))
+			except Exception:
+				continue
+
+	# Fetch all ingredients and preparations in 2 queries (instead of N*M queries)
+	ingredients_map = {}
+	if ingredient_ids:
+		cursor = db.ingredients.find({"_id": {"$in": list(ingredient_ids)}})
+		async for ing in cursor:
+			ingredients_map[str(ing["_id"])] = ing
+
+	preparations_map = {}
+	if preparation_ids:
+		cursor = db.preparations.find({"_id": {"$in": list(preparation_ids)}})
+		async for prep in cursor:
+			preparations_map[str(prep["_id"])] = prep
+
+	# Now compute costs for each recipe using in-memory lookups
+	result = []
+	for recipe in recipes:
+		total_cost = 0.0
+
+		for item in recipe.get("items", []):
+			item_type = item.get("type")
+			item_id = item.get("itemId")
+			qty_per_portion = item.get("qtyPerPortion", 0.0)
+
+			try:
+				if item_type == "ingredient":
+					ingredient = ingredients_map.get(item_id)
+					if ingredient:
+						unit_cost = ingredient.get("effectiveUnitCost") or ingredient.get("unitCost", 0.0)
+						item_cost = unit_cost * qty_per_portion
+						total_cost += item_cost
+
+				elif item_type == "preparation":
+					preparation = preparations_map.get(item_id)
+					if preparation:
+						prep_cost = preparation.get("cost", 0.0)
+						item_cost = prep_cost * qty_per_portion
+						total_cost += item_cost
+
+			except Exception:
+				continue
+
+		# Calculate derived fields
+		portions = recipe.get("portions", 1)
+		cost_per_portion = total_cost / portions if portions > 0 else 0.0
+
+		selling_price = recipe.get("sellingPrice")
+		vat_pct = recipe.get("vatPct", 22.0)
+
+		# Price without VAT
+		price_without_vat = None
+		if selling_price is not None and selling_price > 0:
+			price_without_vat = selling_price / (1 + vat_pct / 100)
+
+		# Food cost percentage
+		food_cost_pct = None
+		if selling_price is not None and selling_price > 0:
+			food_cost_pct = (cost_per_portion / selling_price) * 100
+
+		# Update document with calculated fields
+		recipe["totalCost"] = round(total_cost, 4)
+		recipe["costPerPortion"] = round(cost_per_portion, 4)
+		if price_without_vat is not None:
+			recipe["priceWithoutVat"] = round(price_without_vat, 4)
+		if food_cost_pct is not None:
+			recipe["foodCostPct"] = round(food_cost_pct, 2)
+
+		result.append(recipe)
+
+	return result
+
+
 async def list_recipes(restaurant_id: str) -> List[dict]:
 	recipes = await find_many(restaurant_id)
-	return [await _compute_recipe_costs(r) for r in recipes]
+	return await _compute_recipe_costs_batch(recipes)
 
 
 async def get_recipe(restaurant_id: str, recipe_id: str) -> Optional[dict]:

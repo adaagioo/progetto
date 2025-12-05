@@ -28,8 +28,8 @@ class Settings(BaseSettings):
 
 	# CORS
 	ALLOW_ORIGINS: List[str] = Field(default_factory=lambda: ["http://localhost:3000"])
-	ALLOW_METHODS: List[str] = Field(default_factory=lambda: ["*"])
-	ALLOW_HEADERS: List[str] = Field(default_factory=lambda: ["*"])
+	ALLOW_METHODS: List[str] = Field(default_factory=lambda: ["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"])
+	ALLOW_HEADERS: List[str] = Field(default_factory=lambda: ["Content-Type", "Authorization", "Accept", "Origin", "X-Requested-With"])
 
 	# Frontend URL (per link in email, ecc.)
 	APP_URL: str = "http://localhost:3000"

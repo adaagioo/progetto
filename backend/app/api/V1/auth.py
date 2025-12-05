@@ -4,8 +4,9 @@ from __future__ import annotations
 from datetime import datetime, timezone
 
 from backend.app.repositories.password_reset_repo import pr_find, pr_create, pr_used, pr_check_rate_limit
+from backend.app.repositories.login_attempts_repo import check_rate_limit as check_login_rate_limit, record_login_attempt, reset_login_attempts
 from backend.app.services.auth_service import login as login_service
-from fastapi import APIRouter, HTTPException, status, Depends
+from fastapi import APIRouter, HTTPException, status, Depends, Request
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from backend.app.schemas.auth import (
 	LoginRequest, TokenResponse, RegisterRequest, MeResponse,
@@ -23,10 +24,31 @@ logger = get_logger(__name__)
 
 
 @router.post("/auth/login", response_model=TokenResponse)
-async def login(payload: LoginRequest):
+async def login(payload: LoginRequest, request: Request):
+	# Rate limiting: prevent brute force attacks (max 5 failed attempts per 15 minutes)
+	rate_limited = await check_login_rate_limit(payload.email, max_failed_attempts=5, window_minutes=15)
+	if rate_limited:
+		logger.warning(f"Rate limit exceeded for login attempts: {payload.email}")
+		raise HTTPException(
+			status_code=status.HTTP_429_TOO_MANY_REQUESTS,
+			detail="Too many failed login attempts. Please try again later."
+		)
+
+	# Get client IP for logging
+	client_ip = request.client.host if request.client else "unknown"
+
+	# Attempt login
 	res = await login_service(payload.email, payload.password)
 	if not res["ok"]:
+		# Record failed attempt
+		await record_login_attempt(payload.email, success=False, ip_address=client_ip)
+		logger.warning(f"Failed login attempt for {payload.email} from {client_ip}")
 		raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid credentials")
+
+	# Record successful attempt and reset failed attempts counter
+	await record_login_attempt(payload.email, success=True, ip_address=client_ip)
+	await reset_login_attempts(payload.email)
+	logger.info(f"Successful login for {payload.email} from {client_ip}")
 
 	user = res["user"]
 	user_data = UserData(

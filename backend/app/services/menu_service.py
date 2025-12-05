@@ -2,8 +2,12 @@
 from __future__ import annotations
 from typing import Dict, Any
 from bson import ObjectId
+from bson.errors import InvalidId
 from backend.app.db.mongo import get_db
 from backend.app.utils.units import normalize_quantity_to_base_unit
+from backend.app.utils.logger import get_logger
+
+logger = get_logger(__name__)
 
 
 async def _find_by_id(collection, entity_id: str, additional_filters: dict = None):
@@ -21,8 +25,8 @@ async def _find_by_id(collection, entity_id: str, additional_filters: dict = Non
 		result = await coll.find_one(query, {"_id": 0})
 		if result:
 			return result
-	except:
-		pass
+	except (InvalidId, TypeError, ValueError) as e:
+		logger.debug(f"Failed to lookup {collection} by ObjectId {entity_id}: {e}")
 
 	# Fallback to string id field
 	query = {"id": entity_id}

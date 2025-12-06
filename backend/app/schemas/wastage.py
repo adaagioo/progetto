@@ -16,8 +16,13 @@ class WastageCreate(BaseModel):
 	items: List[WastageItem]
 
 
-class Wastage(BaseModel):
-	id: str
+class WastageFull(BaseModel):
+	"""Full wastage data including restaurantId"""
 	date: date
 	items: List[WastageItem]
+	restaurantId: str
+
+
+class Wastage(WastageFull):
+	id: str
 	createdAt: datetime

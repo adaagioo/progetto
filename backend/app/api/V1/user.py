@@ -80,6 +80,7 @@ async def users_get(user_id: str, user: dict = Depends(get_current_user)):
 
 
 @router.put("/users/{user_id}", response_model=UserPublic)
+@router.patch("/users/{user_id}", response_model=UserPublic)
 async def users_update(user_id: str, payload: UserUpdate, user: dict = Depends(get_current_user)):
 	"""Update user (email, role, locale)"""
 	from backend.app.repositories.users_repo import update_user as repo_update_user

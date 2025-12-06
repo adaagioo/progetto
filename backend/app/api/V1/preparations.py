@@ -47,6 +47,7 @@ async def create(body: PreparationCreate, user: dict = Depends(get_current_user)
 	return created
 
 
+@router.put("/preparations/{prep_id}", response_model=Preparation)
 @router.patch("/preparations/{prep_id}", response_model=Preparation)
 async def update(prep_id: str, body: PreparationUpdate, user: dict = Depends(get_current_user)):
 	access = await get_resource_access(user, RESOURCE)

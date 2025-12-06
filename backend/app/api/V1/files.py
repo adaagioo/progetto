@@ -77,7 +77,7 @@ async def download_file(file_id: str, user: dict = Depends(get_current_user)):
 	                headers={"Content-Disposition": f'attachment; filename="{doc["filename"]}"'})
 
 
-@router.delete("/files/{file_id}")
+@router.delete("/files/{file_id}", status_code=status.HTTP_204_NO_CONTENT)
 async def delete_file_api(file_id: str, user: dict = Depends(get_current_user)):
 	access = await get_resource_access(user, RESOURCE)
 	if not access.get("canDelete", False):
@@ -92,4 +92,4 @@ async def delete_file_api(file_id: str, user: dict = Depends(get_current_user)):
 	deleted = await delete_meta(file_id, restaurant_id=user["restaurantId"])
 	if not deleted:
 		raise HTTPException(status_code=404, detail="File not found or access denied")
-	return {"ok": True}
+	return None

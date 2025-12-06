@@ -47,6 +47,7 @@ async def create(body: RecipeCreate, user: dict = Depends(get_current_user)):
 	return created
 
 
+@router.put("/recipes/{recipe_id}", response_model=Recipe)
 @router.patch("/recipes/{recipe_id}", response_model=Recipe)
 async def update(recipe_id: str, body: RecipeUpdate, user: dict = Depends(get_current_user)):
 	access = await get_resource_access(user, RESOURCE)

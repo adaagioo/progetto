@@ -104,6 +104,7 @@ async def get_menu(menu_id: str, user: dict = Depends(get_current_user)):
 	return Menu(**menu)
 
 
+@router.put("/menu/{menu_id}", response_model=Menu)
 @router.patch("/menu/{menu_id}", response_model=Menu)
 async def update_menu(menu_id: str, payload: MenuUpdate, user: dict = Depends(get_current_user)):
 	"""Update a menu"""
@@ -140,7 +141,7 @@ async def update_menu(menu_id: str, payload: MenuUpdate, user: dict = Depends(ge
 	return Menu(**updated)
 
 
-@router.delete("/menu/{menu_id}")
+@router.delete("/menu/{menu_id}", status_code=status.HTTP_204_NO_CONTENT)
 async def delete_menu(menu_id: str, user: dict = Depends(get_current_user)):
 	"""Delete a menu and all its items"""
 	access = await get_resource_access(user, RESOURCE)
@@ -158,7 +159,7 @@ async def delete_menu(menu_id: str, user: dict = Depends(get_current_user)):
 	# Delete menu
 	await repo.delete_menu(menu_id, user["restaurantId"])
 
-	return {"message": "Menu deleted"}
+	return None
 
 
 # ========== MENU ITEM ENDPOINTS ==========
@@ -273,6 +274,7 @@ async def get_menu_items(menu_id: str, user: dict = Depends(get_current_user)):
 	return populated_items
 
 
+@router.put("/menu/{menu_id}/items/{item_id}")
 @router.patch("/menu/{menu_id}/items/{item_id}")
 async def update_menu_item(menu_id: str, item_id: str, payload: MenuItemUpdate, user: dict = Depends(get_current_user)):
 	"""Update a menu item (toggle isActive, update price, tags)"""
@@ -305,7 +307,7 @@ async def update_menu_item(menu_id: str, item_id: str, payload: MenuItemUpdate, 
 	return populated_item
 
 
-@router.delete("/menu/{menu_id}/items/{item_id}")
+@router.delete("/menu/{menu_id}/items/{item_id}", status_code=status.HTTP_204_NO_CONTENT)
 async def delete_menu_item(menu_id: str, item_id: str, user: dict = Depends(get_current_user)):
 	"""Delete a menu item"""
 	access = await get_resource_access(user, RESOURCE)
@@ -317,4 +319,4 @@ async def delete_menu_item(menu_id: str, item_id: str, user: dict = Depends(get_
 	if not deleted:
 		raise HTTPException(status_code=404, detail="Menu item not found")
 
-	return {"message": "Menu item deleted"}
+	return None

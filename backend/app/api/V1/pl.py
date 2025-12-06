@@ -102,7 +102,7 @@ async def list_pl_records(user: dict = Depends(get_current_user)):
 	return [PL(**p) for p in records]
 
 
-@router.delete("/pl/record/{pl_id}")
+@router.delete("/pl/record/{pl_id}", status_code=status.HTTP_204_NO_CONTENT)
 async def delete_pl_record(pl_id: str, user: dict = Depends(get_current_user)):
 	"""Delete a stored P&L record"""
 	access = await get_resource_access(user, RESOURCE)
@@ -113,4 +113,4 @@ async def delete_pl_record(pl_id: str, user: dict = Depends(get_current_user)):
 	if not deleted:
 		raise HTTPException(status_code=404, detail="P&L record not found")
 
-	return {"message": "P&L record deleted"}
+	return None

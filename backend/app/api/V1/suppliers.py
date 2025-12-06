@@ -23,9 +23,12 @@ async def create_supplier(payload: SupplierCreate, user: dict = Depends(get_curr
 	access = await get_resource_access(user, RESOURCE)
 	if not access.get("canCreate", False):
 		raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Forbidden")
-	sid = await repo.create(payload.model_dump(exclude_unset=True))
-	doc = await repo.get_by_id(sid)
-	return Supplier(id=str(doc["_id"]), **{k: v for k, v in doc.items() if k != "_id"})
+	# Add restaurantId to supplier data
+	data = payload.model_dump(exclude_unset=True)
+	data["restaurantId"] = user["restaurantId"]
+	sid = await repo.insert_one(data)
+	doc = await repo.find_one(user["restaurantId"], sid)
+	return Supplier(**doc)
 
 
 @router.get("/suppliers", response_model=List[Supplier])
@@ -33,8 +36,8 @@ async def list_suppliers(user: dict = Depends(get_current_user)):
 	access = await get_resource_access(user, RESOURCE)
 	if not access.get("canView", True):
 		raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Forbidden")
-	docs = await repo.list_all()
-	return [Supplier(id=str(d["_id"]), **{k: v for k, v in d.items() if k != "_id"}) for d in docs]
+	docs = await repo.find_many(user["restaurantId"])
+	return [Supplier(**d) for d in docs]
 
 
 @router.get("/suppliers/{supplier_id}", response_model=Supplier)
@@ -42,33 +45,34 @@ async def get_supplier(supplier_id: str, user: dict = Depends(get_current_user))
 	access = await get_resource_access(user, RESOURCE)
 	if not access.get("canView", True):
 		raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Forbidden")
-	doc = await repo.get_by_id(supplier_id)
+	doc = await repo.find_one(user["restaurantId"], supplier_id)
 	if not doc:
 		raise HTTPException(status_code=404, detail="Not found")
-	return Supplier(id=str(doc["_id"]), **{k: v for k, v in doc.items() if k != "_id"})
+	return Supplier(**doc)
 
 
 @router.put("/suppliers/{supplier_id}", response_model=Supplier)
+@router.patch("/suppliers/{supplier_id}", response_model=Supplier)
 async def update_supplier(supplier_id: str, payload: SupplierUpdate, user: dict = Depends(get_current_user)):
 	access = await get_resource_access(user, RESOURCE)
 	if not access.get("canUpdate", False):
 		raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Forbidden")
-	ok = await repo.update(supplier_id, payload.model_dump(exclude_unset=True))
+	ok = await repo.update_one(user["restaurantId"], supplier_id, payload.model_dump(exclude_unset=True))
 	if not ok:
 		raise HTTPException(status_code=404, detail="Not found")
-	doc = await repo.get_by_id(supplier_id)
-	return Supplier(id=str(doc["_id"]), **{k: v for k, v in doc.items() if k != "_id"})
+	doc = await repo.find_one(user["restaurantId"], supplier_id)
+	return Supplier(**doc)
 
 
-@router.delete("/suppliers/{supplier_id}")
+@router.delete("/suppliers/{supplier_id}", status_code=status.HTTP_204_NO_CONTENT)
 async def delete_supplier(supplier_id: str, user: dict = Depends(get_current_user)):
 	access = await get_resource_access(user, RESOURCE)
 	if not access.get("canDelete", False):
 		raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Forbidden")
-	ok = await repo.delete(supplier_id)
+	ok = await repo.delete_one(user["restaurantId"], supplier_id)
 	if not ok:
 		raise HTTPException(status_code=404, detail="Not found")
-	return {"ok": True}
+	return None
 
 
 @router.get("/suppliers/{supplier_id}/dependencies", response_model=SupplierDependencies)
@@ -131,14 +135,14 @@ async def suppliers_attach_file(
 		"url": url,
 	}
 
-	ok = await repo.attach_file(supplier_id, file_ref)
+	ok = await repo.attach_file(user["restaurantId"], supplier_id, file_ref)
 	if not ok:
 		raise HTTPException(status_code=404, detail="Supplier not found")
 
 	return FileRef(**file_ref)
 
 
-@router.delete("/suppliers/{supplier_id}/files/{file_id}")
+@router.delete("/suppliers/{supplier_id}/files/{file_id}", status_code=status.HTTP_204_NO_CONTENT)
 async def suppliers_detach_file(
 		supplier_id: str,
 		file_id: str,
@@ -154,7 +158,7 @@ async def suppliers_detach_file(
 	if not access.get("canUpdate", False):
 		raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Forbidden")
 
-	ok = await repo.detach_file(supplier_id, file_id)
+	ok = await repo.detach_file(user["restaurantId"], supplier_id, file_id)
 	if not ok:
 		raise HTTPException(status_code=404, detail="Supplier or file not found")
-	return {"ok": True}
+	return None

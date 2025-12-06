@@ -201,7 +201,7 @@ async def update_production_plan(
 	return ProductionPlan(**plan)
 
 
-@router.delete("/production-plan/{plan_id}")
+@router.delete("/production-plan/{plan_id}", status_code=status.HTTP_204_NO_CONTENT)
 async def delete_production_plan(
 	plan_id: str,
 	user: dict = Depends(get_current_user)
@@ -215,7 +215,7 @@ async def delete_production_plan(
 	if not deleted:
 		raise HTTPException(status_code=404, detail="Production plan not found")
 
-	return {"message": "Production plan deleted"}
+	return None
 
 
 @router.post("/production-plan/generate-forecast")

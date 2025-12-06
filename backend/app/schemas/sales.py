@@ -18,8 +18,13 @@ class SaleCreate(BaseModel):
 	items: List[SaleItem]
 
 
-class Sale(BaseModel):
-	id: str
+class SaleFull(BaseModel):
+	"""Full sale data including restaurantId"""
 	date: date
 	items: List[SaleItem]
+	restaurantId: str
+
+
+class Sale(SaleFull):
+	id: str
 	createdAt: datetime

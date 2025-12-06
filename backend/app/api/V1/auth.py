@@ -140,13 +140,13 @@ async def reset_password(payload: ResetPasswordRequest):
 	rec = await pr_find(payload.token)
 	if not rec:
 		logger.warning(f"Password reset attempt with invalid token: {payload.token[:10]}...")
-		raise HTTPException(status_code=400, detail="Invalid token")
+		raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Invalid token")
 
 	email = rec.get("email")  # Get email for logging
 
 	if rec.get("used"):
 		logger.warning(f"Password reset attempt with already-used token for email: {email}")
-		raise HTTPException(status_code=400, detail="Token already used")
+		raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Token already used")
 
 	# Handle both timezone-aware and naive datetimes
 	expires_at = rec.get("expiresAt")
@@ -157,14 +157,14 @@ async def reset_password(payload: ResetPasswordRequest):
 			expires_at = expires_at.replace(tzinfo=timezone.utc)
 		if expires_at < now:
 			logger.warning(f"Password reset attempt with expired token for email: {email}")
-			raise HTTPException(status_code=400, detail="Token expired")
+			raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Token expired")
 
 	uid = str(rec["userId"])
 
 	ok = await update_password(uid, hash_password(payload.new_password))
 	if not ok:
 		logger.error(f"Failed to update password for user {uid} during password reset")
-		raise HTTPException(status_code=404, detail="User not found")
+		raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found")
 
 	await pr_used(payload.token)
 	logger.info(f"Password successfully reset for email: {email}")
@@ -190,7 +190,7 @@ async def update_locale(payload: LocaleUpdateRequest, creds: HTTPAuthorizationCr
 	try:
 		claims = decode_access_token(creds.credentials)
 	except TokenError:
-		raise HTTPException(status_code=401, detail="Invalid token")
+		raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid token")
 	sub = claims.get("sub")
 	user = None
 	try:
@@ -198,7 +198,7 @@ async def update_locale(payload: LocaleUpdateRequest, creds: HTTPAuthorizationCr
 	except Exception:
 		user = await find_by_email(sub)
 	if not user:
-		raise HTTPException(status_code=401, detail="User not found")
+		raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="User not found")
 	from backend.app.repositories.users_repo import update_user
 	await update_user(str(user["_id"]), {"locale": payload.locale})
 	return {"ok": True}

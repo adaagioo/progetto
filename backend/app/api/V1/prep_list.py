@@ -197,4 +197,4 @@ async def export_prep_list(
 		)
 
 	else:
-		raise HTTPException(status_code=400, detail=f"Unsupported format: {format}")
+		raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=f"Unsupported format: {format}")

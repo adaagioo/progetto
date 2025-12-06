@@ -18,7 +18,7 @@ async def recipe_dependencies(recipe_id: str, user: dict = Depends(get_current_u
 		raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Forbidden")
 	data = await lookup_recipe_dependencies(recipe_id)
 	if not data:
-		raise HTTPException(status_code=404, detail="Not found")
+		raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Not found")
 	return data
 
 
@@ -29,7 +29,7 @@ async def preparation_dependencies(prep_id: str, user: dict = Depends(get_curren
 		raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Forbidden")
 	data = await lookup_preparation_dependencies(prep_id)
 	if not data:
-		raise HTTPException(status_code=404, detail="Not found")
+		raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Not found")
 	return data
 
 
@@ -40,5 +40,5 @@ async def inventory_dependencies(inventory_id: str, user: dict = Depends(get_cur
 		raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Forbidden")
 	data = await lookup_inventory_dependencies(inventory_id)
 	if not data:
-		raise HTTPException(status_code=404, detail="Not found")
+		raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Not found")
 	return data

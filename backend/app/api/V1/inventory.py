@@ -29,7 +29,7 @@ async def list_all(
 	"""
 	access = await get_resource_access(user, RESOURCE)
 	if not access.get("canView", False):
-		raise HTTPException(status_code=403, detail="Forbidden")
+		raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Forbidden")
 
 	items = await list_inventory(user["restaurantId"])
 
@@ -52,7 +52,7 @@ async def get_expiring_inventory(days: int = 3, user: dict = Depends(get_current
 	"""Get count of items expiring within specified days (bucketed by day)"""
 	access = await get_resource_access(user, RESOURCE)
 	if not access.get("canView", False):
-		raise HTTPException(status_code=403, detail="Forbidden")
+		raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Forbidden")
 
 	from backend.app.services.inventory_service import get_expiring_inventory_buckets
 
@@ -67,10 +67,10 @@ async def get_expiring_inventory(days: int = 3, user: dict = Depends(get_current
 async def get_one(inv_id: str, user: dict = Depends(get_current_user)):
 	access = await get_resource_access(user, RESOURCE)
 	if not access.get("canView", False):
-		raise HTTPException(status_code=403, detail="Forbidden")
+		raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Forbidden")
 	doc = await get_inventory(user["restaurantId"], inv_id)
 	if not doc:
-		raise HTTPException(status_code=404, detail="Inventory record not found")
+		raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Inventory record not found")
 	return doc
 
 
@@ -78,7 +78,7 @@ async def get_one(inv_id: str, user: dict = Depends(get_current_user)):
 async def create(body: InventoryCreate, user: dict = Depends(get_current_user)):
 	access = await get_resource_access(user, RESOURCE)
 	if not access.get("canCreate", False):
-		raise HTTPException(status_code=403, detail="Forbidden")
+		raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Forbidden")
 
 	doc = body.model_dump()
 	doc["restaurantId"] = user["restaurantId"]
@@ -104,6 +104,6 @@ async def create(body: InventoryCreate, user: dict = Depends(get_current_user)):
 async def delete_by_receiving(receiving_id: str, user: dict = Depends(get_current_user)):
 	access = await get_resource_access(user, RESOURCE)
 	if not access.get("canDelete", False):
-		raise HTTPException(status_code=403, detail="Forbidden")
+		raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Forbidden")
 	deleted = await delete_inventory_by_receiving(user["restaurantId"], receiving_id)
 	return {"deleted": deleted}

@@ -47,7 +47,7 @@ async def get_supplier(supplier_id: str, user: dict = Depends(get_current_user))
 		raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Forbidden")
 	doc = await repo.find_one(user["restaurantId"], supplier_id)
 	if not doc:
-		raise HTTPException(status_code=404, detail="Not found")
+		raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Not found")
 	return Supplier(**doc)
 
 
@@ -59,7 +59,7 @@ async def update_supplier(supplier_id: str, payload: SupplierUpdate, user: dict 
 		raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Forbidden")
 	ok = await repo.update_one(user["restaurantId"], supplier_id, payload.model_dump(exclude_unset=True))
 	if not ok:
-		raise HTTPException(status_code=404, detail="Not found")
+		raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Not found")
 	doc = await repo.find_one(user["restaurantId"], supplier_id)
 	return Supplier(**doc)
 
@@ -71,7 +71,7 @@ async def delete_supplier(supplier_id: str, user: dict = Depends(get_current_use
 		raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Forbidden")
 	ok = await repo.delete_one(user["restaurantId"], supplier_id)
 	if not ok:
-		raise HTTPException(status_code=404, detail="Not found")
+		raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Not found")
 	return None
 
 
@@ -137,7 +137,7 @@ async def suppliers_attach_file(
 
 	ok = await repo.attach_file(user["restaurantId"], supplier_id, file_ref)
 	if not ok:
-		raise HTTPException(status_code=404, detail="Supplier not found")
+		raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Supplier not found")
 
 	return FileRef(**file_ref)
 
@@ -160,5 +160,5 @@ async def suppliers_detach_file(
 
 	ok = await repo.detach_file(user["restaurantId"], supplier_id, file_id)
 	if not ok:
-		raise HTTPException(status_code=404, detail="Supplier or file not found")
+		raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Supplier or file not found")
 	return None

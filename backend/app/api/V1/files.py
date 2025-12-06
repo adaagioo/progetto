@@ -69,7 +69,7 @@ async def download_file(file_id: str, user: dict = Depends(get_current_user)):
 	# Multi-tenancy: verify file belongs to user's restaurant
 	doc = await get_meta(file_id, restaurant_id=user["restaurantId"])
 	if not doc:
-		raise HTTPException(status_code=404, detail="File not found or access denied")
+		raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="File not found or access denied")
 	storage = get_storage()
 	data = storage.open_file(doc["path"])
 	content_type = doc.get("contentType") or "application/octet-stream"
@@ -85,11 +85,11 @@ async def delete_file_api(file_id: str, user: dict = Depends(get_current_user)):
 	# Multi-tenancy: verify file belongs to user's restaurant before deletion
 	doc = await get_meta(file_id, restaurant_id=user["restaurantId"])
 	if not doc:
-		raise HTTPException(status_code=404, detail="File not found or access denied")
+		raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="File not found or access denied")
 	storage = get_storage()
 	storage.delete_file(doc["path"])
 	# Multi-tenancy: delete with restaurant check
 	deleted = await delete_meta(file_id, restaurant_id=user["restaurantId"])
 	if not deleted:
-		raise HTTPException(status_code=404, detail="File not found or access denied")
+		raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="File not found or access denied")
 	return None

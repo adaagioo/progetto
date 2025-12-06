@@ -111,6 +111,6 @@ async def delete_pl_record(pl_id: str, user: dict = Depends(get_current_user)):
 
 	deleted = await repo.delete_pl(pl_id, user["restaurantId"])
 	if not deleted:
-		raise HTTPException(status_code=404, detail="P&L record not found")
+		raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="P&L record not found")
 
 	return None

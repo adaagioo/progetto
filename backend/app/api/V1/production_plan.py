@@ -35,7 +35,7 @@ async def create_production_plan(
 	for item in payload.items:
 		if not await validate_recipe_exists(item.recipeId, user["restaurantId"]):
 			raise HTTPException(
-				status_code=400,
+				status_code=status.HTTP_400_BAD_REQUEST,
 				detail=f"Recipe {item.recipeId} not found"
 			)
 
@@ -89,7 +89,7 @@ async def get_production_plan(
 
 	plan = await repo.get_production_plan(plan_id, user["restaurantId"])
 	if not plan:
-		raise HTTPException(status_code=404, detail="Production plan not found")
+		raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Production plan not found")
 
 	return ProductionPlan(**plan)
 
@@ -141,7 +141,7 @@ async def upsert_production_plan_by_date(
 	for item in payload.items:
 		if not await validate_recipe_exists(item.recipeId, user["restaurantId"]):
 			raise HTTPException(
-				status_code=400,
+				status_code=status.HTTP_400_BAD_REQUEST,
 				detail=f"Recipe {item.recipeId} not found"
 			)
 
@@ -175,7 +175,7 @@ async def update_production_plan(
 	# Check if plan exists
 	existing = await repo.get_production_plan(plan_id, user["restaurantId"])
 	if not existing:
-		raise HTTPException(status_code=404, detail="Production plan not found")
+		raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Production plan not found")
 
 	# Build update data
 	update_data = {}
@@ -184,7 +184,7 @@ async def update_production_plan(
 		for item in payload.items:
 			if not await validate_recipe_exists(item.recipeId, user["restaurantId"]):
 				raise HTTPException(
-					status_code=400,
+					status_code=status.HTTP_400_BAD_REQUEST,
 					detail=f"Recipe {item.recipeId} not found"
 				)
 		update_data["items"] = [item.model_dump() for item in payload.items]
@@ -213,7 +213,7 @@ async def delete_production_plan(
 
 	deleted = await repo.delete_production_plan(plan_id, user["restaurantId"])
 	if not deleted:
-		raise HTTPException(status_code=404, detail="Production plan not found")
+		raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Production plan not found")
 
 	return None
 

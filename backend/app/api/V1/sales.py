@@ -67,7 +67,7 @@ async def sales_get(sale_id: str, user: dict = Depends(get_current_user)):
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Forbidden")
     d = await repo.find_one(user["restaurantId"], sale_id)
     if not d:
-        raise HTTPException(status_code=404, detail="Not found")
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Not found")
     return Sale(**d)
 
 
@@ -78,5 +78,5 @@ async def sales_delete(sale_id: str, user: dict = Depends(get_current_user)):
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Forbidden")
     ok = await repo.delete_one(user["restaurantId"], sale_id)
     if not ok:
-        raise HTTPException(status_code=404, detail="Not found")
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Not found")
     return None

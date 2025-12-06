@@ -33,7 +33,7 @@ async def update_restaurant(payload: dict, user: dict = Depends(get_current_user
 	update_data = {k: v for k, v in payload.items() if k in allowed_fields}
 
 	if not update_data:
-		raise HTTPException(status_code=400, detail="No valid fields to update")
+		raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="No valid fields to update")
 
 	# Upsert (update or create) restaurant
 	restaurant = await repo.upsert(user["restaurantId"], update_data)

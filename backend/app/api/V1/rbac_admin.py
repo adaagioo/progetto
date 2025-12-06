@@ -44,7 +44,7 @@ DEFAULTS = {
 @router.post("/rbac/seed-defaults")
 async def seed_defaults(user: dict = Depends(get_current_user)):
 	if user.get("roleKey") != "admin":
-		raise HTTPException(status_code=403, detail="Admin only")
+		raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Admin only")
 	from backend.app.repositories.rbac_repo import upsert_role
 	for role_key, permissions in DEFAULTS.items():
 		await upsert_role(role_key, permissions)
@@ -78,7 +78,7 @@ async def rbac_get_caps(role: str, resource: str, user: dict = Depends(get_curre
 		raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Forbidden")
 	caps = await policies.get_capabilities_for_role(role, resource)
 	if caps is None:
-		raise HTTPException(status_code=404, detail="Role not found")
+		raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Role not found")
 	return ResourceCapabilities(resource=resource, capabilities=caps or {})
 
 

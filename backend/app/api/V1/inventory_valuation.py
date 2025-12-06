@@ -87,7 +87,7 @@ async def valuation_by_specific_category(
 		logger.warning(f"Category 'nonfood' is deprecated, using 'supplies' instead")
 
 	if category not in valid_categories:
-		raise HTTPException(status_code=400, detail=f"Invalid category. Must be one of: {', '.join(valid_categories)}")
+		raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=f"Invalid category. Must be one of: {', '.join(valid_categories)}")
 
 	# Get all items by category
 	items = await get_valuation_by_category(asOf)

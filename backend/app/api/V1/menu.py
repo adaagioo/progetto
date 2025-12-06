@@ -33,7 +33,7 @@ async def create_menu(payload: MenuCreate, user: dict = Depends(get_current_user
 		existing_active = await repo.get_active_menu(user["restaurantId"])
 		if existing_active:
 			raise HTTPException(
-				status_code=400,
+				status_code=status.HTTP_400_BAD_REQUEST,
 				detail="Another active menu already exists. Deactivate it first or set this menu as inactive."
 			)
 
@@ -99,7 +99,7 @@ async def get_menu(menu_id: str, user: dict = Depends(get_current_user)):
 	menu = await repo.get_menu(menu_id, user["restaurantId"])
 
 	if not menu:
-		raise HTTPException(status_code=404, detail="Menu not found")
+		raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Menu not found")
 
 	return Menu(**menu)
 
@@ -115,7 +115,7 @@ async def update_menu(menu_id: str, payload: MenuUpdate, user: dict = Depends(ge
 	# Check if menu exists
 	existing = await repo.get_menu(menu_id, user["restaurantId"])
 	if not existing:
-		raise HTTPException(status_code=404, detail="Menu not found")
+		raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Menu not found")
 
 	# If activating this menu, deactivate others
 	if payload.isActive is True and not existing.get("isActive"):
@@ -151,7 +151,7 @@ async def delete_menu(menu_id: str, user: dict = Depends(get_current_user)):
 	# Check if menu exists
 	menu = await repo.get_menu(menu_id, user["restaurantId"])
 	if not menu:
-		raise HTTPException(status_code=404, detail="Menu not found")
+		raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Menu not found")
 
 	# Delete all menu items first
 	await repo.delete_all_menu_items(menu_id)
@@ -187,11 +187,11 @@ async def add_menu_items(menu_id: str, items: List[MenuItemCreate], user: dict =
 		if any_menu:
 			msg = f"Menu exists but wrong restaurant. Menu.restaurantId={any_menu.get('restaurantId')}, user.restaurantId={user['restaurantId']}"
 			logger.error(msg)
-			raise HTTPException(status_code=404, detail=msg)
+			raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=msg)
 
 		msg = f"Menu {menu_id} does not exist in database"
 		logger.error(msg)
-		raise HTTPException(status_code=404, detail=msg)
+		raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=msg)
 
 	db = get_db()
 	created_items = []
@@ -201,7 +201,7 @@ async def add_menu_items(menu_id: str, items: List[MenuItemCreate], user: dict =
 
 		# Validate refType
 		if item.refType not in ["ingredient", "preparation", "recipe"]:
-			raise HTTPException(status_code=400, detail=f"Invalid refType: {item.refType}")
+			raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=f"Invalid refType: {item.refType}")
 
 		# Validate that referenced entity exists using proper repositories
 		# This prevents NoSQL injection by using type-safe repository methods
@@ -223,7 +223,7 @@ async def add_menu_items(menu_id: str, items: List[MenuItemCreate], user: dict =
 		if not ref_entity:
 			msg = f"{item.refType.capitalize()} with id '{item.refId}' not found for restaurantId='{user['restaurantId']}'"
 			logger.error(msg)
-			raise HTTPException(status_code=404, detail=msg)
+			raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=msg)
 
 		# Check for duplicates
 		existing = await repo.find_duplicate_menu_item(menu_id, item.refType, item.refId)
@@ -260,7 +260,7 @@ async def get_menu_items(menu_id: str, user: dict = Depends(get_current_user)):
 	# Check if menu exists
 	menu = await repo.get_menu(menu_id, user["restaurantId"])
 	if not menu:
-		raise HTTPException(status_code=404, detail="Menu not found")
+		raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Menu not found")
 
 	# Get menu items
 	menu_items = await repo.list_menu_items(menu_id)
@@ -285,7 +285,7 @@ async def update_menu_item(menu_id: str, item_id: str, payload: MenuItemUpdate, 
 	# Check if menu item exists
 	existing = await repo.get_menu_item(item_id, menu_id)
 	if not existing:
-		raise HTTPException(status_code=404, detail="Menu item not found")
+		raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Menu item not found")
 
 	# Build update dict
 	update_data = {}
@@ -317,6 +317,6 @@ async def delete_menu_item(menu_id: str, item_id: str, user: dict = Depends(get_
 	# Delete menu item
 	deleted = await repo.delete_menu_item(item_id, menu_id)
 	if not deleted:
-		raise HTTPException(status_code=404, detail="Menu item not found")
+		raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Menu item not found")
 
 	return None

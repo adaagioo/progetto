@@ -26,7 +26,7 @@ async def create_receiving_api(request: Request, user: dict = Depends(get_curren
 		logger.debug(f"Raw body received: {body}")
 	except Exception as e:
 		logger.error(f"Failed to parse request body: {e}")
-		raise HTTPException(status_code=400, detail="Invalid JSON")
+		raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Invalid JSON")
 
 	# Validate payload
 	try:
@@ -153,7 +153,7 @@ async def get_receiving_api(rec_id: str, user: dict = Depends(get_current_user))
 		raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Forbidden")
 	doc = await repo.find_one(user["restaurantId"], rec_id)
 	if not doc:
-		raise HTTPException(status_code=404, detail="Not found")
+		raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Not found")
 	return Receiving(
 		id=doc["id"],
 		date=doc["date"],
@@ -188,11 +188,11 @@ async def update_receiving_api(rec_id: str, body: ReceivingUpdate, user: dict = 
 		updates["notes"] = body.notes
 
 	if not updates:
-		raise HTTPException(status_code=400, detail="No fields to update")
+		raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="No fields to update")
 
 	ok = await repo.update_one(user["restaurantId"], rec_id, updates)
 	if not ok:
-		raise HTTPException(status_code=404, detail="Receiving not found")
+		raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Receiving not found")
 
 	# Return updated document
 	doc = await repo.find_one(user["restaurantId"], rec_id)
@@ -252,7 +252,7 @@ async def delete_receiving_api(rec_id: str, user: dict = Depends(get_current_use
 		raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Forbidden")
 	ok = await repo.delete_one(user["restaurantId"], rec_id)
 	if not ok:
-		raise HTTPException(status_code=404, detail="Not found")
+		raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Not found")
 	return None
 
 
@@ -298,7 +298,7 @@ async def receiving_attach_file(
 	# Attach file to receiving
 	ok = await repo.attach_file(user["restaurantId"], rec_id, file_ref)
 	if not ok:
-		raise HTTPException(status_code=404, detail="Receiving not found")
+		raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Receiving not found")
 
 	return FileRef(**file_ref)
 
@@ -315,5 +315,5 @@ async def receiving_detach_file(
 
 	ok = await repo.detach_file(user["restaurantId"], rec_id, file_id)
 	if not ok:
-		raise HTTPException(status_code=404, detail="Receiving not found")
+		raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Receiving not found")
 	return None

@@ -63,7 +63,7 @@ async def wastage_get(w_id: str, user: dict = Depends(get_current_user)):
 		raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Forbidden")
 	d = await repo.find_one(user["restaurantId"], w_id)
 	if not d:
-		raise HTTPException(status_code=404, detail="Not found")
+		raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Not found")
 	return Wastage(**d)
 
 
@@ -74,5 +74,5 @@ async def wastage_delete(w_id: str, user: dict = Depends(get_current_user)):
 		raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Forbidden")
 	ok = await repo.delete_one(user["restaurantId"], w_id)
 	if not ok:
-		raise HTTPException(status_code=404, detail="Not found")
+		raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Not found")
 	return None

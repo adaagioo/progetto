@@ -22,7 +22,7 @@ RESOURCE = "ingredients"
 async def list_all(user: dict = Depends(get_current_user)):
 	access = await get_resource_access(user, RESOURCE)
 	if not access.get("canView", False):
-		raise HTTPException(status_code=403, detail="Forbidden")
+		raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Forbidden")
 	docs = await list_ingredients(user["restaurantId"])
 	return docs
 
@@ -31,10 +31,10 @@ async def list_all(user: dict = Depends(get_current_user)):
 async def get_one(ingredient_id: str, user: dict = Depends(get_current_user)):
 	access = await get_resource_access(user, RESOURCE)
 	if not access.get("canView", False):
-		raise HTTPException(status_code=403, detail="Forbidden")
+		raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Forbidden")
 	doc = await get_ingredient(user["restaurantId"], ingredient_id)
 	if not doc:
-		raise HTTPException(status_code=404, detail="Ingredient not found")
+		raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Ingredient not found")
 	return doc
 
 
@@ -42,7 +42,7 @@ async def get_one(ingredient_id: str, user: dict = Depends(get_current_user)):
 async def create(body: IngredientCreate, user: dict = Depends(get_current_user)):
 	access = await get_resource_access(user, RESOURCE)
 	if not access.get("canCreate", False):
-		raise HTTPException(status_code=403, detail="Forbidden")
+		raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Forbidden")
 	doc = body.model_dump()
 	doc["restaurantId"] = user["restaurantId"]
 	new_id = await create_ingredient(doc)
@@ -57,11 +57,11 @@ async def update(ingredient_id: str, body: IngredientUpdate, user: dict = Depend
 	"""Update ingredient (supports both PATCH and PUT for compatibility)"""
 	access = await get_resource_access(user, RESOURCE)
 	if not access.get("canUpdate", False):
-		raise HTTPException(status_code=403, detail="Forbidden")
+		raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Forbidden")
 	ok = await update_ingredient(user["restaurantId"], ingredient_id,
 	                             {k: v for k, v in body.model_dump().items() if v is not None})
 	if not ok:
-		raise HTTPException(status_code=404, detail="Ingredient not found")
+		raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Ingredient not found")
 	doc = await get_ingredient(user["restaurantId"], ingredient_id)
 	return doc
 
@@ -70,10 +70,10 @@ async def update(ingredient_id: str, body: IngredientUpdate, user: dict = Depend
 async def delete(ingredient_id: str, user: dict = Depends(get_current_user)):
 	access = await get_resource_access(user, RESOURCE)
 	if not access.get("canDelete", False):
-		raise HTTPException(status_code=403, detail="Forbidden")
+		raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Forbidden")
 	ok = await delete_ingredient(user["restaurantId"], ingredient_id)
 	if not ok:
-		raise HTTPException(status_code=404, detail="Ingredient not found")
+		raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Ingredient not found")
 	return None
 
 

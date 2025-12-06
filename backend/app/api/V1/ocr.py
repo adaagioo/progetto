@@ -139,7 +139,7 @@ async def ocr_delete_mapping(
 
 	deleted = await delete_rule(user_id, key, supplier_id=supplierId)
 	if deleted == 0:
-		raise HTTPException(status_code=404, detail="Mapping not found")
+		raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Mapping not found")
 	return None
 
 

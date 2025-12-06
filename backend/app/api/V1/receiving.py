@@ -42,9 +42,7 @@ async def create_receiving_api(request: Request, user: dict = Depends(get_curren
 		raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Forbidden")
 
 	# Map ingredientId to inventoryId for each item
-	from backend.app.db.mongo import get_db
-	from bson import ObjectId
-	db = get_db()
+	from backend.app.repositories.inventory_repo import find_by_ingredient_id
 
 	# Process items and find inventory IDs for stock updates
 	items_for_db = []
@@ -60,13 +58,13 @@ async def create_receiving_api(request: Request, user: dict = Depends(get_curren
 		# Find inventory ID for stock update
 		if ingredient_id:
 			try:
-				inventory = await db.inventory.find_one({
-					"ingredientId": ingredient_id,
-					"restaurantId": user.get("restaurantId", "default")
-				})
+				inventory = await find_by_ingredient_id(
+					user.get("restaurantId", "default"),
+					ingredient_id
+				)
 
 				if inventory:
-					inventory_id = str(inventory["_id"])
+					inventory_id = inventory["id"]
 					logger.debug(f"Mapped ingredientId {ingredient_id} to inventoryId {inventory_id}")
 				else:
 					# No inventory found - use ingredient ID directly
@@ -151,7 +149,7 @@ async def create_receiving_api(request: Request, user: dict = Depends(get_curren
 @router.get("/receiving/{rec_id}", response_model=Receiving)
 async def get_receiving_api(rec_id: str, user: dict = Depends(get_current_user)):
 	access = await get_resource_access(user, RESOURCE)
-	if not access.get("canView", True):
+	if not access.get("canView", False):
 		raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Forbidden")
 	doc = await repo.find_one(user["restaurantId"], rec_id)
 	if not doc:
@@ -218,7 +216,7 @@ async def list_receiving_api(
 		user: dict = Depends(get_current_user),
 ):
 	access = await get_resource_access(user, RESOURCE)
-	if not access.get("canView", True):
+	if not access.get("canView", False):
 		raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Forbidden")
 	docs = await repo.find_many(user["restaurantId"], start=start, end=end, limit=200)
 

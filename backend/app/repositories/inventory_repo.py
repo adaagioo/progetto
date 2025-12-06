@@ -25,6 +25,11 @@ async def find_by_id(restaurant_id: str, inv_id: str) -> Optional[dict]:
 	return _as_id(await _col().find_one({"_id": ObjectId(inv_id), "restaurantId": restaurant_id}))
 
 
+async def find_by_ingredient_id(restaurant_id: str, ingredient_id: str) -> Optional[dict]:
+	"""Find inventory by ingredientId and restaurantId"""
+	return _as_id(await _col().find_one({"ingredientId": ingredient_id, "restaurantId": restaurant_id}))
+
+
 async def find_all(restaurant_id: str) -> List[dict]:
 	cur = _col().find({"restaurantId": restaurant_id})
 	return [_as_id(d) async for d in cur]

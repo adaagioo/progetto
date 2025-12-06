@@ -18,7 +18,7 @@ RESOURCE = "users"
 @router.get("/users", response_model=List[UserPublic])
 async def users_index(skip: int = 0, limit: int = 50, user: dict = Depends(get_current_user)):
 	access = await get_resource_access(user, RESOURCE)
-	if not access["canView"]:
+	if not access.get("canView", False):
 		raise HTTPException(status_code=403, detail="Forbidden")
 	docs = await list_users(limit=limit, skip=skip)
 	out: List[UserPublic] = []
@@ -34,7 +34,7 @@ async def users_index(skip: int = 0, limit: int = 50, user: dict = Depends(get_c
 @router.delete("/users/{user_id}", status_code=204)
 async def users_delete(user_id: str, user: dict = Depends(get_current_user)):
 	access = await get_resource_access(user, RESOURCE)
-	if not access["canDelete"]:
+	if not access.get("canDelete", False):
 		raise HTTPException(status_code=403, detail="Forbidden")
 	ok = await delete_user(user_id)
 	if not ok:

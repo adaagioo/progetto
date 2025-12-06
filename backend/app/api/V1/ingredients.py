@@ -21,7 +21,7 @@ RESOURCE = "ingredients"
 @router.get("/ingredients", response_model=List[Ingredient])
 async def list_all(user: dict = Depends(get_current_user)):
 	access = await get_resource_access(user, RESOURCE)
-	if not access["canView"]:
+	if not access.get("canView", False):
 		raise HTTPException(status_code=403, detail="Forbidden")
 	docs = await list_ingredients(user["restaurantId"])
 	return docs
@@ -30,7 +30,7 @@ async def list_all(user: dict = Depends(get_current_user)):
 @router.get("/ingredients/{ingredient_id}", response_model=Ingredient)
 async def get_one(ingredient_id: str, user: dict = Depends(get_current_user)):
 	access = await get_resource_access(user, RESOURCE)
-	if not access["canView"]:
+	if not access.get("canView", False):
 		raise HTTPException(status_code=403, detail="Forbidden")
 	doc = await get_ingredient(user["restaurantId"], ingredient_id)
 	if not doc:
@@ -41,7 +41,7 @@ async def get_one(ingredient_id: str, user: dict = Depends(get_current_user)):
 @router.post("/ingredients", response_model=Ingredient, status_code=status.HTTP_201_CREATED)
 async def create(body: IngredientCreate, user: dict = Depends(get_current_user)):
 	access = await get_resource_access(user, RESOURCE)
-	if not access["canCreate"]:
+	if not access.get("canCreate", False):
 		raise HTTPException(status_code=403, detail="Forbidden")
 	doc = body.model_dump()
 	doc["restaurantId"] = user["restaurantId"]
@@ -56,7 +56,7 @@ async def create(body: IngredientCreate, user: dict = Depends(get_current_user))
 async def update(ingredient_id: str, body: IngredientUpdate, user: dict = Depends(get_current_user)):
 	"""Update ingredient (supports both PATCH and PUT for compatibility)"""
 	access = await get_resource_access(user, RESOURCE)
-	if not access["canUpdate"]:
+	if not access.get("canUpdate", False):
 		raise HTTPException(status_code=403, detail="Forbidden")
 	ok = await update_ingredient(user["restaurantId"], ingredient_id,
 	                             {k: v for k, v in body.model_dump().items() if v is not None})
@@ -69,7 +69,7 @@ async def update(ingredient_id: str, body: IngredientUpdate, user: dict = Depend
 @router.delete("/ingredients/{ingredient_id}", status_code=status.HTTP_204_NO_CONTENT)
 async def delete(ingredient_id: str, user: dict = Depends(get_current_user)):
 	access = await get_resource_access(user, RESOURCE)
-	if not access["canDelete"]:
+	if not access.get("canDelete", False):
 		raise HTTPException(status_code=403, detail="Forbidden")
 	ok = await delete_ingredient(user["restaurantId"], ingredient_id)
 	if not ok:
@@ -80,13 +80,13 @@ async def delete(ingredient_id: str, user: dict = Depends(get_current_user)):
 @router.get("/ingredients/{ingredient_id}/price-history", response_model=List[PricePoint])
 async def ingredient_price_history(ingredient_id: str, user: dict = Depends(get_current_user)):
 	access = await get_resource_access(user, RESOURCE)
-	if not access.get("canView", True):
+	if not access.get("canView", False):
 		raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Forbidden")
 
 	# Note: In the current model, price is associated with Inventory (not Ingredient directly).
 	# For consistency with the old endpoint, I interpret ingredient_id = inventoryId.
 	# It is possible to map Ingredient -> Inventory first if needed.
-	rows = await find_receiving_price_history(ingredient_id, limit=200)
+	rows = await find_receiving_price_history(user["restaurantId"], ingredient_id, limit=200)
 	out: List[PricePoint] = []
 	for r in rows:
 		at = r.get("at")

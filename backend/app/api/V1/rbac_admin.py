@@ -45,13 +45,9 @@ DEFAULTS = {
 async def seed_defaults(user: dict = Depends(get_current_user)):
 	if user.get("roleKey") != "admin":
 		raise HTTPException(status_code=403, detail="Admin only")
-	db = get_db()
+	from backend.app.repositories.rbac_repo import upsert_role
 	for role_key, permissions in DEFAULTS.items():
-		await db["rbac_roles"].update_one(
-			{"roleKey": role_key},
-			{"$set": {"roleKey": role_key, "permissions": permissions}},
-			upsert=True,
-		)
+		await upsert_role(role_key, permissions)
 	return {"ok": True, "seeded_roles": list(DEFAULTS.keys())}
 
 

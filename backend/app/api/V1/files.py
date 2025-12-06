@@ -43,7 +43,7 @@ async def upload_file(f: UploadFile = File(...), user: dict = Depends(get_curren
 @router.get("/files", response_model=List[FileMeta])
 async def list_files_api(user: dict = Depends(get_current_user)):
 	access = await get_resource_access(user, RESOURCE)
-	if not access.get("canView", True):
+	if not access.get("canView", False):
 		raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Forbidden")
 	# Multi-tenancy: only list files from user's restaurant
 	docs = await list_files(restaurant_id=user["restaurantId"])
@@ -64,7 +64,7 @@ async def list_files_api(user: dict = Depends(get_current_user)):
 @router.get("/files/{file_id}")
 async def download_file(file_id: str, user: dict = Depends(get_current_user)):
 	access = await get_resource_access(user, RESOURCE)
-	if not access.get("canView", True):
+	if not access.get("canView", False):
 		raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Forbidden")
 	# Multi-tenancy: verify file belongs to user's restaurant
 	doc = await get_meta(file_id, restaurant_id=user["restaurantId"])

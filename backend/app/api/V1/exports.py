@@ -43,7 +43,7 @@ def _pdf_response(draw_fn, filename: str) -> StreamingResponse:
 @router.get("/exports/preplist.xlsx")
 async def export_preplist_xlsx(user: dict = Depends(get_current_user)):
 	access = await get_resource_access(user, PREPLIST_RESOURCE)
-	if not access["canView"]:
+	if not access.get("canView", False):
 		raise HTTPException(status_code=403, detail="Forbidden")
 	recipes = await find_recipes(user["restaurantId"])
 	wb = Workbook()
@@ -58,7 +58,7 @@ async def export_preplist_xlsx(user: dict = Depends(get_current_user)):
 @router.get("/exports/preplist.pdf")
 async def export_preplist_pdf(user: dict = Depends(get_current_user)):
 	access = await get_resource_access(user, PREPLIST_RESOURCE)
-	if not access["canView"]:
+	if not access.get("canView", False):
 		raise HTTPException(status_code=403, detail="Forbidden")
 
 	def draw(c):
@@ -71,7 +71,7 @@ async def export_preplist_pdf(user: dict = Depends(get_current_user)):
 @router.get("/exports/orderlist.xlsx")
 async def export_orderlist_xlsx(user: dict = Depends(get_current_user)):
 	access = await get_resource_access(user, ORDERLIST_RESOURCE)
-	if not access["canView"]:
+	if not access.get("canView", False):
 		raise HTTPException(status_code=403, detail="Forbidden")
 	ingredients = await find_ingredients(user["restaurantId"])
 	wb = Workbook()
@@ -86,7 +86,7 @@ async def export_orderlist_xlsx(user: dict = Depends(get_current_user)):
 @router.get("/exports/orderlist.pdf")
 async def export_orderlist_pdf(user: dict = Depends(get_current_user)):
 	access = await get_resource_access(user, ORDERLIST_RESOURCE)
-	if not access["canView"]:
+	if not access.get("canView", False):
 		raise HTTPException(status_code=403, detail="Forbidden")
 
 	def draw(c):

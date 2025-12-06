@@ -26,11 +26,22 @@ async def sales_create(payload: SaleCreate, user: dict = Depends(get_current_use
         "createdAt": datetime.now(tz=timezone.utc)
     }
     sid = await repo.insert_one(sale_doc)
-    for it in sale_items:
-        rid = it.get("recipeId")
-        qty = float(it.get("quantity", 0.0))
-        if rid and qty > 0:
-            await deduct_stock_for_recipe(rid, qty, actor_id=str(user["_id"]))
+
+    # Deduct stock with rollback on failure
+    try:
+        for it in sale_items:
+            rid = it.get("recipeId")
+            qty = float(it.get("quantity", 0.0))
+            if rid and qty > 0:
+                await deduct_stock_for_recipe(rid, qty, actor_id=str(user["_id"]))
+    except Exception as e:
+        # Rollback: delete the sale if stock deduction fails
+        await repo.delete_one(user["restaurantId"], sid)
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=f"Failed to deduct stock: {str(e)}"
+        )
+
     doc = await repo.find_one(user["restaurantId"], sid)
     return Sale(**doc)
 

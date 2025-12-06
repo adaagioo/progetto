@@ -26,7 +26,18 @@ async def wastage_create(payload: WastageCreate, user: dict = Depends(get_curren
 		"createdAt": datetime.now(tz=timezone.utc)
 	}
 	wid = await repo.insert_one(wastage_doc)
-	await deduct_stock_for_wastage(items, actor_id=str(user["_id"]))
+
+	# Deduct stock with rollback on failure
+	try:
+		await deduct_stock_for_wastage(items, actor_id=str(user["_id"]))
+	except Exception as e:
+		# Rollback: delete the wastage record if stock deduction fails
+		await repo.delete_one(user["restaurantId"], wid)
+		raise HTTPException(
+			status_code=status.HTTP_400_BAD_REQUEST,
+			detail=f"Failed to deduct stock for wastage: {str(e)}"
+		)
+
 	doc = await repo.find_one(user["restaurantId"], wid)
 	return Wastage(**doc)
 

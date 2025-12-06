@@ -199,6 +199,6 @@ async def update_locale(payload: LocaleUpdateRequest, creds: HTTPAuthorizationCr
 		user = await find_by_email(sub)
 	if not user:
 		raise HTTPException(status_code=401, detail="User not found")
-	from backend.app.db.mongo import get_db
-	await get_db()["users"].update_one({"_id": user["_id"]}, {"$set": {"locale": payload.locale}})
+	from backend.app.repositories.users_repo import update_user
+	await update_user(str(user["_id"]), {"locale": payload.locale})
 	return {"ok": True}

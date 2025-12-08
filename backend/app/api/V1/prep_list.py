@@ -3,11 +3,13 @@ from __future__ import annotations
 from datetime import date, timedelta
 from typing import Optional, List
 from fastapi import APIRouter, Depends, HTTPException, status, Query
+from fastapi.responses import Response
 from backend.app.deps.auth import get_current_user
 from backend.app.core.rbac_policies import get_resource_access
 from backend.app.schemas.prep_list import PrepListResponse, PrepTask, PrepForecastResponse, PrepForecastItem
 from backend.app.services.prep_list_service import compute_prep_list
 from backend.app.utils.logger import get_logger
+from io import BytesIO
 
 logger = get_logger(__name__)
 router = APIRouter()
@@ -96,3 +98,103 @@ async def prep_list_forecast(
 		logger.debug(f"Date {current_date}: {tasks_count} tasks")
 		items.append(PrepForecastItem(date=current_date, tasksCount=tasks_count))
 	return PrepForecastResponse(items=items)
+
+
+@router.get("/prep-list/export")
+async def export_prep_list(
+	date_param: Optional[date] = Query(None, alias="date", description="Date for prep list"),
+	format: str = Query("pdf", description="Export format: pdf or excel"),
+	locale: str = Query("en", description="Locale for export"),
+	user: dict = Depends(get_current_user),
+):
+	"""Export prep list to PDF or Excel format"""
+	access = await get_resource_access(user, RESOURCE)
+	if not access.get("canView"):
+		raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Forbidden")
+
+	d = date_param or date.today()
+	logger.info(f"Exporting prep list for date {d} in format {format}")
+
+	# Compute prep list
+	doc = await compute_prep_list(d)
+	tasks = doc.get("tasks", [])
+
+	if format.lower() == "pdf":
+		# Generate PDF
+		from reportlab.pdfgen import canvas
+		from reportlab.lib.pagesizes import A4
+
+		buf = BytesIO()
+		c = canvas.Canvas(buf, pagesize=A4)
+		width, height = A4
+
+		# Title
+		c.setFont("Helvetica-Bold", 16)
+		c.drawString(50, height - 50, f"Prep List - {d}")
+
+		# Tasks
+		c.setFont("Helvetica", 10)
+		y = height - 100
+		c.drawString(50, y, "Task")
+		c.drawString(300, y, "Quantity")
+		c.drawString(400, y, "Unit")
+
+		y -= 20
+		c.setFont("Helvetica", 9)
+
+		for task in tasks:
+			if y < 50:  # New page if needed
+				c.showPage()
+				c.setFont("Helvetica", 9)
+				y = height - 50
+
+			name = task.get("name", task.get("preparationName", "Unknown"))
+			qty = task.get("quantity", 0)
+			unit = task.get("unit", "")
+
+			c.drawString(50, y, str(name)[:40])
+			c.drawString(300, y, str(qty))
+			c.drawString(400, y, str(unit))
+			y -= 15
+
+		c.save()
+		buf.seek(0)
+
+		return Response(
+			content=buf.getvalue(),
+			media_type="application/pdf",
+			headers={"Content-Disposition": f"attachment; filename=prep_list_{d}.pdf"}
+		)
+
+	elif format.lower() in ["excel", "xlsx"]:
+		# Generate Excel
+		from openpyxl import Workbook
+
+		wb = Workbook()
+		ws = wb.active
+		ws.title = "Prep List"
+
+		# Headers
+		ws.append(["Date", str(d)])
+		ws.append([])
+		ws.append(["Task", "Quantity", "Unit"])
+
+		# Data
+		for task in tasks:
+			name = task.get("name", task.get("preparationName", "Unknown"))
+			qty = task.get("quantity", 0)
+			unit = task.get("unit", "")
+			ws.append([name, qty, unit])
+
+		buf = BytesIO()
+		wb.save(buf)
+		buf.seek(0)
+
+		return Response(
+			content=buf.getvalue(),
+			media_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+			headers={"Content-Disposition": f"attachment; filename=prep_list_{d}.xlsx"}
+		)
+
+	else:
+		raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=f"Unsupported format: {format}")

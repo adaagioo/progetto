@@ -22,10 +22,22 @@ async def get_current_user(credentials: HTTPAuthorizationCredentials = Depends(b
 		# Try by id first; fallback by email if needed.
 		user = None
 		try:
-			from bson import ObjectId  # type: ignore
-			user = await find_by_id(str(sub))
-		except Exception:
+			from bson import ObjectId
+			from bson.errors import InvalidId
+			# Only attempt ObjectId lookup if sub looks like a valid ObjectId
+			if ObjectId.is_valid(sub):
+				user = await find_by_id(str(sub))
+		except InvalidId:
+			# Invalid ObjectId format, will try email lookup below
 			pass
+		except Exception as e:
+			# Database or unexpected error - log and raise
+			import logging
+			logging.error(f"Error looking up user by ID {sub}: {e}")
+			raise HTTPException(
+				status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+				detail="Database error during authentication"
+			)
 
 		if not user:
 			user = await find_by_email(str(sub))
@@ -46,6 +58,9 @@ async def get_current_user(credentials: HTTPAuthorizationCredentials = Depends(b
 	except HTTPException:
 		raise
 	except Exception as e:
+		# Log unexpected errors for debugging
+		import logging
+		logging.error(f"Unexpected error in get_current_user: {e}", exc_info=True)
 		raise HTTPException(
 			status_code=status.HTTP_401_UNAUTHORIZED,
 			detail="Authentication failed"

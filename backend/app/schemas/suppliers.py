@@ -28,14 +28,13 @@ class SupplierUpdate(BaseModel):
 	active: Optional[bool] = None
 
 
-class Supplier(BaseModel):
+class SupplierFull(SupplierBase):
+	"""Full supplier data including restaurantId"""
+	restaurantId: str
+
+
+class Supplier(SupplierFull):
 	id: str
-	name: str
-	email: Optional[str] = None
-	phone: Optional[str] = None
-	address: Optional[str] = None
-	notes: Optional[str] = None
-	active: bool = True
 	files: Optional[List[FileRef]] = None
 
 

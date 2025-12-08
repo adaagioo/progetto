@@ -43,8 +43,8 @@ def _pdf_response(draw_fn, filename: str) -> StreamingResponse:
 @router.get("/exports/preplist.xlsx")
 async def export_preplist_xlsx(user: dict = Depends(get_current_user)):
 	access = await get_resource_access(user, PREPLIST_RESOURCE)
-	if not access["canView"]:
-		raise HTTPException(status_code=403, detail="Forbidden")
+	if not access.get("canView", False):
+		raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Forbidden")
 	recipes = await find_recipes(user["restaurantId"])
 	wb = Workbook()
 	ws = wb.active
@@ -58,8 +58,8 @@ async def export_preplist_xlsx(user: dict = Depends(get_current_user)):
 @router.get("/exports/preplist.pdf")
 async def export_preplist_pdf(user: dict = Depends(get_current_user)):
 	access = await get_resource_access(user, PREPLIST_RESOURCE)
-	if not access["canView"]:
-		raise HTTPException(status_code=403, detail="Forbidden")
+	if not access.get("canView", False):
+		raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Forbidden")
 
 	def draw(c):
 		c.setFont("Helvetica", 12)
@@ -71,8 +71,8 @@ async def export_preplist_pdf(user: dict = Depends(get_current_user)):
 @router.get("/exports/orderlist.xlsx")
 async def export_orderlist_xlsx(user: dict = Depends(get_current_user)):
 	access = await get_resource_access(user, ORDERLIST_RESOURCE)
-	if not access["canView"]:
-		raise HTTPException(status_code=403, detail="Forbidden")
+	if not access.get("canView", False):
+		raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Forbidden")
 	ingredients = await find_ingredients(user["restaurantId"])
 	wb = Workbook()
 	ws = wb.active
@@ -86,8 +86,8 @@ async def export_orderlist_xlsx(user: dict = Depends(get_current_user)):
 @router.get("/exports/orderlist.pdf")
 async def export_orderlist_pdf(user: dict = Depends(get_current_user)):
 	access = await get_resource_access(user, ORDERLIST_RESOURCE)
-	if not access["canView"]:
-		raise HTTPException(status_code=403, detail="Forbidden")
+	if not access.get("canView", False):
+		raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Forbidden")
 
 	def draw(c):
 		c.setFont("Helvetica", 12)

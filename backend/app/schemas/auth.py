@@ -27,7 +27,12 @@ class TokenResponse(BaseModel):
 
 class RegisterRequest(BaseModel):
 	email: EmailStr
-	password: str
+	password: str = Field(
+		...,
+		min_length=8,
+		max_length=128,
+		description="Password must be between 8 and 128 characters"
+	)
 	locale: str | None = None
 
 
@@ -44,7 +49,12 @@ class ForgotPasswordRequest(BaseModel):
 
 class ResetPasswordRequest(BaseModel):
 	token: str
-	new_password: str
+	new_password: str = Field(
+		...,
+		min_length=8,
+		max_length=128,
+		description="Password must be between 8 and 128 characters"
+	)
 
 
 class LocaleUpdateRequest(BaseModel):

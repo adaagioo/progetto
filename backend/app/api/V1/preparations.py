@@ -19,27 +19,27 @@ RESOURCE = "preparations"
 @router.get("/preparations", response_model=List[Preparation])
 async def list_all(user: dict = Depends(get_current_user)):
 	access = await get_resource_access(user, RESOURCE)
-	if not access["canView"]:
-		raise HTTPException(status_code=403, detail="Forbidden")
+	if not access.get("canView", False):
+		raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Forbidden")
 	return await list_preparations(user["restaurantId"])
 
 
 @router.get("/preparations/{prep_id}", response_model=Preparation)
 async def get_one(prep_id: str, user: dict = Depends(get_current_user)):
 	access = await get_resource_access(user, RESOURCE)
-	if not access["canView"]:
-		raise HTTPException(status_code=403, detail="Forbidden")
+	if not access.get("canView", False):
+		raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Forbidden")
 	doc = await get_preparation(user["restaurantId"], prep_id)
 	if not doc:
-		raise HTTPException(status_code=404, detail="Preparation not found")
+		raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Preparation not found")
 	return doc
 
 
 @router.post("/preparations", response_model=Preparation, status_code=status.HTTP_201_CREATED)
 async def create(body: PreparationCreate, user: dict = Depends(get_current_user)):
 	access = await get_resource_access(user, RESOURCE)
-	if not access["canCreate"]:
-		raise HTTPException(status_code=403, detail="Forbidden")
+	if not access.get("canCreate", False):
+		raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Forbidden")
 	doc = body.model_dump()
 	doc["restaurantId"] = user["restaurantId"]
 	new_id = await create_preparation(doc)
@@ -47,26 +47,27 @@ async def create(body: PreparationCreate, user: dict = Depends(get_current_user)
 	return created
 
 
+@router.put("/preparations/{prep_id}", response_model=Preparation)
 @router.patch("/preparations/{prep_id}", response_model=Preparation)
 async def update(prep_id: str, body: PreparationUpdate, user: dict = Depends(get_current_user)):
 	access = await get_resource_access(user, RESOURCE)
-	if not access["canUpdate"]:
-		raise HTTPException(status_code=403, detail="Forbidden")
+	if not access.get("canUpdate", False):
+		raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Forbidden")
 	ok = await update_preparation(user["restaurantId"], prep_id,
 	                              {k: v for k, v in body.model_dump().items() if v is not None})
 	if not ok:
-		raise HTTPException(status_code=404, detail="Preparation not found")
+		raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Preparation not found")
 	return await get_preparation(user["restaurantId"], prep_id)
 
 
 @router.delete("/preparations/{prep_id}", status_code=status.HTTP_204_NO_CONTENT)
 async def delete(prep_id: str, user: dict = Depends(get_current_user)):
 	access = await get_resource_access(user, RESOURCE)
-	if not access["canDelete"]:
-		raise HTTPException(status_code=403, detail="Forbidden")
+	if not access.get("canDelete", False):
+		raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Forbidden")
 	ok = await delete_preparation(user["restaurantId"], prep_id)
 	if not ok:
-		raise HTTPException(status_code=404, detail="Preparation not found")
+		raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Preparation not found")
 	return None
 
 

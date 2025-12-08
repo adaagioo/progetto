@@ -10,11 +10,12 @@ def _movements():
 	return get_db()["inventory_movements"]
 
 
-async def find_receiving_price_history(inventory_id: str, limit: int = 200) -> List[Dict[str, Any]]:
+async def find_receiving_price_history(restaurant_id: str, inventory_id: str, limit: int = 200) -> List[Dict[str, Any]]:
 	inv = ObjectId(inventory_id)
 	cur = _movements().find({
 		"kind": "receiving",
-		"inventoryId": inv
+		"inventoryId": inv,
+		"restaurantId": restaurant_id
 	}, {
 		"at": 1,
 		"unitCost": 1,

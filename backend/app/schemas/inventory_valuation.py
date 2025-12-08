@@ -2,13 +2,14 @@
 from __future__ import annotations
 from datetime import date, datetime
 from typing import Optional, List
-from pydantic import BaseModel, field_serializer
+from pydantic import BaseModel, Field, field_serializer
 
 
 class ValuationCategories(BaseModel):
-	food: float = 0.0
-	beverage: float = 0.0
-	nofood: float = 0.0  # Frontend expects "nofood", not "other"
+	"""Inventory valuation by category"""
+	food: float = Field(default=0.0, description="Food items valuation")
+	beverage: float = Field(default=0.0, description="Beverage items valuation")
+	supplies: float = Field(default=0.0, description="Non-food supplies valuation (packaging, cleaning, etc.)")
 
 
 class ValuationSummaryResponse(BaseModel):

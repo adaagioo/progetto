@@ -60,3 +60,21 @@ async def pr_used(token: str) -> bool:
 	col = await _col()
 	res = await col.update_one({"token": token}, {"$set": {"used": True, "usedAt": datetime.now(tz=timezone.utc)}})
 	return res.matched_count == 1
+
+
+async def pr_check_rate_limit(email: str, max_requests: int = 3, window_minutes: int = 5) -> bool:
+	"""
+	Check if email has exceeded rate limit for password reset requests.
+	Returns True if rate limit exceeded, False if request is allowed.
+	"""
+	col = await _col()
+	now = datetime.now(tz=timezone.utc)
+	window_start = now - timedelta(minutes=window_minutes)
+
+	# Count recent requests for this email (within the time window)
+	recent_count = await col.count_documents({
+		"email": email,
+		"createdAt": {"$gte": window_start}
+	})
+
+	return recent_count >= max_requests

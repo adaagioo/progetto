@@ -3,21 +3,20 @@ services:
     build:
       context: ./backend
 #      dockerfile: Dockerfile
-    command: uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
+    command: uvicorn backend.main:app --host 0.0.0.0 --port 8000 --reload
     env_file:
       - ./backend/.env
     environment:
       # Fallbacks for dev if .env is missing some keys
       - MONGO_URI=mongodb://mongo:27017/ristobrain
-      - JWT_SECRET=devsecret
+      # JWT_SECRET must be set in .env (min 32 chars required)
       - DEFAULT_LOCALE=it-IT
       - DEFAULT_CURRENCY=EUR
-      - SMTP_HOST=mailhog
-      - SMTP_PORT=1025
+      # SMTP config now comes from .env file
       - STORAGE_DRIVER=local
       - STORAGE_LOCAL_PATH=/data/storage
     volumes:
-      - ./backend:/app
+      - ./backend:/app/backend
       - storage_data:/data/storage
     ports:
       - "8000:8000"
@@ -41,29 +40,29 @@ services:
     volumes:
       - mongo_data:/data/db
 
-#  mailhog:
-#    image: mailhog/mailhog
-#    ports:
-#      - "8025:8025"
-#
-#  minio:
-#    image: minio/minio
-#    command: server /data --console-address ":9001"
-#    environment:
-#      - MINIO_ROOT_USER=minio
-#      - MINIO_ROOT_PASSWORD=minio123
-#    ports:
-#      - "9000:9000"
-#      - "9001:9001"
-#    volumes:
-#      - minio_data:/data
-#    healthcheck:
-#      test: ["CMD", "curl", "-f", "http://localhost:9000/minio/health/ready"]
-#      interval: 10s
-#      timeout: 5s
-#      retries: 10
+  mailhog:
+    image: mailhog/mailhog
+    ports:
+      - "8025:8025"
+
+  minio:
+    image: minio/minio
+    command: server /data --console-address ":9001"
+    environment:
+      - MINIO_ROOT_USER=minio
+      - MINIO_ROOT_PASSWORD=minio123
+    ports:
+      - "9000:9000"
+      - "9001:9001"
+    volumes:
+      - minio_data:/data
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:9000/minio/health/ready"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
 
 volumes:
   mongo_data: {}
-#  minio_data: {}
+  minio_data: {}
   storage_data: {}

@@ -18,8 +18,8 @@ RESOURCE = "users"
 @router.get("/users", response_model=List[UserPublic])
 async def users_index(skip: int = 0, limit: int = 50, user: dict = Depends(get_current_user)):
 	access = await get_resource_access(user, RESOURCE)
-	if not access["canView"]:
-		raise HTTPException(status_code=403, detail="Forbidden")
+	if not access.get("canView", False):
+		raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Forbidden")
 	docs = await list_users(limit=limit, skip=skip)
 	out: List[UserPublic] = []
 	for d in docs:
@@ -34,8 +34,8 @@ async def users_index(skip: int = 0, limit: int = 50, user: dict = Depends(get_c
 @router.delete("/users/{user_id}", status_code=204)
 async def users_delete(user_id: str, user: dict = Depends(get_current_user)):
 	access = await get_resource_access(user, RESOURCE)
-	if not access["canDelete"]:
-		raise HTTPException(status_code=403, detail="Forbidden")
+	if not access.get("canDelete", False):
+		raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Forbidden")
 	ok = await delete_user(user_id)
 	if not ok:
 		raise HTTPException(status_code=404, detail="User not found")
@@ -80,6 +80,7 @@ async def users_get(user_id: str, user: dict = Depends(get_current_user)):
 
 
 @router.put("/users/{user_id}", response_model=UserPublic)
+@router.patch("/users/{user_id}", response_model=UserPublic)
 async def users_update(user_id: str, payload: UserUpdate, user: dict = Depends(get_current_user)):
 	"""Update user (email, role, locale)"""
 	from backend.app.repositories.users_repo import update_user as repo_update_user

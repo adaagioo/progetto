@@ -1,7 +1,7 @@
 # backend/app/api/V1/receiving.py
 from __future__ import annotations
 from typing import List
-from datetime import date
+from datetime import date, datetime, timezone
 from fastapi import APIRouter, HTTPException, Depends, status, Query, Request, Body, UploadFile, File
 from pydantic import ValidationError, BaseModel
 from backend.app.deps.auth import get_current_user
@@ -10,11 +10,7 @@ from backend.app.repositories.files_repo import get_meta
 from backend.app.schemas.files import FileRef
 from backend.app.schemas.receiving import Receiving, ReceivingPost, ReceivingUpdate
 from backend.app.services.storage_service import get_storage
-from backend.app.repositories.receiving_repo import (
-	create_receiving, get_receiving, list_receiving, update_receiving, delete_receiving,
-	attach_file as receiving_attach_file_repo,
-	detach_file as receiving_detach_file_repo,
-)
+from backend.app.repositories import receiving_repo as repo
 from backend.app.utils.logger import get_logger
 
 logger = get_logger(__name__)
@@ -30,7 +26,7 @@ async def create_receiving_api(request: Request, user: dict = Depends(get_curren
 		logger.debug(f"Raw body received: {body}")
 	except Exception as e:
 		logger.error(f"Failed to parse request body: {e}")
-		raise HTTPException(status_code=400, detail="Invalid JSON")
+		raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Invalid JSON")
 
 	# Validate payload
 	try:
@@ -46,9 +42,7 @@ async def create_receiving_api(request: Request, user: dict = Depends(get_curren
 		raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Forbidden")
 
 	# Map ingredientId to inventoryId for each item
-	from backend.app.db.mongo import get_db
-	from bson import ObjectId
-	db = get_db()
+	from backend.app.repositories.inventory_repo import find_by_ingredient_id
 
 	# Process items and find inventory IDs for stock updates
 	items_for_db = []
@@ -64,13 +58,13 @@ async def create_receiving_api(request: Request, user: dict = Depends(get_curren
 		# Find inventory ID for stock update
 		if ingredient_id:
 			try:
-				inventory = await db.inventory.find_one({
-					"ingredientId": ingredient_id,
-					"restaurantId": user.get("restaurantId", "default")
-				})
+				inventory = await find_by_ingredient_id(
+					user.get("restaurantId", "default"),
+					ingredient_id
+				)
 
 				if inventory:
-					inventory_id = str(inventory["_id"])
+					inventory_id = inventory["id"]
 					logger.debug(f"Mapped ingredientId {ingredient_id} to inventoryId {inventory_id}")
 				else:
 					# No inventory found - use ingredient ID directly
@@ -89,13 +83,17 @@ async def create_receiving_api(request: Request, user: dict = Depends(get_curren
 			except Exception as e:
 				logger.error(f"Failed to map ingredientId to inventoryId: {e}")
 
-	# Create receiving with frontend field names and metadata
-	receiving_data = {
+	# Create receiving document with frontend field names and metadata
+	receiving_doc = {
+		"date": payload.arrivedAt,
+		"items": items_for_db,
+		"restaurantId": user["restaurantId"],
 		"supplierId": payload.supplierId,
 		"category": payload.category,
 		"notes": payload.notes,
+		"createdAt": datetime.now(tz=timezone.utc)
 	}
-	rid = await create_receiving(payload.arrivedAt, items_for_db, metadata=receiving_data)
+	rid = await repo.insert_one(receiving_doc)
 	actor_id = str(user["_id"])
 
 	# Apply inventory updates separately
@@ -133,13 +131,14 @@ async def create_receiving_api(request: Request, user: dict = Depends(get_curren
 					}
 					await _log("receiving", payload_log)
 			except Exception as e:
-				print(f"[RECEIVING ERROR] Failed to update inventory: {e}")
-	doc = await get_receiving(rid)
+				logger.error(f"Failed to update inventory: {e}")
+	doc = await repo.find_one(user["restaurantId"], rid)
 	return Receiving(
-		id=str(doc["_id"]),
+		id=doc["id"],
 		date=doc["date"],
 		items=doc["items"],
 		createdAt=doc["createdAt"].isoformat(),
+		restaurantId=doc["restaurantId"],
 		supplierId=doc.get("supplierId"),
 		category=doc.get("category"),
 		notes=doc.get("notes"),
@@ -150,16 +149,17 @@ async def create_receiving_api(request: Request, user: dict = Depends(get_curren
 @router.get("/receiving/{rec_id}", response_model=Receiving)
 async def get_receiving_api(rec_id: str, user: dict = Depends(get_current_user)):
 	access = await get_resource_access(user, RESOURCE)
-	if not access.get("canView", True):
+	if not access.get("canView", False):
 		raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Forbidden")
-	doc = await get_receiving(rec_id)
+	doc = await repo.find_one(user["restaurantId"], rec_id)
 	if not doc:
-		raise HTTPException(status_code=404, detail="Not found")
+		raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Not found")
 	return Receiving(
-		id=str(doc["_id"]),
+		id=doc["id"],
 		date=doc["date"],
 		items=doc["items"],
 		createdAt=doc["createdAt"].isoformat(),
+		restaurantId=doc["restaurantId"],
 		supplierId=doc.get("supplierId"),
 		category=doc.get("category"),
 		notes=doc.get("notes"),
@@ -188,19 +188,20 @@ async def update_receiving_api(rec_id: str, body: ReceivingUpdate, user: dict = 
 		updates["notes"] = body.notes
 
 	if not updates:
-		raise HTTPException(status_code=400, detail="No fields to update")
+		raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="No fields to update")
 
-	ok = await update_receiving(rec_id, updates)
+	ok = await repo.update_one(user["restaurantId"], rec_id, updates)
 	if not ok:
-		raise HTTPException(status_code=404, detail="Receiving not found")
+		raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Receiving not found")
 
 	# Return updated document
-	doc = await get_receiving(rec_id)
+	doc = await repo.find_one(user["restaurantId"], rec_id)
 	return Receiving(
-		id=str(doc["_id"]),
+		id=doc["id"],
 		date=doc["date"],
 		items=doc["items"],
 		createdAt=doc["createdAt"].isoformat(),
+		restaurantId=doc["restaurantId"],
 		supplierId=doc.get("supplierId"),
 		category=doc.get("category"),
 		notes=doc.get("notes"),
@@ -215,43 +216,44 @@ async def list_receiving_api(
 		user: dict = Depends(get_current_user),
 ):
 	access = await get_resource_access(user, RESOURCE)
-	if not access.get("canView", True):
+	if not access.get("canView", False):
 		raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Forbidden")
-	docs = await list_receiving(start=start, end=end, limit=200)
+	docs = await repo.find_many(user["restaurantId"], start=start, end=end, limit=200)
 
 	result = []
 	for d in docs:
 		try:
 			receiving = Receiving(
-				id=str(d["_id"]),
+				id=d["id"],
 				date=d["date"],
 				items=d.get("items", []),
 				createdAt=d["createdAt"].isoformat(),
+				restaurantId=d["restaurantId"],
 				supplierId=d.get("supplierId"),
 				category=d.get("category"),
 				notes=d.get("notes"),
 				files=d.get("files", [])
 			)
 			result.append(receiving)
-			print(f"[RECEIVING DEBUG] Python repr: {receiving.model_dump()}")
-			print(f"[RECEIVING DEBUG] JSON mode: {receiving.model_dump(mode='json')}")
+			logger.debug(f"Python repr: {receiving.model_dump()}")
+			logger.debug(f"JSON mode: {receiving.model_dump(mode='json')}")
 		except Exception as e:
-			print(f"[RECEIVING ERROR] Failed to serialize receiving {d.get('_id')}: {e}")
-			print(f"[RECEIVING ERROR] Document: {d}")
+			logger.error(f"Failed to serialize receiving {d.get('id')}: {e}")
+			logger.error(f"Document: {d}")
 
-	print(f"[RECEIVING DEBUG] Returning {len(result)} receivings")
+	logger.debug(f"Returning {len(result)} receivings")
 	return result
 
 
-@router.delete("/receiving/{rec_id}")
+@router.delete("/receiving/{rec_id}", status_code=status.HTTP_204_NO_CONTENT)
 async def delete_receiving_api(rec_id: str, user: dict = Depends(get_current_user)):
 	access = await get_resource_access(user, RESOURCE)
 	if not access.get("canDelete", False):
 		raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Forbidden")
-	ok = await delete_receiving(rec_id)
+	ok = await repo.delete_one(user["restaurantId"], rec_id)
 	if not ok:
-		raise HTTPException(status_code=404, detail="Not found")
-	return {"ok": True}
+		raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Not found")
+	return None
 
 
 @router.post("/receiving/{rec_id}/files", response_model=FileRef, status_code=201)
@@ -294,14 +296,14 @@ async def receiving_attach_file(
 	}
 
 	# Attach file to receiving
-	ok = await receiving_attach_file_repo(rec_id, file_ref)
+	ok = await repo.attach_file(user["restaurantId"], rec_id, file_ref)
 	if not ok:
-		raise HTTPException(status_code=404, detail="Receiving not found")
+		raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Receiving not found")
 
 	return FileRef(**file_ref)
 
 
-@router.delete("/receiving/{rec_id}/files/{file_id}")
+@router.delete("/receiving/{rec_id}/files/{file_id}", status_code=status.HTTP_204_NO_CONTENT)
 async def receiving_detach_file(
 		rec_id: str,
 		file_id: str,
@@ -311,7 +313,7 @@ async def receiving_detach_file(
 	if not access.get("canUpdate", False):
 		raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Forbidden")
 
-	ok = await receiving_detach_file_repo(rec_id, file_id)
+	ok = await repo.detach_file(user["restaurantId"], rec_id, file_id)
 	if not ok:
-		raise HTTPException(status_code=404, detail="Receiving not found")
-	return {"ok": True}
+		raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Receiving not found")
+	return None

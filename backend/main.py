@@ -101,6 +101,18 @@ TAGS_METADATA = [
 	},
 ]
 
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+	# Startup
+	rebuild_ocr_models()
+	await init_mongo()
+	await ensure_indexes()
+	yield
+	# Shutdown
+	await close_mongo()
+
+
+# Single FastAPI instance with complete configuration
 app = FastAPI(
 	title="RistoBrain API",
 	version="2.0.0",
@@ -130,43 +142,19 @@ app = FastAPI(
 		"docExpansion": "none",  # Collapse all endpoints by default
 		"filter": True,  # Enable search filter
 		"showCommonExtensions": True,
-	}
+	},
+	debug=settings.DEBUG,
+	lifespan=lifespan,
 )
 
+# Add CORS middleware
+app.add_middleware(
+	CORSMiddleware,
+	allow_origins=settings.ALLOW_ORIGINS,
+	allow_credentials=True,
+	allow_methods=settings.ALLOW_METHODS,
+	allow_headers=settings.ALLOW_HEADERS,
+)
 
-@app.on_event("startup")
-async def _rebuild_pydantic_models() -> None:
-	rebuild_ocr_models()
-
-
-@asynccontextmanager
-async def lifespan(app: FastAPI):
-	# Startup
-	await init_mongo()
-	await ensure_indexes()
-	yield
-	# Shutdown
-	await close_mongo()
-
-
-def create_app() -> FastAPI:
-	app = FastAPI(
-		title=settings.APP_NAME,
-		debug=settings.DEBUG,
-		lifespan=lifespan,
-	)
-
-	app.add_middleware(
-		CORSMiddleware,
-		allow_origins=settings.ALLOW_ORIGINS,
-		allow_credentials=True,
-		allow_methods=settings.ALLOW_METHODS,
-		allow_headers=settings.ALLOW_HEADERS,
-	)
-
-	app.include_router(api_router, prefix="/api")
-
-	return app
-
-
-app = create_app()
+# Include API router
+app.include_router(api_router, prefix="/api")

@@ -36,6 +36,24 @@ class Resource(str, Enum):
 
 # Default permission matrix for each role
 DEFAULT_PERMISSIONS: Dict[str, Dict[str, List[str]]] = {
+    "owner": {
+        # Owner has full access to everything (same as admin)
+        Resource.DASHBOARD: [Action.VIEW],
+        Resource.RECIPES: [Action.VIEW, Action.CREATE, Action.UPDATE, Action.DELETE],
+        Resource.INGREDIENTS: [Action.VIEW, Action.CREATE, Action.UPDATE, Action.DELETE],
+        Resource.PREPARATIONS: [Action.VIEW, Action.CREATE, Action.UPDATE, Action.DELETE],
+        Resource.SUPPLIERS: [Action.VIEW, Action.CREATE, Action.UPDATE, Action.DELETE],
+        Resource.RECEIVING: [Action.VIEW, Action.CREATE, Action.UPDATE, Action.DELETE],
+        Resource.INVENTORY: [Action.VIEW, Action.CREATE, Action.UPDATE, Action.DELETE],
+        Resource.SALES: [Action.VIEW, Action.CREATE, Action.UPDATE, Action.DELETE],
+        Resource.WASTAGE: [Action.VIEW, Action.CREATE, Action.UPDATE, Action.DELETE],
+        Resource.PREP_LIST: [Action.VIEW, Action.CREATE, Action.UPDATE, Action.DELETE],
+        Resource.ORDER_LIST: [Action.VIEW, Action.CREATE, Action.UPDATE, Action.DELETE],
+        Resource.PL_SNAPSHOT: [Action.VIEW, Action.CREATE, Action.UPDATE, Action.DELETE],
+        Resource.USERS: [Action.VIEW, Action.CREATE, Action.UPDATE, Action.DELETE],
+        Resource.SETTINGS: [Action.VIEW, Action.UPDATE],
+        Resource.RBAC: [Action.VIEW, Action.UPDATE],
+    },
     "admin": {
         # Admin has full access to everything
         Resource.DASHBOARD: [Action.VIEW],

@@ -28,8 +28,8 @@ async def list_all(
 	Use ?flat=true to get a flat list instead.
 	"""
 	access = await get_resource_access(user, RESOURCE)
-	if not access["canView"]:
-		raise HTTPException(status_code=403, detail="Forbidden")
+	if not access.get("canView", False):
+		raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Forbidden")
 
 	items = await list_inventory(user["restaurantId"])
 
@@ -51,62 +51,34 @@ async def list_all(
 async def get_expiring_inventory(days: int = 3, user: dict = Depends(get_current_user)):
 	"""Get count of items expiring within specified days (bucketed by day)"""
 	access = await get_resource_access(user, RESOURCE)
-	if not access["canView"]:
-		raise HTTPException(status_code=403, detail="Forbidden")
+	if not access.get("canView", False):
+		raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Forbidden")
 
-	from datetime import date, timedelta
-	from backend.app.db.mongo import get_db
+	from backend.app.services.inventory_service import get_expiring_inventory_buckets
 
-	db = get_db()
-	inventory_items = await db.inventory.find({
-		"restaurantId": user["restaurantId"],
-		"expiryDate": {"$exists": True, "$ne": None}
-	}).to_list(10000)
-
-	today = date.today()
-	buckets = {f"day{i}": 0 for i in range(1, days + 1)}
-
-	for item in inventory_items:
-		expiry_str = item.get("expiryDate")
-		if not expiry_str:
-			continue
-
-		try:
-			if isinstance(expiry_str, str):
-				expiry_date = date.fromisoformat(expiry_str.split('T')[0])
-			else:
-				continue
-
-			days_until_expiry = (expiry_date - today).days
-
-			# Bucket items by days (1, 2, 3, etc.)
-			if 0 <= days_until_expiry < days:
-				bucket_key = f"day{days_until_expiry + 1}"
-				if bucket_key in buckets:
-					buckets[bucket_key] += 1
-
-		except (ValueError, AttributeError):
-			continue
-
-	return {"buckets": buckets, "total": sum(buckets.values())}
+	try:
+		result = await get_expiring_inventory_buckets(user["restaurantId"], days)
+		return result
+	except ValueError as e:
+		raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
 
 
 @router.get("/inventory/{inv_id}", response_model=Inventory)
 async def get_one(inv_id: str, user: dict = Depends(get_current_user)):
 	access = await get_resource_access(user, RESOURCE)
-	if not access["canView"]:
-		raise HTTPException(status_code=403, detail="Forbidden")
+	if not access.get("canView", False):
+		raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Forbidden")
 	doc = await get_inventory(user["restaurantId"], inv_id)
 	if not doc:
-		raise HTTPException(status_code=404, detail="Inventory record not found")
+		raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Inventory record not found")
 	return doc
 
 
 @router.post("/inventory", response_model=Inventory, status_code=status.HTTP_201_CREATED)
 async def create(body: InventoryCreate, user: dict = Depends(get_current_user)):
 	access = await get_resource_access(user, RESOURCE)
-	if not access["canCreate"]:
-		raise HTTPException(status_code=403, detail="Forbidden")
+	if not access.get("canCreate", False):
+		raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Forbidden")
 
 	doc = body.model_dump()
 	doc["restaurantId"] = user["restaurantId"]
@@ -131,7 +103,7 @@ async def create(body: InventoryCreate, user: dict = Depends(get_current_user)):
 @router.delete("/inventory/by-receiving/{receiving_id}", status_code=status.HTTP_200_OK)
 async def delete_by_receiving(receiving_id: str, user: dict = Depends(get_current_user)):
 	access = await get_resource_access(user, RESOURCE)
-	if not access["canDelete"]:
-		raise HTTPException(status_code=403, detail="Forbidden")
+	if not access.get("canDelete", False):
+		raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Forbidden")
 	deleted = await delete_inventory_by_receiving(user["restaurantId"], receiving_id)
 	return {"deleted": deleted}

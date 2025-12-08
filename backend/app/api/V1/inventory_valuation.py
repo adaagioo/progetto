@@ -74,15 +74,20 @@ async def valuation_by_specific_category(
 		asOf: Optional[date] = Query(None, description="Valuation date; defaults to today"),
 		user: dict = Depends(get_current_user),
 ):
-	"""Get inventory valuation for a specific category (food, beverage, nonfood)"""
+	"""Get inventory valuation for a specific category (food, beverage, supplies)"""
 	access = await get_resource_access(user, RESOURCE)
 	if not access.get("canView"):
 		raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Forbidden")
 
 	# Validate category
-	valid_categories = ["food", "beverage", "nonfood"]
+	valid_categories = ["food", "beverage", "supplies"]
+	# Map legacy "nonfood" to "supplies" for backward compatibility
+	if category == "nonfood":
+		category = "supplies"
+		logger.warning(f"Category 'nonfood' is deprecated, using 'supplies' instead")
+
 	if category not in valid_categories:
-		raise HTTPException(status_code=400, detail=f"Invalid category. Must be one of: {', '.join(valid_categories)}")
+		raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=f"Invalid category. Must be one of: {', '.join(valid_categories)}")
 
 	# Get all items by category
 	items = await get_valuation_by_category(asOf)

@@ -5,11 +5,11 @@ from typing import Tuple
 from backend.app.db.mongo import get_db
 
 
-async def compute_pl(start: date, end: date) -> Tuple[float, float, float]:
+async def compute_pl(restaurant_id: str, start: date, end: date) -> Tuple[float, float, float]:
 	db = get_db()
 	revenue = 0.0
 	async for s in db["sales"].aggregate([
-		{"$match": {"date": {"$gte": start, "$lte": end}}},
+		{"$match": {"restaurantId": restaurant_id, "date": {"$gte": start, "$lte": end}}},
 		{"$unwind": "$items"},
 		{"$group": {"_id": None, "sum": {"$sum": {"$multiply": ["$items.quantity", "$items.price"]}}}},
 	]):

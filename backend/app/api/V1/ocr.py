@@ -125,7 +125,7 @@ async def ocr_list_mappings(
 	return out
 
 
-@router.delete("/ocr/mappings/{key}")
+@router.delete("/ocr/mappings/{key}", status_code=status.HTTP_204_NO_CONTENT)
 async def ocr_delete_mapping(
 		key: str,
 		supplierId: Optional[str] = Query(default=None),
@@ -139,8 +139,8 @@ async def ocr_delete_mapping(
 
 	deleted = await delete_rule(user_id, key, supplier_id=supplierId)
 	if deleted == 0:
-		raise HTTPException(status_code=404, detail="Mapping not found")
-	return {"ok": True, "deleted": deleted}
+		raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Mapping not found")
+	return None
 
 
 @router.post("/ocr/receivings", summary="Create Receiving from OCR parsed items")

@@ -41,6 +41,16 @@ class ReceivingUpdate(BaseModel):
 	notes: Optional[str] = None
 
 
+class ReceivingFull(BaseModel):
+	"""Full receiving data including restaurantId"""
+	arrivedAt: date
+	lines: List[ReceivingItem]
+	restaurantId: str
+	supplierId: Optional[str] = None
+	category: Optional[str] = None
+	notes: Optional[str] = None
+
+
 class Receiving(BaseModel):
 	model_config = ConfigDict(
 		populate_by_name=True,
@@ -50,6 +60,7 @@ class Receiving(BaseModel):
 	id: str
 	arrivedAt: date = Field(validation_alias="date", serialization_alias="arrivedAt")
 	lines: List[ReceivingItem] = Field(validation_alias="items", serialization_alias="lines")
+	restaurantId: str
 	createdAt: str
 	supplierId: Optional[str] = None
 	category: Optional[str] = None

@@ -18,7 +18,7 @@ async def pl_get(start: date = Query(...), end: date = Query(...), user: dict = 
 	access = await get_resource_access(user, RESOURCE)
 	if not access.get("canView"):
 		raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Forbidden")
-	revenue, cogs, wastage_cost = await compute_pl(start, end)
+	revenue, cogs, wastage_cost = await compute_pl(user["restaurantId"], start, end)
 	gross = revenue - cogs - wastage_cost
 	return PLResponse(start=start, end=end, revenue=revenue, costOfGoods=cogs, wastageCost=wastage_cost,
 	                  grossMargin=gross)
@@ -102,7 +102,7 @@ async def list_pl_records(user: dict = Depends(get_current_user)):
 	return [PL(**p) for p in records]
 
 
-@router.delete("/pl/record/{pl_id}")
+@router.delete("/pl/record/{pl_id}", status_code=status.HTTP_204_NO_CONTENT)
 async def delete_pl_record(pl_id: str, user: dict = Depends(get_current_user)):
 	"""Delete a stored P&L record"""
 	access = await get_resource_access(user, RESOURCE)
@@ -111,6 +111,6 @@ async def delete_pl_record(pl_id: str, user: dict = Depends(get_current_user)):
 
 	deleted = await repo.delete_pl(pl_id, user["restaurantId"])
 	if not deleted:
-		raise HTTPException(status_code=404, detail="P&L record not found")
+		raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="P&L record not found")
 
-	return {"message": "P&L record deleted"}
+	return None

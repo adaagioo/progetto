@@ -1,7 +1,7 @@
 from __future__ import annotations
 from typing import Dict, Any, List, Tuple, Optional
 from bson import ObjectId
-from datetime import datetime, timezone
+from datetime import datetime, timezone, date, timedelta
 from backend.app.db.mongo import get_db
 from backend.app.repositories.inventory_repo import find_all, find_by_id, insert_one, delete_by_receiving
 from backend.app.services.unit_conversion import convert_quantity
@@ -32,8 +32,65 @@ async def delete_inventory_by_receiving(restaurant_id: str, receiving_id: str) -
 	return await delete_by_receiving(restaurant_id, receiving_id)
 
 
+async def get_expiring_inventory_buckets(restaurant_id: str, days: int = 3) -> Dict[str, Any]:
+	"""
+	Get count of items expiring within specified days, bucketed by day.
+
+	Args:
+		restaurant_id: Restaurant ID to filter by
+		days: Number of days to bucket (1-30)
+
+	Returns:
+		Dict with 'buckets' (day1, day2, ...) and 'total' count
+	"""
+	# Validate days parameter
+	if days < 1 or days > 30:
+		raise ValueError("Days must be between 1 and 30")
+
+	# Fetch inventory items with expiry dates
+	inventory_items = await _inventory().find({
+		"restaurantId": restaurant_id,
+		"expiryDate": {"$exists": True, "$ne": None}
+	}).to_list(10000)
+
+	today = date.today()
+	buckets = {f"day{i}": 0 for i in range(1, days + 1)}
+
+	for item in inventory_items:
+		expiry_str = item.get("expiryDate")
+		if not expiry_str:
+			continue
+
+		try:
+			if isinstance(expiry_str, str):
+				expiry_date = date.fromisoformat(expiry_str.split('T')[0])
+			elif isinstance(expiry_str, datetime):
+				expiry_date = expiry_str.date()
+			else:
+				continue
+
+			days_until_expiry = (expiry_date - today).days
+
+			# Bucket items by days (1, 2, 3, etc.)
+			if 0 <= days_until_expiry < days:
+				bucket_key = f"day{days_until_expiry + 1}"
+				if bucket_key in buckets:
+					buckets[bucket_key] += 1
+
+		except (ValueError, AttributeError):
+			continue
+
+	return {"buckets": buckets, "total": sum(buckets.values())}
+
+
 async def _dec(inv_id: ObjectId, qty: float) -> bool:
-	res = await _inventory().update_one({"_id": inv_id}, {"$inc": {"quantity": -abs(float(qty))}})
+	"""Decrement inventory quantity. Returns False if insufficient stock."""
+	qty_abs = abs(float(qty))
+	# Only decrement if quantity is sufficient (atomic check-and-set)
+	res = await _inventory().update_one(
+		{"_id": inv_id, "quantity": {"$gte": qty_abs}},
+		{"$inc": {"quantity": -qty_abs}}
+	)
 	return res.matched_count == 1
 
 
@@ -61,15 +118,17 @@ async def deduct_stock_for_recipe(recipe_id: str, servings: float, actor_id: str
 		if unit and inv_unit:
 			qty = convert_quantity(qty, unit, inv_unit)
 		ok = await _dec(inv_id, qty)
-		if ok:
-			m = {"inventoryId": inv_id, "qty": qty, "recipeId": ObjectId(recipe_id),
-			     "actorId": (ObjectId(actor_id) if actor_id else None)}
-			await log_movement("recipe-consume", m)
-			m["inventoryId"] = str(inv_id)
-			m["recipeId"] = str(m["recipeId"])
-			if m["actorId"]:
-				m["actorId"] = str(m["actorId"])
-			movements.append(m)
+		if not ok:
+			# Stock deduction failed - either inventory not found or insufficient quantity
+			raise ValueError(f"Insufficient stock for inventory {inv_id} (recipe: {r.get('name', recipe_id)})")
+		m = {"inventoryId": inv_id, "qty": qty, "recipeId": ObjectId(recipe_id),
+		     "actorId": (ObjectId(actor_id) if actor_id else None)}
+		await log_movement("recipe-consume", m)
+		m["inventoryId"] = str(inv_id)
+		m["recipeId"] = str(m["recipeId"])
+		if m["actorId"]:
+			m["actorId"] = str(m["actorId"])
+		movements.append(m)
 	return True, movements
 
 
@@ -85,12 +144,14 @@ async def deduct_stock_for_wastage(items: List[Dict[str, Any]], actor_id: str | 
 		if unit and inv_unit:
 			qty = convert_quantity(qty, unit, inv_unit)
 		ok = await _dec(inv_id, qty)
-		if ok:
-			m = {"inventoryId": inv_id, "qty": qty, "reason": it.get("reason"),
-			     "actorId": (ObjectId(actor_id) if actor_id else None)}
-			await log_movement("wastage", m)
-			m["inventoryId"] = str(inv_id)
-			if m["actorId"]:
-				m["actorId"] = str(m["actorId"])
-			movements.append(m)
+		if not ok:
+			# Stock deduction failed - either inventory not found or insufficient quantity
+			raise ValueError(f"Insufficient stock for inventory {inv_id} (wastage)")
+		m = {"inventoryId": inv_id, "qty": qty, "reason": it.get("reason"),
+		     "actorId": (ObjectId(actor_id) if actor_id else None)}
+		await log_movement("wastage", m)
+		m["inventoryId"] = str(inv_id)
+		if m["actorId"]:
+			m["actorId"] = str(m["actorId"])
+		movements.append(m)
 	return True, movements

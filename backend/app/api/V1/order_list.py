@@ -123,7 +123,7 @@ async def order_list(
 	}
 )
 async def order_list_forecast(
-	start: date = Query(..., description="Start date for forecast"),
+	start: date = Query(..., alias="date", description="Start date for forecast"),
 	days: int = Query(7, ge=1, le=31, description="Number of days to forecast"),
 	user: dict = Depends(get_current_user)
 ):

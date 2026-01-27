@@ -83,13 +83,14 @@ async def get_expiring_inventory_buckets(restaurant_id: str, days: int = 3) -> D
 	return {"buckets": buckets, "total": sum(buckets.values())}
 
 
-async def _dec(inv_id: ObjectId, qty: float) -> bool:
+async def _dec(inv_id: ObjectId, qty_val: float) -> bool:
 	"""Decrement inventory quantity. Returns False if insufficient stock."""
-	qty_abs = abs(float(qty))
+	qty_abs = abs(float(qty_val))
 	# Only decrement if quantity is sufficient (atomic check-and-set)
+	# Note: inventory documents use 'qty' field, not 'quantity'
 	res = await _inventory().update_one(
-		{"_id": inv_id, "quantity": {"$gte": qty_abs}},
-		{"$inc": {"quantity": -qty_abs}}
+		{"_id": inv_id, "qty": {"$gte": qty_abs}},
+		{"$inc": {"qty": -qty_abs}}
 	)
 	return res.matched_count == 1
 
@@ -136,16 +137,37 @@ async def deduct_stock_for_wastage(items: List[Dict[str, Any]], actor_id: str | 
 	bool, List[Dict[str, Any]]]:
 	movements: List[Dict[str, Any]] = []
 	for it in items:
-		inv_id = ObjectId(it["inventoryId"])
+		item_id_str = it.get("inventoryId") or it.get("itemId")
 		qty = float(it.get("quantity", 0.0))
 		unit = it.get("unit")
-		inv_doc = await _inventory().find_one({"_id": inv_id}, projection={"unit": 1})
-		inv_unit = inv_doc.get("unit") if inv_doc else None
+
+		# Try to find inventory - first by _id, then by ingredientId
+		inv_doc = None
+		inv_id = None
+		try:
+			inv_id = ObjectId(item_id_str)
+			inv_doc = await _inventory().find_one({"_id": inv_id}, projection={"unit": 1, "qty": 1})
+		except Exception:
+			pass
+
+		# If not found by _id, try by ingredientId (frontend may send ingredient ID)
+		if not inv_doc:
+			inv_doc = await _inventory().find_one(
+				{"ingredientId": item_id_str},
+				projection={"_id": 1, "unit": 1, "qty": 1}
+			)
+			if inv_doc:
+				inv_id = inv_doc["_id"]
+
+		if not inv_doc or not inv_id:
+			raise ValueError(f"No inventory found for item {item_id_str}")
+
+		inv_unit = inv_doc.get("unit")
 		if unit and inv_unit:
 			qty = convert_quantity(qty, unit, inv_unit)
 		ok = await _dec(inv_id, qty)
 		if not ok:
-			# Stock deduction failed - either inventory not found or insufficient quantity
+			# Stock deduction failed - insufficient quantity
 			raise ValueError(f"Insufficient stock for inventory {inv_id} (wastage)")
 		m = {"inventoryId": inv_id, "qty": qty, "reason": it.get("reason"),
 		     "actorId": (ObjectId(actor_id) if actor_id else None)}

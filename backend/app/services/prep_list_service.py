@@ -78,16 +78,22 @@ async def compute_prep_list(for_date: date) -> Dict[str, Any]:
 		else:
 			prep_id_str = None
 
+		qty = round(float(t["quantity"]), 4)
 		tasks.append({
 			"preparationId": prep_id_str,  # Convert ObjectId to string
 			"recipeId": str(t.get("recipeId")) if t.get("recipeId") else None,
 			"name": resolved_name,
 			"preparationName": resolved_name,  # Frontend expects this field
-			"quantity": round(float(t["quantity"]), 4),
+			"quantity": qty,
 			"unit": t.get("unit"),
+			# Frontend expected fields
+			"forecastQty": qty,
+			"availableQty": 0,  # TODO: calculate from inventory
+			"toMakeQty": qty,  # Same as forecastQty when no inventory
+			"forecastSource": "production_plan",
 		})
 	# Sort by name for stable output
 	tasks.sort(key=lambda x: (x["name"] or "", x.get("unit") or ""))
 	logger.debug(f"Computed {len(tasks)} tasks for date {for_date}")
 	logger.debug(f"First task: {tasks[0] if tasks else 'none'}")
-	return {"date": for_date, "tasks": tasks}
+	return {"date": for_date, "tasks": tasks, "items": tasks}  # items is alias for frontend

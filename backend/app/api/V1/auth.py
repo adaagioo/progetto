@@ -56,7 +56,8 @@ async def login(payload: LoginRequest, request: Request):
 		email=user["email"],
 		roleKey=user.get("roleKey", "user"),
 		restaurantId=user.get("restaurantId", "default"),
-		locale=user.get("locale")
+		locale=user.get("locale"),
+		displayName=user.get("displayName"),
 	)
 
 	return TokenResponse(access_token=res["accessToken"], refresh_token=None, user=user_data)
@@ -79,7 +80,8 @@ async def register(payload: RegisterRequest):
 		email=user["email"],
 		roleKey=user.get("roleKey", "user"),
 		restaurantId=user.get("restaurantId", "default"),
-		locale=user.get("locale")
+		locale=user.get("locale"),
+		displayName=user.get("displayName"),
 	)
 
 	return TokenResponse(access_token=res["accessToken"], refresh_token=None, user=user_data)
@@ -92,6 +94,7 @@ async def me(user: dict = Depends(get_current_user)):
 		email=user["email"],
 		roleKey=user.get("roleKey", "user"),
 		locale=user.get("locale"),
+		displayName=user.get("displayName"),
 	)
 
 

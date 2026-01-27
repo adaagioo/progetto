@@ -100,7 +100,8 @@ async def valuation_by_specific_category(
 
 	return {
 		"category": category,
-		"totalValue": total_value,
+		"value": total_value,  # Frontend expects 'value' field
+		"totalValue": total_value,  # Keep for backward compatibility
 		"itemCount": len(category_items),
 		"items": [item.model_dump() for item in category_items]
 	}

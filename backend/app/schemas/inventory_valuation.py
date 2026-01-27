@@ -24,7 +24,9 @@ class ValuationSummaryResponse(BaseModel):
 
 
 class ValuationTotalResponse(BaseModel):
-	total: float
+	total: float = Field(default=0.0, serialization_alias="totalValue")
+	totalValue: float = Field(default=0.0, description="Alias for total - frontend compatibility")
+	negativeCount: int = Field(default=0, description="Count of items with negative stock")
 
 
 class ValuationByCategoryItem(BaseModel):

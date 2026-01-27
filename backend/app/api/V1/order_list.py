@@ -89,60 +89,37 @@ async def order_list(
 	return OrderListResponse(**doc)
 
 
-@router.get(
-	"/order-list/forecast",
-	response_model=OrderForecastResponse,
-	summary="Get order forecast for multiple days",
-	description="""
-	Generates a multi-day forecast showing the number of items that will need
-	ordering for each day in the specified range.
-
-	Useful for:
-	- **Planning ahead** - See upcoming order volumes
-	- **Supplier coordination** - Schedule deliveries in advance
-	- **Budget forecasting** - Estimate weekly/monthly order costs
-
-	**Note:** This endpoint returns counts only. For detailed item lists,
-	call `/order-list` for each specific date.
-	""",
-	responses={
-		200: {
-			"description": "Forecast successfully generated",
-			"content": {
-				"application/json": {
-					"example": {
-						"items": [
-							{"date": "2025-01-20", "itemsCount": 5},
-							{"date": "2025-01-21", "itemsCount": 3},
-							{"date": "2025-01-22", "itemsCount": 7}
-						]
-					}
-				}
-			}
-		}
-	}
-)
+@router.get("/order-list/forecast")
 async def order_list_forecast(
 	start: date = Query(..., alias="date", description="Start date for forecast"),
-	days: int = Query(7, ge=1, le=31, description="Number of days to forecast"),
+	days: int = Query(1, ge=1, le=31, description="Number of days to forecast"),
 	user: dict = Depends(get_current_user)
 ):
+	"""
+	Generate order list forecast.
+	When days=1 (default), returns full order list for the date (OrderListResponse).
+	When days>1, returns forecast counts (OrderForecastResponse).
+	"""
 	access = await get_resource_access(user, RESOURCE)
 	if not access.get("canView"):
 		raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Forbidden")
 
-	# Validate user has restaurantId
 	restaurant_id = user.get("restaurantId")
 	if not restaurant_id:
 		logger.error(f"User {user.get('_id')} has no restaurantId")
 		raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="User has no restaurant assigned")
 
-	# Validate start date is reasonable
 	today = date.today()
 	if start < today - timedelta(days=90):
 		raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Start date cannot be more than 90 days in the past")
 	if start > today + timedelta(days=365):
 		raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Start date cannot be more than 1 year in the future")
 
+	# If single day, return full order list (for frontend "Generate" button)
+	if days == 1:
+		doc = await compute_order_list(start, restaurant_id)
+		return OrderListResponse(**doc)
+
+	# Multi-day forecast returns counts per day
 	items = await compute_order_forecast(start, days, restaurant_id)
 	return OrderForecastResponse(items=items)

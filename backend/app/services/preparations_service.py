@@ -23,7 +23,7 @@ async def _compute_preparation_costs(doc: dict) -> dict:
 	db = get_db()
 	total_cost = 0.0
 
-	# Sum up costs from all items
+	# Sum up costs from all items and populate names
 	for item in doc.get("items", []):
 		item_type = item.get("type", "ingredient")
 		item_id = item.get("itemId")
@@ -31,26 +31,37 @@ async def _compute_preparation_costs(doc: dict) -> dict:
 
 		try:
 			if item_type == "ingredient":
-				# Get ingredient cost
+				# Get ingredient cost and name
 				ingredient = await db.ingredients.find_one({"_id": ObjectId(item_id)})
 				if ingredient:
 					# Use effectiveUnitCost (includes waste) if available, fallback to unitCost
 					unit_cost = ingredient.get("effectiveUnitCost") or ingredient.get("unitCost", 0.0)
 					item_cost = unit_cost * qty
 					total_cost += item_cost
+					# Populate item name from ingredient
+					item["name"] = ingredient.get("name", "Unknown")
+					# Also set unit if not already set
+					if not item.get("unit"):
+						item["unit"] = ingredient.get("unit")
 
 			elif item_type == "preparation":
-				# Get nested preparation cost (preparations can contain other preparations)
+				# Get nested preparation cost and name
 				preparation = await db.preparations.find_one({"_id": ObjectId(item_id)})
 				if preparation:
 					# Use costPerPortion if available, fallback to cost
 					prep_cost = preparation.get("costPerPortion") or preparation.get("cost", 0.0)
 					item_cost = prep_cost * qty
 					total_cost += item_cost
+					# Populate item name from nested preparation
+					item["name"] = preparation.get("name", "Unknown")
 
 		except Exception:
 			# If we can't find the item or calculate cost, skip it
 			continue
+
+		# Ensure name has a fallback
+		if not item.get("name"):
+			item["name"] = "Unknown"
 
 	# Calculate cost per portion
 	portions = doc.get("portions", 1)
@@ -104,7 +115,7 @@ async def _compute_preparation_costs_batch(preparations: List[dict]) -> List[dic
 		async for nested_prep in cursor:
 			preparations_map[str(nested_prep["_id"])] = nested_prep
 
-	# Now compute costs for each preparation using in-memory lookups
+	# Now compute costs and populate names for each preparation using in-memory lookups
 	result = []
 	for prep in preparations:
 		total_cost = 0.0
@@ -121,16 +132,27 @@ async def _compute_preparation_costs_batch(preparations: List[dict]) -> List[dic
 						unit_cost = ingredient.get("effectiveUnitCost") or ingredient.get("unitCost", 0.0)
 						item_cost = unit_cost * qty
 						total_cost += item_cost
+						# Populate item name from ingredient
+						item["name"] = ingredient.get("name", "Unknown")
+						# Also set unit if not already set
+						if not item.get("unit"):
+							item["unit"] = ingredient.get("unit")
 
 				elif item_type == "preparation":
-					preparation = preparations_map.get(item_id)
-					if preparation:
-						prep_cost = preparation.get("costPerPortion") or preparation.get("cost", 0.0)
+					nested_prep = preparations_map.get(item_id)
+					if nested_prep:
+						prep_cost = nested_prep.get("costPerPortion") or nested_prep.get("cost", 0.0)
 						item_cost = prep_cost * qty
 						total_cost += item_cost
+						# Populate item name from nested preparation
+						item["name"] = nested_prep.get("name", "Unknown")
 
 			except Exception:
 				continue
+
+			# Ensure name has a fallback
+			if not item.get("name"):
+				item["name"] = "Unknown"
 
 		# Calculate cost per portion
 		portions = prep.get("portions", 1)

@@ -156,17 +156,31 @@ async def compute_order_list(for_date: date, restaurant_id: str) -> Dict[str, An
 					# Calculate order quantity to reach target level
 					order_qty = max(0, target_level - projected) if target_level > 0 else (reorder_level - projected)
 
+					# Determine drivers for this item
+					drivers = []
+					if projected < 0:
+						drivers.append("low_stock")
+					elif projected < reorder_level:
+						drivers.append("low_stock")
+
 					order_items.append({
-						"inventoryId": ingredient_id,  # Actually ingredientId, but schema expects inventoryId
+						"inventoryId": ingredient_id,
+						"ingredientId": ingredient_id,  # Alias for frontend
 						"name": name,
+						"ingredientName": name,  # Alias for frontend
 						"quantity": round(order_qty, 2),
-						"unit": unit or "unit",  # Provide default if missing
+						"suggestedQty": round(order_qty, 2),  # Alias for frontend
+						"unit": unit or "unit",
 						"supplierId": supplier_id,
 						"currentStock": round(current, 2),
+						"currentQty": round(current, 2),  # Alias for frontend
+						"minStockQty": reorder_level,  # Alias for frontend
 						"plannedConsumption": round(planned_consumption, 2),
 						"projectedStock": round(projected, 2),
 						"reorderLevel": reorder_level,
-						"targetLevel": target_level
+						"targetLevel": target_level,
+						"drivers": drivers if drivers else None,
+						"packSize": ingredient.get("packSize"),
 					})
 			except Exception as e:
 				logger.warning(f"Error processing ingredient: {e}")

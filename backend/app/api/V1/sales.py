@@ -18,13 +18,20 @@ async def sales_create(payload: SaleCreate, user: dict = Depends(get_current_use
     access = await get_resource_access(user, RESOURCE)
     if not access.get("canCreate"):
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Forbidden")
-    sale_items = [i.model_dump() for i in payload.items]
+    sale_items = [i.model_dump(exclude_none=True) for i in payload.items]
+    # Convert date to datetime for MongoDB compatibility
+    sale_date = datetime.combine(payload.date, datetime.min.time())
     sale_doc = {
-        "date": payload.date,
+        "date": sale_date,
         "items": sale_items,
         "restaurantId": user["restaurantId"],
         "createdAt": datetime.now(tz=timezone.utc)
     }
+    # Include optional fields from frontend
+    if payload.revenue is not None:
+        sale_doc["revenue"] = payload.revenue
+    if payload.notes:
+        sale_doc["notes"] = payload.notes
     sid = await repo.insert_one(sale_doc)
 
     # Deduct stock with rollback on failure

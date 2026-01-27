@@ -78,21 +78,32 @@ async def prep_list(
 	return PrepListResponse(**doc)
 
 
-@router.get("/prep-list/forecast", response_model=PrepForecastResponse)
+@router.get("/prep-list/forecast")
 async def prep_list_forecast(
-		start: Optional[date] = Query(None),
-		days: int = Query(7, ge=1, le=31),
+		start: Optional[date] = Query(None, alias="date"),
+		days: int = Query(1, ge=1, le=31),
 		user: dict = Depends(get_current_user),
 ):
+	"""
+	Generate prep list forecast.
+	When days=1 (default), returns full prep list for the date (PrepListResponse).
+	When days>1, returns forecast counts (PrepForecastResponse).
+	"""
 	access = await get_resource_access(user, RESOURCE)
 	if not access.get("canView"):
 		raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Forbidden")
 	s = start or date.today()
 	logger.info(f"Computing forecast from {s} for {days} days")
+
+	# If single day, return full prep list (for frontend "Generate" button)
+	if days == 1:
+		doc = await compute_prep_list(s)
+		return PrepListResponse(**doc)
+
+	# Multi-day forecast returns counts per day
 	items: List[PrepForecastItem] = []
 	for i in range(days):
 		current_date = s + timedelta(days=i)
-		# Actually compute the prep list to get real task counts
 		result = await compute_prep_list(current_date)
 		tasks_count = len(result.get("tasks", []))
 		logger.debug(f"Date {current_date}: {tasks_count} tasks")

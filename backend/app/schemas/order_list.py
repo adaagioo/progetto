@@ -1,8 +1,8 @@
 # backend/app/schemas/order_list.py
 from __future__ import annotations
-from datetime import date as DateType, timedelta
+from datetime import date as DateType, datetime, timedelta
 from typing import List, Optional
-from pydantic import BaseModel, Field, ConfigDict, model_validator
+from pydantic import BaseModel, Field, ConfigDict, model_validator, field_serializer
 
 
 class OrderItem(BaseModel):
@@ -133,5 +133,13 @@ class OrderListSaved(BaseModel):
 	id: Optional[str] = None
 	date: DateType
 	items: List[OrderItem] = Field(default_factory=list)
-	createdAt: Optional[str] = None
-	updatedAt: Optional[str] = None
+	createdAt: Optional[datetime] = None
+	updatedAt: Optional[datetime] = None
+
+	@field_serializer('date')
+	def serialize_date(self, value: DateType) -> str:
+		return value.isoformat() if value else None
+
+	@field_serializer('createdAt', 'updatedAt')
+	def serialize_datetime(self, value: Optional[datetime]) -> Optional[str]:
+		return value.isoformat() if value else None

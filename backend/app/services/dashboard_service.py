@@ -30,15 +30,17 @@ async def get_kpis(start_date: date = None, end_date: date = None) -> dict:
 		start_date = end_date - timedelta(days=30)
 
 	# Calculate total sales revenue
+	# Sales documents have 'revenue' field or we sum from items
 	total_sales = 0.0
 	try:
+		# First try to sum the revenue field directly
 		async for s in db["sales"].aggregate([
-			{"$match": {"date": {"$gte": start_date, "$lte": end_date}}},
-			{"$unwind": "$items"},
-			{"$group": {"_id": None, "sum": {"$sum": {"$multiply": ["$items.quantity", "$items.price"]}}}},
+			{"$match": {"date": {"$gte": datetime.combine(start_date, datetime.min.time()),
+			                     "$lte": datetime.combine(end_date, datetime.max.time())}}},
+			{"$group": {"_id": None, "sum": {"$sum": {"$ifNull": ["$revenue", 0]}}}},
 		]):
 			total_sales = float(s.get("sum", 0.0))
-	except Exception:
+	except Exception as e:
 		total_sales = 0.0
 
 	# Calculate value usage (inventory consumption + wastage)
@@ -47,23 +49,49 @@ async def get_kpis(start_date: date = None, end_date: date = None) -> dict:
 	purchases_cost = 0.0
 	try:
 		# Get wastage cost for the period
+		# Wastage items may have 'unitCost' or we need to look it up from ingredients
 		async for w in db["wastage"].aggregate([
-			{"$match": {"date": {"$gte": start_date, "$lte": end_date}}},
+			{"$match": {"date": {"$gte": datetime.combine(start_date, datetime.min.time()),
+			                     "$lte": datetime.combine(end_date, datetime.max.time())}}},
 			{"$unwind": "$items"},
-			{"$group": {"_id": None, "sum": {"$sum": {"$multiply": ["$items.quantity", "$items.unitCost"]}}}},
+			{"$group": {"_id": None, "sum": {"$sum": {"$multiply": [
+				{"$ifNull": ["$items.quantity", {"$ifNull": ["$items.qty", 0]}]},
+				{"$ifNull": ["$items.unitCost", 0]}
+			]}}}},
 		]):
 			wastage_cost = float(w.get("sum", 0.0))
 
 		# Get receiving (purchases) cost for the period
+		# Receiving uses 'date' or 'arrivedAt' field, and items have 'unitPrice'
 		async for r in db["receiving"].aggregate([
-			{"$match": {"deliveryDate": {"$gte": start_date, "$lte": end_date}}},
-			{"$unwind": "$items"},
-			{"$group": {"_id": None, "sum": {"$sum": {"$multiply": ["$items.quantity", "$items.unitCost"]}}}},
+			{"$match": {"$or": [
+				{"date": {"$gte": datetime.combine(start_date, datetime.min.time()),
+				          "$lte": datetime.combine(end_date, datetime.max.time())}},
+				{"arrivedAt": {"$gte": start_date.isoformat(), "$lte": end_date.isoformat()}}
+			]}},
+			{"$unwind": "$lines"},
+			{"$group": {"_id": None, "sum": {"$sum": {"$multiply": [
+				{"$ifNull": ["$lines.qty", 0]},
+				{"$ifNull": ["$lines.unitPrice", 0]}
+			]}}}},
 		]):
 			purchases_cost = float(r.get("sum", 0.0))
 
+		# Also try the 'items' field name for receiving (older format)
+		if purchases_cost == 0:
+			async for r in db["receiving"].aggregate([
+				{"$match": {"date": {"$gte": datetime.combine(start_date, datetime.min.time()),
+				                     "$lte": datetime.combine(end_date, datetime.max.time())}}},
+				{"$unwind": "$items"},
+				{"$group": {"_id": None, "sum": {"$sum": {"$multiply": [
+					{"$ifNull": ["$items.qty", 0]},
+					{"$ifNull": ["$items.unitPrice", 0]}
+				]}}}},
+			]):
+				purchases_cost = float(r.get("sum", 0.0))
+
 		value_usage = purchases_cost + wastage_cost
-	except Exception:
+	except Exception as e:
 		value_usage = 0.0
 
 	# Calculate food cost percentage
@@ -71,33 +99,50 @@ async def get_kpis(start_date: date = None, end_date: date = None) -> dict:
 	if total_sales > 0:
 		food_cost_pct = (value_usage / total_sales) * 100
 
-	# Calculate low stock count (items where qty < minQty)
+	# Calculate low stock count (items where qty < minStockQty from ingredients)
 	low_stock_count = 0
 	try:
-		low_stock_count = await db["inventory"].count_documents({
-			"$expr": {"$lt": ["$qty", {"$ifNull": ["$minQty", 0]}]}
-		})
+		# Join inventory with ingredients to check against minStockQty
+		pipeline = [
+			{"$addFields": {"ingredientOid": {"$toObjectId": "$ingredientId"}}},
+			{"$lookup": {
+				"from": "ingredients",
+				"localField": "ingredientOid",
+				"foreignField": "_id",
+				"as": "ingredient"
+			}},
+			{"$unwind": {"path": "$ingredient", "preserveNullAndEmptyArrays": True}},
+			{"$match": {
+				"$expr": {"$lt": ["$qty", {"$ifNull": ["$ingredient.minStockQty", 0]}]}
+			}},
+			{"$count": "count"}
+		]
+		async for result in db["inventory"].aggregate(pipeline):
+			low_stock_count = result.get("count", 0)
 	except Exception:
 		low_stock_count = 0
 
-	# Calculate expiring items
-	today = datetime.now().replace(hour=0, minute=0, second=0, microsecond=0)
-	day1 = today + timedelta(days=1)
-	day2 = today + timedelta(days=2)
-	day3 = today + timedelta(days=3)
+	# Calculate expiring items using batchExpiry (string format YYYY-MM-DD)
+	today_str = date.today().isoformat()
+	day1_str = (date.today() + timedelta(days=1)).isoformat()
+	day2_str = (date.today() + timedelta(days=2)).isoformat()
+	day3_str = (date.today() + timedelta(days=3)).isoformat()
 
 	expiring_1day = 0
 	expiring_2day = 0
 	expiring_3day = 0
 	try:
+		# Count items expiring within 1 day (today or tomorrow)
 		expiring_1day = await db["inventory"].count_documents({
-			"expiryDate": {"$lte": day1, "$gte": today}
+			"batchExpiry": {"$lte": day1_str, "$gte": today_str}
 		})
+		# Count items expiring in 2 days (day after tomorrow)
 		expiring_2day = await db["inventory"].count_documents({
-			"expiryDate": {"$lte": day2, "$gt": day1}
+			"batchExpiry": {"$lte": day2_str, "$gt": day1_str}
 		})
+		# Count items expiring in 3 days
 		expiring_3day = await db["inventory"].count_documents({
-			"expiryDate": {"$lte": day3, "$gt": day2}
+			"batchExpiry": {"$lte": day3_str, "$gt": day2_str}
 		})
 	except Exception:
 		pass

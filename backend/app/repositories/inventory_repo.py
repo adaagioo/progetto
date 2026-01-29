@@ -54,24 +54,41 @@ def _preps():
 
 
 async def aggregate_valuation_summary(as_of: date) -> Dict[str, Any]:
+	"""Aggregate inventory valuation by category, joining with ingredients for category info."""
 	pipeline = [
+		# Convert ingredientId string to ObjectId for lookup
+		{"$addFields": {
+			"ingredientOid": {"$toObjectId": "$ingredientId"}
+		}},
+		# Join with ingredients to get category
+		{"$lookup": {
+			"from": "ingredients",
+			"localField": "ingredientOid",
+			"foreignField": "_id",
+			"as": "ingredient"
+		}},
+		{"$unwind": {"path": "$ingredient", "preserveNullAndEmptyArrays": True}},
+		# Project with category from ingredient, fallback to "supplies"
 		{"$project": {
-			"category": {"$ifNull": ["$category", "nofood"]},
-			"value": {"$multiply": [{"$ifNull": ["$quantity", 0]}, {"$ifNull": ["$unitCost", 0]}]}
+			"category": {"$ifNull": ["$ingredient.category", "supplies"]},
+			"value": {"$multiply": [
+				{"$ifNull": ["$qty", {"$ifNull": ["$quantity", 0]}]},
+				{"$ifNull": ["$unitCost", {"$ifNull": ["$ingredient.unitCost", 0]}]}
+			]}
 		}},
 		{"$group": {"_id": "$category", "total": {"$sum": "$value"}, "count": {"$sum": 1}}},
 	]
-	totals = {"food": 0.0, "beverage": 0.0, "nofood": 0.0}
+	totals = {"food": 0.0, "beverage": 0.0, "supplies": 0.0}
 	item_count = 0
 	async for g in _col().aggregate(pipeline):
-		cat = (g.get("_id") or "nofood")
+		cat = (g.get("_id") or "supplies")
 		count = g.get("count", 0)
 		item_count += count
 		if cat not in totals:
-			totals["nofood"] += float(g.get("total", 0.0))
+			totals["supplies"] += float(g.get("total", 0.0))
 		else:
 			totals[cat] = float(g.get("total", 0.0))
-	grand = totals["food"] + totals["beverage"] + totals["nofood"]
+	grand = totals["food"] + totals["beverage"] + totals["supplies"]
 	return {
 		"asOf": as_of,
 		"total": grand,
@@ -81,31 +98,107 @@ async def aggregate_valuation_summary(as_of: date) -> Dict[str, Any]:
 
 
 async def aggregate_valuation_by_category(as_of: date) -> list[dict]:
+	"""Aggregate inventory valuation by category, joining with ingredients for category info."""
 	pipeline = [
+		# Convert ingredientId string to ObjectId for lookup
+		{"$addFields": {
+			"ingredientOid": {"$toObjectId": "$ingredientId"}
+		}},
+		# Join with ingredients to get category
+		{"$lookup": {
+			"from": "ingredients",
+			"localField": "ingredientOid",
+			"foreignField": "_id",
+			"as": "ingredient"
+		}},
+		{"$unwind": {"path": "$ingredient", "preserveNullAndEmptyArrays": True}},
+		# Project with category from ingredient
 		{"$project": {
-			"category": {"$ifNull": ["$category", "other"]},
-			"value": {"$multiply": [{"$ifNull": ["$quantity", 0]}, {"$ifNull": ["$unitCost", 0]}]}
+			"category": {"$ifNull": ["$ingredient.category", "supplies"]},
+			"value": {"$multiply": [
+				{"$ifNull": ["$qty", {"$ifNull": ["$quantity", 0]}]},
+				{"$ifNull": ["$unitCost", {"$ifNull": ["$ingredient.unitCost", 0]}]}
+			]}
 		}},
 		{"$group": {"_id": "$category", "total": {"$sum": "$value"}}},
 		{"$sort": {"_id": 1}},
 	]
 	out: list[dict] = []
 	async for g in _col().aggregate(pipeline):
-		out.append({"category": g.get("_id") or "other", "total": float(g.get("total", 0.0))})
+		out.append({"category": g.get("_id") or "supplies", "total": float(g.get("total", 0.0))})
 	return out
 
 
 async def find_expiring_inventory_items(days: int) -> list[dict]:
+	"""Find inventory items expiring within the given number of days.
+
+	Handles both 'expiryDate' (datetime) and 'batchExpiry' (string) fields,
+	and joins with ingredients to get the item name.
+	"""
 	now = datetime.now(tz=timezone.utc)
+	today_str = now.strftime("%Y-%m-%d")
 	up_to = now + timedelta(days=days)
-	cursor = _col().find({"expiryDate": {"$gte": now, "$lte": up_to}}, projection={"name": 1, "expiryDate": 1}).sort(
-		[("expiryDate", 1)])
+	up_to_str = up_to.strftime("%Y-%m-%d")
+
+	# Pipeline to handle both expiryDate and batchExpiry, and get name from ingredient
+	pipeline = [
+		# Match items with either expiryDate or batchExpiry within range
+		{"$match": {
+			"$or": [
+				{"expiryDate": {"$gte": now, "$lte": up_to}},
+				{"batchExpiry": {"$gte": today_str, "$lte": up_to_str}}
+			]
+		}},
+		# Convert ingredientId to ObjectId for lookup
+		{"$addFields": {
+			"ingredientOid": {"$toObjectId": "$ingredientId"}
+		}},
+		# Join with ingredients to get name
+		{"$lookup": {
+			"from": "ingredients",
+			"localField": "ingredientOid",
+			"foreignField": "_id",
+			"as": "ingredient"
+		}},
+		{"$unwind": {"path": "$ingredient", "preserveNullAndEmptyArrays": True}},
+		# Project the fields we need
+		{"$project": {
+			"_id": 1,
+			"name": {"$ifNull": ["$ingredient.name", "$name"]},
+			"expiryDate": {"$ifNull": ["$expiryDate", {"$dateFromString": {"dateString": "$batchExpiry", "onError": None}}]},
+			"batchExpiry": 1
+		}},
+		{"$sort": {"expiryDate": 1, "batchExpiry": 1}}
+	]
+
 	out: list[dict] = []
-	async for doc in cursor:
+	async for doc in _col().aggregate(pipeline):
 		eid = str(doc.get("_id"))
+		# Handle both datetime expiryDate and string batchExpiry
 		exp = doc.get("expiryDate")
-		days_left = (exp - now).days if exp else 0
-		out.append({"id": eid, "name": doc.get("name", ""), "expiryDate": exp, "daysLeft": days_left})
+		batch_exp = doc.get("batchExpiry")
+
+		if exp and isinstance(exp, datetime):
+			# Make sure exp is timezone-aware for comparison
+			if exp.tzinfo is None:
+				exp = exp.replace(tzinfo=timezone.utc)
+			days_left = (exp - now).days
+		elif batch_exp:
+			try:
+				exp_date = datetime.strptime(batch_exp, "%Y-%m-%d").replace(tzinfo=timezone.utc)
+				days_left = (exp_date - now).days
+				exp = exp_date
+			except (ValueError, TypeError):
+				days_left = 0
+		else:
+			days_left = 0
+
+		out.append({
+			"id": eid,
+			"name": doc.get("name", "Unknown"),
+			"expiryDate": exp,
+			"daysLeft": days_left
+		})
 	return out
 
 

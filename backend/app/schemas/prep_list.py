@@ -1,15 +1,15 @@
 # backend/app/schemas/prep_list.py
 from __future__ import annotations
-from datetime import date
+from datetime import date, datetime
 from typing import List, Optional
-from pydantic import BaseModel, Field, ConfigDict, model_validator
+from pydantic import BaseModel, Field, ConfigDict, model_validator, field_serializer
 
 
 class PrepTask(BaseModel):
 	model_config = ConfigDict(populate_by_name=True)
 	preparationId: Optional[str] = None  # Can be None when grouped by ingredient name
 	recipeId: Optional[str] = None
-	name: str
+	name: str = Field(default="Unknown")  # Make name have a default
 	preparationName: Optional[str] = None  # Frontend expects this field
 	quantity: float = 0
 	unit: str | None = None
@@ -27,11 +27,15 @@ class PrepTask(BaseModel):
 	def sync_alias_fields(cls, data: dict) -> dict:
 		"""Ensure alias fields are populated from main fields"""
 		if isinstance(data, dict):
-			# Sync preparationName <-> name
-			if not data.get("preparationName") and data.get("name"):
-				data["preparationName"] = data["name"]
-			elif not data.get("name") and data.get("preparationName"):
+			# Sync preparationName <-> name (ensure at least one is set)
+			if not data.get("name") and data.get("preparationName"):
 				data["name"] = data["preparationName"]
+			elif not data.get("preparationName") and data.get("name"):
+				data["preparationName"] = data["name"]
+			elif not data.get("name") and not data.get("preparationName"):
+				# Fallback to preparationId if neither is set
+				data["name"] = data.get("preparationId") or "Unknown"
+				data["preparationName"] = data["name"]
 			# Ensure forecastQty is set from quantity
 			if data.get("forecastQty") is None and data.get("quantity") is not None:
 				data["forecastQty"] = data["quantity"]
@@ -49,6 +53,21 @@ class PrepListResponse(BaseModel):
 	date: date
 	tasks: List[PrepTask] = Field(default_factory=list)
 	items: List[PrepTask] = Field(default_factory=list, description="Alias for tasks (frontend)")
+
+	@field_serializer('date')
+	def serialize_date(self, value: date) -> str:
+		return value.isoformat() if value else None
+
+	@model_validator(mode="before")
+	@classmethod
+	def sync_items_tasks(cls, data: dict) -> dict:
+		"""Ensure items and tasks are synced"""
+		if isinstance(data, dict):
+			if data.get("items") is not None and data.get("tasks") is None:
+				data["tasks"] = data["items"]
+			elif data.get("tasks") is not None and data.get("items") is None:
+				data["items"] = data["tasks"]
+		return data
 
 
 class PrepForecastItem(BaseModel):
@@ -74,16 +93,25 @@ class PrepListSaved(BaseModel):
 	date: date
 	items: List[PrepTask] = Field(default_factory=list)
 	tasks: List[PrepTask] = Field(default_factory=list, description="Alias for items")
-	createdAt: Optional[str] = None
-	updatedAt: Optional[str] = None
+	createdAt: Optional[datetime] = None
+	updatedAt: Optional[datetime] = None
+
+	@field_serializer('date')
+	def serialize_date(self, value: date) -> str:
+		return value.isoformat() if value else None
+
+	@field_serializer('createdAt', 'updatedAt')
+	def serialize_datetime(self, value: Optional[datetime]) -> Optional[str]:
+		return value.isoformat() if value else None
 
 	@model_validator(mode="before")
 	@classmethod
 	def sync_items_tasks(cls, data: dict) -> dict:
 		"""Ensure items and tasks are synced"""
 		if isinstance(data, dict):
-			if data.get("items") and not data.get("tasks"):
+			# Use 'is not None' to handle empty lists correctly
+			if data.get("items") is not None and data.get("tasks") is None:
 				data["tasks"] = data["items"]
-			elif data.get("tasks") and not data.get("items"):
+			elif data.get("tasks") is not None and data.get("items") is None:
 				data["items"] = data["tasks"]
 		return data

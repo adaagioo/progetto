@@ -74,9 +74,10 @@ async def generate_prep_list(
 	access = await get_resource_access(user, RESOURCE)
 	if not access.get("canView"):
 		raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Forbidden")
+	restaurant_id = user.get("restaurantId")
 	d = forDate or date.today()
-	logger.info(f"Computing prep list for date: {d}")
-	doc = await compute_prep_list(d)
+	logger.info(f"Computing prep list for date: {d}, restaurant: {restaurant_id}")
+	doc = await compute_prep_list(d, restaurant_id)
 	logger.debug(f"Prep list result: {doc}")
 	return PrepListResponse(**doc)
 
@@ -133,19 +134,20 @@ async def prep_list_forecast(
 	access = await get_resource_access(user, RESOURCE)
 	if not access.get("canView"):
 		raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Forbidden")
+	restaurant_id = user.get("restaurantId")
 	s = start or date.today()
-	logger.info(f"Computing forecast from {s} for {days} days")
+	logger.info(f"Computing forecast from {s} for {days} days, restaurant: {restaurant_id}")
 
 	# If single day, return full prep list (for frontend "Generate" button)
 	if days == 1:
-		doc = await compute_prep_list(s)
+		doc = await compute_prep_list(s, restaurant_id)
 		return PrepListResponse(**doc)
 
 	# Multi-day forecast returns counts per day
 	items: List[PrepForecastItem] = []
 	for i in range(days):
 		current_date = s + timedelta(days=i)
-		result = await compute_prep_list(current_date)
+		result = await compute_prep_list(current_date, restaurant_id)
 		tasks_count = len(result.get("tasks", []))
 		logger.debug(f"Date {current_date}: {tasks_count} tasks")
 		items.append(PrepForecastItem(date=current_date, tasksCount=tasks_count))

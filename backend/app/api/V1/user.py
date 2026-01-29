@@ -4,7 +4,8 @@ from typing import List, Optional
 from fastapi import APIRouter, Depends, HTTPException, status
 
 from backend.app.repositories.users_repo import find_by_id
-from backend.app.schemas.user import UserPublic, UserResetPasswordRequest, UserCreate, UserUpdate
+from backend.app.schemas.user import UserPublic, UserResetPasswordRequest, UserCreate, UserUpdate, UserCreateResponse
+import secrets
 from backend.app.deps.auth import get_current_user
 from backend.app.repositories.users_repo import list_users, delete_user, update_password, find_by_email, create_user
 from backend.app.core.rbac_policies import get_resource_access
@@ -86,23 +87,36 @@ async def users_reset_password(
 	return None
 
 
-@router.post("/users", response_model=UserPublic, status_code=201)
+@router.post("/users", response_model=UserCreateResponse, status_code=201)
 async def users_create(payload: UserCreate, user: dict = Depends(get_current_user)):
 	access = await get_resource_access(user, RESOURCE)
 	if not (access.get("canCreate") or access.get("canManagePermissions")):
 		raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Forbidden")
+
 	# uniqueness check
 	if await find_by_email(payload.email):
 		raise HTTPException(status_code=409, detail="User already exists")
+
+	# Handle password: use provided or generate temp password
+	temp_password = None
+	if payload.sendInvite or not payload.password:
+		# Generate a secure temporary password
+		temp_password = secrets.token_urlsafe(12)
+		password_to_hash = temp_password
+	else:
+		password_to_hash = payload.password
+
 	new_id = await create_user(
 		payload.email,
-		hash_password(payload.password),
+		hash_password(password_to_hash),
 		role_key=payload.roleKey,
 		locale=payload.locale,
 		display_name=payload.displayName
 	)
 	doc = await find_by_id(new_id)
-	return UserPublic(
+
+	# Build response
+	response = UserCreateResponse(
 		id=str(doc["_id"]),
 		email=doc["email"],
 		roleKey=doc.get("roleKey", "user"),
@@ -110,7 +124,10 @@ async def users_create(payload: UserCreate, user: dict = Depends(get_current_use
 		locale=doc.get("locale"),
 		isDisabled=doc.get("isDisabled", False),
 		lastLoginAt=doc.get("lastLoginAt"),
+		tempPassword=temp_password  # Only set if sendInvite was True
 	)
+
+	return response
 
 
 @router.get("/users/{user_id}", response_model=UserPublic)

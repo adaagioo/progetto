@@ -118,3 +118,20 @@ class OrderForecastResponse(BaseModel):
 	})
 
 	items: List[OrderForecastItem] = Field(..., description="Forecast for each day")
+
+
+class OrderListCreate(BaseModel):
+	"""Request body for saving an order list"""
+	date: DateType
+	items: List[OrderItem]
+
+
+class OrderListSaved(BaseModel):
+	"""Saved order list with metadata"""
+	model_config = ConfigDict(populate_by_name=True)
+
+	id: Optional[str] = None
+	date: DateType
+	items: List[OrderItem] = Field(default_factory=list)
+	createdAt: Optional[str] = None
+	updatedAt: Optional[str] = None

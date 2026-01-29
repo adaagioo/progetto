@@ -58,3 +58,32 @@ class PrepForecastItem(BaseModel):
 
 class PrepForecastResponse(BaseModel):
 	items: List[PrepForecastItem]
+
+
+class PrepListCreate(BaseModel):
+	"""Request body for saving a prep list"""
+	date: date
+	items: List[PrepTask]
+
+
+class PrepListSaved(BaseModel):
+	"""Saved prep list with metadata"""
+	model_config = ConfigDict(populate_by_name=True)
+
+	id: Optional[str] = None
+	date: date
+	items: List[PrepTask] = Field(default_factory=list)
+	tasks: List[PrepTask] = Field(default_factory=list, description="Alias for items")
+	createdAt: Optional[str] = None
+	updatedAt: Optional[str] = None
+
+	@model_validator(mode="before")
+	@classmethod
+	def sync_items_tasks(cls, data: dict) -> dict:
+		"""Ensure items and tasks are synced"""
+		if isinstance(data, dict):
+			if data.get("items") and not data.get("tasks"):
+				data["tasks"] = data["items"]
+			elif data.get("tasks") and not data.get("items"):
+				data["items"] = data["tasks"]
+		return data

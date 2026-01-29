@@ -43,7 +43,7 @@ async def compute_prep_list(for_date: date) -> Dict[str, Any]:
 	plan = await _load_production_plan(for_date)
 	if not plan or not plan.get("items"):
 		logger.debug(f"No production plan found for date {for_date}")
-		return {"date": for_date, "tasks": []}
+		return {"date": for_date, "tasks": [], "items": []}
 
 	logger.debug(f"Found production plan with {len(plan['items'])} items")
 

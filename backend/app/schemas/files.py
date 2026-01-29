@@ -21,3 +21,15 @@ class FileRef(BaseModel):
 	size: int
 	path: str
 	url: str
+	fileType: Optional[str] = None
+
+	@property
+	def id(self) -> str:
+		"""Alias for fileId - frontend expects 'id'"""
+		return self.fileId
+
+	def model_dump(self, **kwargs) -> dict:
+		"""Include 'id' in serialization for frontend compatibility"""
+		data = super().model_dump(**kwargs)
+		data["id"] = self.fileId
+		return data

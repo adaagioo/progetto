@@ -77,22 +77,52 @@ async def delete(ingredient_id: str, user: dict = Depends(get_current_user)):
 	return None
 
 
-@router.get("/ingredients/{ingredient_id}/price-history", response_model=List[PricePoint])
-async def ingredient_price_history(ingredient_id: str, user: dict = Depends(get_current_user)):
+@router.get("/ingredients/{ingredient_id}/price-history")
+async def ingredient_price_history(ingredient_id: str, limit: int = 5, user: dict = Depends(get_current_user)):
+	"""Get price history for an ingredient from receiving records.
+
+	Returns format expected by frontend: { history: [...] }
+	"""
 	access = await get_resource_access(user, RESOURCE)
 	if not access.get("canView", False):
 		raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Forbidden")
 
-	# Note: In the current model, price is associated with Inventory (not Ingredient directly).
-	# For consistency with the old endpoint, I interpret ingredient_id = inventoryId.
-	# It is possible to map Ingredient -> Inventory first if needed.
-	rows = await find_receiving_price_history(user["restaurantId"], ingredient_id, limit=200)
-	out: List[PricePoint] = []
-	for r in rows:
-		at = r.get("at")
-		out.append(PricePoint(
-			date=(at.date() if isinstance(at, (datetime,)) else at),
-			unitCost=(r.get("unitCost") if r.get("unitCost") is not None else None),
-			receivingId=(str(r.get("receivingId")) if r.get("receivingId") else None),
-		))
-	return out
+	from backend.app.db.mongo import get_db
+	db = get_db()
+
+	# Find receiving records that contain this ingredient
+	pipeline = [
+		{"$match": {"restaurantId": user["restaurantId"]}},
+		{"$unwind": "$lines"},
+		{"$match": {"lines.ingredientId": ingredient_id}},
+		{"$sort": {"date": -1, "createdAt": -1}},
+		{"$limit": limit},
+		{"$lookup": {
+			"from": "suppliers",
+			"let": {"supplierId": "$supplierId"},
+			"pipeline": [
+				{"$match": {"$expr": {"$eq": [{"$toString": "$_id"}, "$$supplierId"]}}}
+			],
+			"as": "supplier"
+		}},
+		{"$unwind": {"path": "$supplier", "preserveNullAndEmptyArrays": True}},
+		{"$project": {
+			"_id": 0,
+			"date": {"$ifNull": ["$date", "$createdAt"]},
+			"unitPrice": {"$divide": [{"$ifNull": ["$lines.unitPrice", 0]}, 100]},  # Convert from cents
+			"qty": "$lines.qty",
+			"unit": "$lines.unit",
+			"packFormat": "$lines.packFormat",
+			"supplierName": "$supplier.name"
+		}}
+	]
+
+	history = []
+	async for doc in db["receiving"].aggregate(pipeline):
+		# Handle date serialization
+		doc_date = doc.get("date")
+		if isinstance(doc_date, datetime):
+			doc["date"] = doc_date.isoformat()
+		history.append(doc)
+
+	return {"history": history}

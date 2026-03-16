@@ -13,6 +13,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '.
 import { Checkbox } from '../components/ui/checkbox';
 import { Plus, Trash2, Edit, AlertCircle, Package, X } from 'lucide-react';
 import { toast } from 'sonner';
+import { getErrorMessage } from '../utils/errorHandler';
 
 function Preparations() {
   const { t } = useTranslation();
@@ -118,7 +119,7 @@ function Preparations() {
       resetForm();
       setIsDialogOpen(false);
     } catch (error) {
-      toast.error(error.response?.data?.detail || t('preparations.error.save') || 'Failed to save preparation');
+      toast.error(getErrorMessage(error, t('preparations.error.save') || 'Failed to save preparation'));
     }
   };
 

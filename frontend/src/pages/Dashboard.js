@@ -14,16 +14,12 @@ function Dashboard() {
   const navigate = useNavigate();
   const [kpis, setKpis] = useState(null);
   const [valuationSummary, setValuationSummary] = useState(null);
-  const [totalInventoryValue, setTotalInventoryValue] = useState(null);
   const [expiringItems, setExpiringItems] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [loadingTotal, setLoadingTotal] = useState(true);
-  const [totalError, setTotalError] = useState(false);
 
   useEffect(() => {
     fetchKPIs();
     fetchValuation();
-    fetchTotalInventoryValue();
     fetchExpiringItems();
   }, []);
 
@@ -56,21 +52,6 @@ function Dashboard() {
       });
     } catch (error) {
       console.error('Failed to load valuation:', error);
-    }
-  };
-
-  const fetchTotalInventoryValue = async () => {
-    try {
-      setLoadingTotal(true);
-      setTotalError(false);
-      const response = await axios.get(`${API}/inventory/valuation/total`);
-      console.log('Total Inventory Value Response:', response.data, 'RequestId:', response.headers['x-request-id']);
-      setTotalInventoryValue(response.data);
-    } catch (error) {
-      console.error('Failed to load total inventory value:', error);
-      setTotalError(true);
-    } finally {
-      setLoadingTotal(false);
     }
   };
 
@@ -199,7 +180,37 @@ function Dashboard() {
       {/* Inventory Valuation by Category */}
       <div>
         <h2 className="text-xl font-bold mb-4">{t('dashboard.inventoryValuation') || 'Inventory Valuation'}</h2>
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+          {/* Total Inventory Value Card - FIRST for visibility */}
+          <Card 
+            className="border-0 bg-gradient-to-br from-emerald-500 to-teal-600 text-white cursor-pointer shadow-lg"
+            onClick={() => navigate('/inventory')}
+            data-testid="total-inventory-value-card"
+          >
+            <CardHeader className="pb-2">
+              <CardTitle className="text-sm font-medium text-white/90">
+                {t('dashboard.totalInventoryValue') || 'Total Inventory Value'}
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              {valuationSummary ? (
+                <>
+                  <div className="text-2xl font-bold text-white">
+                    {formatMinor((valuationSummary.categories.food || 0) + (valuationSummary.categories.beverage || 0) + (valuationSummary.categories.nofood || 0))}
+                  </div>
+                  <p className="text-xs text-white/80 mt-1">
+                    {t('dashboard.asOfNow') || 'as of now'}
+                  </p>
+                </>
+              ) : (
+                <>
+                  <div className="text-2xl font-bold animate-pulse">⋯</div>
+                  <p className="text-xs text-white/80 mt-1">Loading...</p>
+                </>
+              )}
+            </CardContent>
+          </Card>
+
           {valuationSummary ? (
             <>
               <Card 
@@ -288,73 +299,6 @@ function Dashboard() {
               </Card>
             </>
           )}
-
-          {/* Total Inventory Value Card - ALWAYS VISIBLE */}
-          <Card 
-            className="glass-morphism border-0 bg-gradient-to-br from-emerald-500 to-teal-600 text-white cursor-pointer"
-            onClick={() => navigate('/inventory')}
-            data-testid="total-inventory-value-card"
-          >
-            <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-medium text-white/90">
-                {t('dashboard.totalInventoryValue') || 'Total Inventory Value'}
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              {loadingTotal ? (
-                <>
-                  <div className="text-2xl font-bold animate-pulse">
-                    ⋯
-                  </div>
-                  <p className="text-xs text-white/80 mt-1">Loading...</p>
-                </>
-              ) : totalError ? (
-                <>
-                  <div className="text-lg font-medium text-white/90 mb-2">
-                    {t('dashboard.couldNotLoadTotal') || 'Couldn\'t load total'}
-                  </div>
-                  <button 
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      fetchTotalInventoryValue();
-                    }}
-                    className="text-sm underline text-white/80 hover:text-white"
-                  >
-                    {t('dashboard.retry') || 'Retry'}
-                  </button>
-                </>
-              ) : totalInventoryValue && (totalInventoryValue.total !== undefined && totalInventoryValue.total !== null) ? (
-                <>
-                  <div className="text-2xl font-bold text-white">
-                    {formatMinor(totalInventoryValue.total || 0)}
-                  </div>
-                  <p className="text-xs text-white/80 mt-1">
-                    {t('dashboard.asOfNow') || 'as of now'}
-                  </p>
-                  {totalInventoryValue.negativeCount > 0 && (
-                    <div 
-                      className="mt-2 text-xs bg-red-500/20 border border-red-300/30 rounded px-2 py-1 flex items-center gap-1 cursor-pointer hover:bg-red-500/30 transition-colors"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        navigate('/inventory?filter=negative');
-                      }}
-                    >
-                      <AlertTriangle className="h-3 w-3" />
-                      {t('dashboard.negativeStockWarning', { count: totalInventoryValue.negativeCount }) || 
-                        `${totalInventoryValue.negativeCount} item(s) with negative stock`}
-                    </div>
-                  )}
-                </>
-              ) : (
-                <>
-                  <div className="text-2xl font-bold text-white">€0.00</div>
-                  <p className="text-xs text-white/80 mt-1">
-                    {t('dashboard.asOfNow') || 'as of now'}
-                  </p>
-                </>
-              )}
-            </CardContent>
-          </Card>
         </div>
       </div>
 

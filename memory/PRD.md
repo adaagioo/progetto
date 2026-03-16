@@ -100,8 +100,26 @@ Import and prepare existing GitHub repository (RistoBrain multi-tenant restauran
    - Fixed in: `/app/frontend/src/pages/Settings.js` (2 places)
    - Location: Frontend only
 
-### Error Handler Utility Created
-- `/app/frontend/src/utils/errorHandler.js` - Safe error message extraction
+### Bug Fixes - Session 3 (March 16, 2026)
+
+1. **Dashboard Total Inventory Card blank/invisible**
+   - Root cause: `glass-morphism` CSS class overrode the gradient background with `background: rgba(255,255,255,0.7)`
+   - Also: Card was positioned off-screen due to grid layout constraints
+   - Fix: Removed `glass-morphism` class, added `shadow-lg`, computed total from category values in frontend
+   - Files: `/app/frontend/src/pages/Dashboard.js`
+   - Location: Frontend only
+
+2. **Recipes creation crash with validation error object**
+   - Root cause: `toast.error(error.response?.data?.detail)` tried to render Pydantic validation array directly
+   - Fix: Added `getErrorMessage()` import and usage
+   - Files: `/app/frontend/src/pages/Recipes.js`
+   - Location: Frontend only
+
+3. **Preparations creation crash with validation error object**
+   - Root cause: Same as Recipes - direct rendering of validation error array
+   - Fix: Added `getErrorMessage()` import and usage
+   - Files: `/app/frontend/src/pages/Preparations.js`
+   - Location: Frontend only
 
 ## Test Results (March 16, 2026)
 - Backend: 100% passed

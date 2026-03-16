@@ -323,10 +323,10 @@ function Dashboard() {
                     {t('dashboard.retry') || 'Retry'}
                   </button>
                 </>
-              ) : totalInventoryValue && (totalInventoryValue.totalValue !== undefined && totalInventoryValue.totalValue !== null) ? (
+              ) : totalInventoryValue && (totalInventoryValue.total !== undefined && totalInventoryValue.total !== null) ? (
                 <>
                   <div className="text-2xl font-bold text-white">
-                    {formatMinor(totalInventoryValue.totalValue || 0)}
+                    {formatMinor(totalInventoryValue.total || 0)}
                   </div>
                   <p className="text-xs text-white/80 mt-1">
                     {t('dashboard.asOfNow') || 'as of now'}

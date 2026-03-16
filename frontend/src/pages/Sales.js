@@ -56,7 +56,7 @@ function Sales() {
   };
 
   // RBAC: Check if user can edit
-  const canEdit = user?.roleKey === 'admin' || user?.roleKey === 'manager';
+  const canEdit = user?.roleKey === 'owner' || user?.roleKey === 'admin' || user?.roleKey === 'manager';
 
   const addLineToSale = () => {
     if (!currentLine.recipeId || !currentLine.qty || currentLine.qty <= 0) {

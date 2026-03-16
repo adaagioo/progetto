@@ -113,7 +113,7 @@ function Receiving() {
   };
 
   // RBAC: Check if user can edit
-  const canEdit = user?.roleKey === 'admin' || user?.roleKey === 'manager';
+  const canEdit = user?.roleKey === 'owner' || user?.roleKey === 'admin' || user?.roleKey === 'manager';
 
   // Filter receivings based on search
   const filteredReceivings = React.useMemo(() => {
@@ -524,6 +524,9 @@ function Receiving() {
                   />
                 )}
               </div>
+              <DialogDescription className="sr-only">
+                {editingId ? 'Edit receiving record details' : 'Add a new receiving record'}
+              </DialogDescription>
             </DialogHeader>
             <form onSubmit={handleSubmit} className="space-y-4">
               <div className="grid grid-cols-2 gap-4">

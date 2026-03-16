@@ -105,7 +105,7 @@ function RecipesEnhanced() {
   };
 
   // RBAC: Check if user can edit
-  const canEdit = user?.roleKey === 'admin' || user?.roleKey === 'manager';
+  const canEdit = user?.roleKey === 'owner' || user?.roleKey === 'admin' || user?.roleKey === 'manager';
 
   // Bulk select handlers
   const toggleSelectAll = () => {

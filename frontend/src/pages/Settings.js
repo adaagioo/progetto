@@ -124,7 +124,7 @@ function Settings() {
             <Globe className="w-4 h-4 mr-2" />
             Language & Currency
           </TabsTrigger>
-          {user?.roleKey === 'admin' && (
+          {(user?.roleKey === 'owner' || user?.roleKey === 'admin') && (
             <>
               <TabsTrigger value="users" data-testid="users-tab">
                 <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">

@@ -258,7 +258,9 @@ function CurrentMenu() {
         return;
       }
 
-      await response.json();
+      if (contentType.includes('application/json')) {
+        await response.json();
+      }
       console.log('[CurrentMenu] Menu updated. RequestId:', requestId);
 
       setShowEditMenu(false);
@@ -366,7 +368,9 @@ function CurrentMenu() {
         return;
       }
 
-      await response.json();
+      if (contentType.includes('application/json')) {
+        await response.json();
+      }
       console.log('[CurrentMenu] Item toggled. RequestId:', requestId);
       fetchCurrentMenu();
     } catch (err) {
@@ -516,7 +520,9 @@ function CurrentMenu() {
         return;
       }
 
-      await response.json();
+      if (contentType.includes('application/json')) {
+        await response.json();
+      }
       console.log('[CurrentMenu] Items added. RequestId:', requestId);
 
       setShowAddItems(false);

@@ -66,6 +66,43 @@ Import and prepare existing GitHub repository (RistoBrain multi-tenant restauran
 ### Documentation Created
 - `/app/DEPLOYMENT.md` - Complete deployment guide
 
+### Bug Fixes (March 16, 2026 - Second Session)
+
+1. **Dashboard Total Inventory Card not displaying**
+   - Root cause: Field name mismatch (`total` vs `totalValue`)
+   - Fixed in: `/app/frontend/src/pages/Dashboard.js`
+   - Location: Frontend only
+
+2-3, 7-8. **Recipes, Preparations, Sales, Wastage - Add buttons missing**
+   - Root cause: `owner` role not included in `canEdit` check
+   - Fixed in: `Recipes.js`, `Preparations.js`, `Sales.js`, `Wastage.js`, `PrepList.js`, `Receiving.js`, `OrderList.js`
+   - Location: Frontend only
+
+4. **CurrentMenu delete fails with JSON parse error**
+   - Root cause: Frontend tried to parse JSON from 204 No Content responses
+   - Fixed in: `/app/frontend/src/pages/CurrentMenu.js` (4 handlers)
+   - Location: Frontend only
+
+5. **Suppliers page console error**
+   - Status: Not an app bug - browser extension (password manager autofill)
+
+6. **Receiving dialog accessibility warning**
+   - Root cause: Missing DialogDescription
+   - Fixed in: `/app/frontend/src/pages/Receiving.js`
+   - Location: Frontend only
+
+9-10. **Prep List / Order List logic**
+   - Status: Already implemented and working - connected to real data
+   - Note: Data appears based on production_plans, inventory collections
+
+11. **Settings permissions tabs missing**
+   - Root cause: `owner` role not included in visibility check
+   - Fixed in: `/app/frontend/src/pages/Settings.js` (2 places)
+   - Location: Frontend only
+
+### Error Handler Utility Created
+- `/app/frontend/src/utils/errorHandler.js` - Safe error message extraction
+
 ## Test Results (March 16, 2026)
 - Backend: 100% passed
 - Frontend: 100% passed

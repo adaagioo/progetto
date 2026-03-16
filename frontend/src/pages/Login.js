@@ -9,6 +9,7 @@ import { Label } from '../components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '../components/ui/tabs';
 import { ChefHat } from 'lucide-react';
+import { getErrorMessage } from '../utils/errorHandler';
 
 function Login() {
   const { login } = useContext(AuthContext);
@@ -34,7 +35,7 @@ function Login() {
       login(response.data.access_token, response.data.user);
       toast.success('Welcome back!');
     } catch (error) {
-      toast.error(error.response?.data?.detail || 'Login failed');
+      toast.error(getErrorMessage(error, 'Login failed'));
     } finally {
       setIsLoading(false);
     }
@@ -49,7 +50,7 @@ function Login() {
       login(response.data.access_token, response.data.user);
       toast.success('Account created successfully!');
     } catch (error) {
-      toast.error(error.response?.data?.detail || 'Registration failed');
+      toast.error(getErrorMessage(error, 'Registration failed'));
     } finally {
       setIsLoading(false);
     }

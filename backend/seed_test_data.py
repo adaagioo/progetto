@@ -13,14 +13,30 @@ from dotenv import load_dotenv
 import bcrypt
 from datetime import datetime, timezone
 import uuid
-from rbac_utils import seed_default_roles
 
 # Load environment
 ROOT_DIR = Path(__file__).parent
 load_dotenv(ROOT_DIR / '.env')
 
-MONGO_URL = os.environ['MONGO_URL']
-DB_NAME = os.environ.get('DB_NAME', 'ristobrain_db')
+MONGO_URL = os.environ.get('MONGO_URI', os.environ.get('MONGO_URL', 'mongodb://localhost:27017/ristobrain'))
+DB_NAME = os.environ.get('MONGO_DB_NAME', os.environ.get('DB_NAME', 'ristobrain'))
+DEFAULT_CURRENCY = os.environ.get('DEFAULT_CURRENCY', 'EUR')
+DEFAULT_LOCALE = os.environ.get('DEFAULT_LOCALE', 'it-IT')
+
+
+async def seed_default_roles(db, restaurant_id: str):
+    """Seed default RBAC roles for a restaurant"""
+    default_roles = [
+        {"roleKey": "admin", "restaurantId": restaurant_id, "permissions": {}},
+        {"roleKey": "manager", "restaurantId": restaurant_id, "permissions": {}},
+        {"roleKey": "waiter", "restaurantId": restaurant_id, "permissions": {}},
+    ]
+    for role in default_roles:
+        await db.rbac_roles.update_one(
+            {"roleKey": role["roleKey"]},
+            {"$setOnInsert": role},
+            upsert=True
+        )
 DEFAULT_CURRENCY = os.environ.get('DEFAULT_CURRENCY', 'EUR')
 DEFAULT_LOCALE = os.environ.get('DEFAULT_LOCALE', 'it-IT')
 

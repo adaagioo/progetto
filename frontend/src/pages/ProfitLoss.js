@@ -11,6 +11,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Textarea } from '../components/ui/textarea';
 import { Plus, Trash2, TrendingUp } from 'lucide-react';
 import { toast } from 'sonner';
+import { getErrorMessage } from '../utils/errorHandler';
 
 function ProfitLoss() {
   const { t } = useTranslation();
@@ -49,7 +50,7 @@ function ProfitLoss() {
       resetForm();
       setIsDialogOpen(false);
     } catch (error) {
-      toast.error(error.response?.data?.detail || 'Failed to save P&L');
+      toast.error(getErrorMessage(error, 'Failed to save P&L'));
     }
   };
 

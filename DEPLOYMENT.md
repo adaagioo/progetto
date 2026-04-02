@@ -48,6 +48,33 @@ Create `/app/frontend/.env`:
 |----------|----------|-------------|---------|
 | `REACT_APP_BACKEND_URL` | Yes | Backend API base URL | `https://your-domain.com` |
 
+### Environment-Specific Configuration
+
+#### Staging
+```bash
+# /app/frontend/.env
+REACT_APP_BACKEND_URL=https://your-staging-domain.emergentagent.com
+
+# /app/backend/.env  
+ENV=staging
+APP_URL=https://your-staging-domain.emergentagent.com
+ALLOW_ORIGINS=["*"]
+```
+
+#### Production
+```bash
+# /app/frontend/.env
+REACT_APP_BACKEND_URL=https://your-production-domain.com
+
+# /app/backend/.env
+ENV=production
+DEBUG=false
+APP_URL=https://your-production-domain.com
+ALLOW_ORIGINS=["https://your-production-domain.com"]
+# Generate new JWT_SECRET for production!
+JWT_SECRET=<new-unique-secret>
+```
+
 ## Deployment Preparation
 
 ### 1. Generate JWT Secret

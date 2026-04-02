@@ -12,6 +12,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../components/ui/select';
 import { Plus, Trash2, ShoppingCart, AlertCircle, Package } from 'lucide-react';
 import { toast } from 'sonner';
+import { getErrorMessage } from '../utils/errorHandler';
 
 function Sales() {
   const { t } = useTranslation();
@@ -101,7 +102,7 @@ function Sales() {
       resetForm();
       setIsDialogOpen(false);
     } catch (error) {
-      toast.error(error.response?.data?.detail || t('sales.error.save') || 'Failed to save sales');
+      toast.error(getErrorMessage(error, t('sales.error.save') || 'Failed to save sales'));
     }
   };
 

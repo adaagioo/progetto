@@ -13,6 +13,7 @@ import { Checkbox } from '../components/ui/checkbox';
 import { Plus, Trash2, Edit, Upload, Download, FileText, X } from 'lucide-react';
 import { toast } from 'sonner';
 import OCRUploadButton from '../components/OCRUploadButton';
+import { getErrorMessage } from '../utils/errorHandler';
 
 function Suppliers() {
   const { t } = useTranslation();
@@ -79,7 +80,7 @@ function Suppliers() {
   };
 
   // RBAC: Check if user can edit
-  const canEdit = user?.roleKey === 'admin' || user?.roleKey === 'manager';
+  const canEdit = user?.roleKey === 'owner' || user?.roleKey === 'admin' || user?.roleKey === 'manager';
 
   // Filter suppliers based on search
   const filteredSuppliers = React.useMemo(() => {
@@ -146,7 +147,7 @@ function Suppliers() {
       setShowBulkDeleteDialog(false);
       fetchSuppliers();
     } catch (error) {
-      const errorMsg = error.response?.data?.detail || t('suppliers.error.bulkDelete') || 'Failed to delete suppliers';
+      const errorMsg = getErrorMessage(error, t('suppliers.error.bulkDelete') || 'Failed to delete suppliers');
       toast.error(errorMsg);
     }
   };
@@ -188,7 +189,7 @@ function Suppliers() {
       resetForm();
       setIsDialogOpen(false);
     } catch (error) {
-      toast.error(error.response?.data?.detail || t('suppliers.error.save') || 'Failed to save supplier');
+      toast.error(getErrorMessage(error, t('suppliers.error.save') || 'Failed to save supplier'));
     }
   };
 
@@ -248,7 +249,7 @@ function Suppliers() {
       toast.success(message);
       fetchSuppliers();
     } catch (error) {
-      toast.error(error.response?.data?.detail || t('suppliers.error.upload') || 'Failed to upload file');
+      toast.error(getErrorMessage(error, t('suppliers.error.upload') || 'Failed to upload file'));
     } finally {
       setUploadingFor(null);
       event.target.value = '';
@@ -671,7 +672,7 @@ function Suppliers() {
                       setOCRSupplierId(null);
                       setItemMappings({});
                     } catch (error) {
-                      toast.error(error.response?.data?.detail || t('suppliers.error.updatePrices') || 'Failed to update prices');
+                      toast.error(getErrorMessage(error, t('suppliers.error.updatePrices') || 'Failed to update prices'));
                     }
                   }}
                   disabled={Object.values(itemMappings).filter(v => v).length === 0}

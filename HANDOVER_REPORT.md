@@ -161,37 +161,38 @@
 
 ## 4. CRITICAL ISSUES (BLOCKING)
 
-### P0 - Must Fix Immediately
+### P0 - ✅ ALL FIXED
 
-| # | Issue | Location | Impact |
-|---|-------|----------|--------|
-| 1 | **14 pages can crash on API validation errors** | Frontend | Runtime crash when Pydantic returns array errors |
-| 2 | **6 pages exclude `owner` role from canEdit** | Frontend | Owner cannot edit in Inventory, P&L, RecipesEnhanced, SalesEnhanced, Suppliers, WastageEnhanced |
-| 3 | **Frontend .env has wrong backend URL** | `/app/frontend/.env` | Will fail in production if not updated |
+| # | Issue | Status | Fix Applied |
+|---|-------|--------|-------------|
+| 1 | 14 pages crash on API validation errors | ✅ FIXED | Added `getErrorMessage()` import and usage |
+| 2 | 6 pages exclude `owner` role from canEdit | ✅ FIXED | Added `owner` to canEdit check |
+| 3 | Frontend .env has stale preview URL | ✅ FIXED | Updated to current environment URL |
 
-### Pages Missing `getErrorMessage` (Will Crash on Validation Errors)
-1. DocumentImport.js
-2. ForgotPassword.js
-3. Ingredients.js
-4. Inventory.js
-5. ProfitLoss.js
-6. RBACTab.js
-7. Receiving.js
-8. RecipesEnhanced.js
-9. ResetPassword.js
-10. Sales.js
-11. SalesEnhanced.js
-12. Suppliers.js
-13. Wastage.js
-14. WastageEnhanced.js
+### Pages Fixed for Error Handling (14 total)
+- DocumentImport.js
+- ForgotPassword.js
+- Ingredients.js
+- Inventory.js
+- ProfitLoss.js
+- RBACTab.js
+- Receiving.js
+- RecipesEnhanced.js
+- ResetPassword.js
+- Sales.js
+- SalesEnhanced.js
+- Suppliers.js
+- Wastage.js
+- WastageEnhanced.js
+- (Also fixed additional instances in Recipes.js and Preparations.js)
 
-### Pages Missing `owner` in canEdit Check
-1. Inventory.js (line 119)
-2. PLSnapshot.js (line 19)
-3. RecipesEnhanced.js (line 70)
-4. SalesEnhanced.js (line 59)
-5. Suppliers.js (line 82)
-6. WastageEnhanced.js (line 91)
+### Pages Fixed for Owner Role (6 total)
+- Inventory.js
+- PLSnapshot.js
+- RecipesEnhanced.js
+- SalesEnhanced.js
+- Suppliers.js
+- WastageEnhanced.js
 
 ---
 

@@ -263,7 +263,7 @@ function Preparations() {
       setShowBulkDeleteDialog(false);
       fetchPreparations();
     } catch (error) {
-      const errorMsg = error.response?.data?.detail || t('preparations.error.bulkDelete') || 'Failed to delete preparations';
+      const errorMsg = getErrorMessage(error, t('preparations.error.bulkDelete') || 'Failed to delete preparations');
       toast.error(errorMsg);
     }
   };

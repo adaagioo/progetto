@@ -12,6 +12,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../components/ui/select';
 import { Plus, Trash2, AlertTriangle, Package } from 'lucide-react';
 import { toast } from 'sonner';
+import { getErrorMessage } from '../utils/errorHandler';
 
 const WASTAGE_REASONS = [
   'Spoilage',
@@ -115,7 +116,7 @@ function Wastage() {
       resetForm();
       setIsDialogOpen(false);
     } catch (error) {
-      toast.error(error.response?.data?.detail || t('wastage.error.save') || 'Failed to save wastage');
+      toast.error(getErrorMessage(error, t('wastage.error.save') || 'Failed to save wastage'));
     }
   };
 

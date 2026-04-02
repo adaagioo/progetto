@@ -16,7 +16,7 @@ function PLSnapshot() {
   const [isEditing, setIsEditing] = useState(false);
 
   // RBAC check
-  const canEdit = user?.roleKey === 'admin' || user?.roleKey === 'manager';
+  const canEdit = user?.roleKey === 'owner' || user?.roleKey === 'admin' || user?.roleKey === 'manager';
 
   // Get current locale from i18n
   const currentLocale = i18n.language === 'it' ? 'it-IT' : 'en-US';

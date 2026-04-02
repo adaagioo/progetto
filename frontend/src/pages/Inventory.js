@@ -13,6 +13,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '.
 import { Plus, Trash2, Package, TrendingUp, X } from 'lucide-react';
 import { toast } from 'sonner';
 import { format } from 'date-fns';
+import { getErrorMessage } from '../utils/errorHandler';
 
 function Inventory() {
   const { t } = useTranslation();
@@ -116,7 +117,7 @@ function Inventory() {
   };
 
   // RBAC: Check if user can edit
-  const canEdit = user?.roleKey === 'admin' || user?.roleKey === 'manager';
+  const canEdit = user?.roleKey === 'owner' || user?.roleKey === 'admin' || user?.roleKey === 'manager';
 
   // Bulk select handlers
   const toggleSelectAll = () => {
@@ -150,7 +151,7 @@ function Inventory() {
       fetchInventory();
       fetchValuation(); // Refresh valuation after deleting inventory
     } catch (error) {
-      const errorMsg = error.response?.data?.detail || t('inventory.error.bulkDelete') || 'Failed to delete inventory records';
+      const errorMsg = getErrorMessage(error, t('inventory.error.bulkDelete') || 'Failed to delete inventory records');
       toast.error(errorMsg);
     }
   };
@@ -176,7 +177,7 @@ function Inventory() {
       resetForm();
       setIsDialogOpen(false);
     } catch (error) {
-      toast.error(error.response?.data?.detail || 'Failed to save inventory');
+      toast.error(getErrorMessage(error, 'Failed to save inventory'));
     }
   };
 
@@ -219,7 +220,7 @@ function Inventory() {
       resetAdjustmentForm();
       setIsAdjustmentDialogOpen(false);
     } catch (error) {
-      toast.error(error.response?.data?.detail || t('inventory.error.adjust') || 'Failed to create adjustment');
+      toast.error(getErrorMessage(error, t('inventory.error.adjust') || 'Failed to create adjustment'));
     }
   };
 

@@ -15,6 +15,7 @@ import { Popover, PopoverContent, PopoverTrigger } from '../components/ui/popove
 import { Plus, Trash2, Edit, Upload, Download, FileText, X, History, TrendingUp } from 'lucide-react';
 import { toast } from 'sonner';
 import OCRUploadButton from '../components/OCRUploadButton';
+import { getErrorMessage } from '../utils/errorHandler';
 
 function Receiving() {
   const { t } = useTranslation();
@@ -160,7 +161,7 @@ function Receiving() {
       setShowBulkDeleteDialog(false);
       fetchReceivings();
     } catch (error) {
-      const errorMsg = error.response?.data?.detail || t('receiving.error.bulkDelete') || 'Failed to delete receiving records';
+      const errorMsg = getErrorMessage(error, t('receiving.error.bulkDelete') || 'Failed to delete receiving records');
       toast.error(errorMsg);
     }
   };
@@ -231,7 +232,7 @@ function Receiving() {
       resetForm();
       setIsDialogOpen(false);
     } catch (error) {
-      toast.error(error.response?.data?.detail || t('receiving.error.save') || 'Failed to save receiving');
+      toast.error(getErrorMessage(error, t('receiving.error.save') || 'Failed to save receiving'));
     }
   };
 
@@ -416,7 +417,7 @@ function Receiving() {
       toast.success(t('receiving.success.fileUploaded') || 'File uploaded successfully');
       fetchReceivings();
     } catch (error) {
-      toast.error(error.response?.data?.detail || t('receiving.error.fileUpload') || 'Failed to upload file');
+      toast.error(getErrorMessage(error, t('receiving.error.fileUpload') || 'Failed to upload file'));
     } finally {
       setUploadingFor(null);
       event.target.value = '';

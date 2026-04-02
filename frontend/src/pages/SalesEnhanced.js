@@ -12,6 +12,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../components/ui/select';
 import { Plus, Trash2, ShoppingCart, AlertCircle, Package } from 'lucide-react';
 import { toast } from 'sonner';
+import { getErrorMessage } from '../utils/errorHandler';
 
 function Sales() {
   const { t } = useTranslation();
@@ -56,7 +57,7 @@ function Sales() {
   };
 
   // RBAC: Check if user can edit
-  const canEdit = user?.roleKey === 'admin' || user?.roleKey === 'manager';
+  const canEdit = user?.roleKey === 'owner' || user?.roleKey === 'admin' || user?.roleKey === 'manager';
 
   const addLineToSale = () => {
     if (!currentLine.recipeId || !currentLine.qty || currentLine.qty <= 0) {
@@ -101,7 +102,7 @@ function Sales() {
       resetForm();
       setIsDialogOpen(false);
     } catch (error) {
-      toast.error(error.response?.data?.detail || t('sales.error.save') || 'Failed to save sales');
+      toast.error(getErrorMessage(error, t('sales.error.save') || 'Failed to save sales'));
     }
   };
 

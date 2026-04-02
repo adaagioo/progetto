@@ -164,7 +164,7 @@ function RecipesEnhanced() {
       setShowBulkDeleteDialog(false);
       fetchRecipes();
     } catch (error) {
-      const errorMsg = error.response?.data?.detail || t('recipes.error.bulkDelete') || 'Failed to delete recipes';
+      const errorMsg = getErrorMessage(error, t('recipes.error.bulkDelete') || 'Failed to delete recipes');
       toast.error(errorMsg);
     }
   };

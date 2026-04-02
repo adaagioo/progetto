@@ -7,6 +7,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../co
 import { Checkbox } from '../components/ui/checkbox';
 import { toast } from 'sonner';
 import { Shield, RotateCcw, Save, AlertCircle } from 'lucide-react';
+import { getErrorMessage } from '../utils/errorHandler';
 
 function RBACTab() {
   const { t } = useTranslation();
@@ -31,7 +32,7 @@ function RBACTab() {
       setRoles(rolesRes.data);
       setResources(resourcesRes.data);
     } catch (error) {
-      toast.error(error.response?.data?.detail || t('rbac.error.load') || 'Failed to load RBAC data');
+      toast.error(getErrorMessage(error, t('rbac.error.load') || 'Failed to load RBAC data'));
     } finally {
       setLoading(false);
     }
@@ -68,7 +69,7 @@ function RBACTab() {
       setHasUnsavedChanges(false);
       await fetchRBACData(); // Refresh to show isCustomized status
     } catch (error) {
-      toast.error(error.response?.data?.detail || t('rbac.error.save') || 'Failed to save permissions');
+      toast.error(getErrorMessage(error, t('rbac.error.save') || 'Failed to save permissions'));
     } finally {
       setSaving(false);
     }
@@ -85,7 +86,7 @@ function RBACTab() {
       setHasUnsavedChanges(false);
       await fetchRBACData();
     } catch (error) {
-      toast.error(error.response?.data?.detail || t('rbac.error.reset') || 'Failed to reset permissions');
+      toast.error(getErrorMessage(error, t('rbac.error.reset') || 'Failed to reset permissions'));
     }
   };
 

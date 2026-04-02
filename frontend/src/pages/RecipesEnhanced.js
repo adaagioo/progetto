@@ -11,6 +11,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../components/ui/select';
 import { Plus, Trash2, Calculator, AlertCircle, Edit, Package } from 'lucide-react';
 import { toast } from 'sonner';
+import { getErrorMessage } from '../utils/errorHandler';
 
 function RecipesEnhanced() {
   const { t } = useTranslation();
@@ -67,7 +68,7 @@ function RecipesEnhanced() {
   };
 
   // RBAC: Check if user can edit
-  const canEdit = user?.roleKey === 'admin' || user?.roleKey === 'manager';
+  const canEdit = user?.roleKey === 'owner' || user?.roleKey === 'admin' || user?.roleKey === 'manager';
 
   // Keyboard event handler
   const handleKeyDown = (e, index, field) => {
@@ -259,7 +260,7 @@ function RecipesEnhanced() {
       resetForm();
       setIsDialogOpen(false);
     } catch (error) {
-      toast.error(error.response?.data?.detail || t('recipes.error.save') || 'Failed to save recipe');
+      toast.error(getErrorMessage(error, t('recipes.error.save') || 'Failed to save recipe'));
     }
   };
 

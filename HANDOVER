@@ -1,0 +1,48 @@
+L’applicazione è stabile e funzionante, pronta per handover e sviluppo successivo.
+
+Attività da completare
+
+1. Configurazione SMTP
+Stato: non configurato
+Impatto: email non inviate realmente
+Da fare:
+- configurare credenziali SMTP reali nel backend
+- testare: reset password e invio email (quando sarà attivo invite flow)
+
+2. Email Invite Flow
+Stato: placeholder / non implementato
+Problema:
+- il frontend prevede invito utenti (sendInvite)
+- il backend non gestisce realmente l’invio
+Da fare:
+- generazione token invito
+- invio email con link attivazione
+- creazione utente tramite link
+- gestione password iniziale
+
+3. Session Management / Refresh Token
+Stato: base presente, ma non completo. Sessioni non persistenti a lungo e possibile logout improvviso
+Da fare:
+- implementare refresh token
+- gestire scadenza JWT lato frontend
+- eventuale silent refresh
+
+4. OCR Service (Receiving)
+Stato: mock / placeholder
+Da fare:
+- integrare servizio OCR reale (es. API esterna)
+- parsing fatture/documenti
+- collegamento automatico a inventory
+
+5. Consolidamento componenti duplicati
+Stato: alcune pagine duplicate (es. Enhanced vs base)
+Da fare:
+- identificare duplicati
+- unificare componenti mantenendo comportamento attuale
+
+6. Miglioramento gestione errori UX
+Stato: tecnico corretto, UX minimale
+Da fare:
+- messaggi più user-friendly
+- uniformare toast/error display
+- eventuale logging strutturato

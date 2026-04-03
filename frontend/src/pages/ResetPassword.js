@@ -8,6 +8,7 @@ import { Label } from '../components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../components/ui/card';
 import { ChefHat, Check } from 'lucide-react';
 import { toast } from 'sonner';
+import { getErrorMessage } from '../utils/errorHandler';
 
 function ResetPassword() {
   const [searchParams] = useSearchParams();
@@ -49,7 +50,7 @@ function ResetPassword() {
       toast.success('Password reset successfully!');
       setTimeout(() => navigate('/login'), 3000);
     } catch (error) {
-      toast.error(error.response?.data?.detail || 'Failed to reset password');
+      toast.error(getErrorMessage(error, 'Failed to reset password'));
     } finally {
       setIsLoading(false);
     }

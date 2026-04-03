@@ -8,6 +8,7 @@ import { Label } from '../components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../components/ui/card';
 import { ChefHat, ArrowLeft } from 'lucide-react';
 import { toast } from 'sonner';
+import { getErrorMessage } from '../utils/errorHandler';
 
 function ForgotPassword() {
   const [email, setEmail] = useState('');
@@ -26,7 +27,7 @@ function ForgotPassword() {
       if (error.response?.status === 429) {
         toast.error('Too many requests. Please try again later.');
       } else {
-        toast.error(error.response?.data?.detail || 'Failed to send reset email');
+        toast.error(getErrorMessage(error, 'Failed to send reset email'));
       }
     } finally {
       setIsLoading(false);

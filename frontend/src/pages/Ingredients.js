@@ -12,6 +12,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '.
 import { Plus, Trash2, Edit, AlertCircle } from 'lucide-react';
 import { toast } from 'sonner';
 import AllergenSelector from '../components/AllergenSelector';
+import { getErrorMessage } from '../utils/errorHandler';
 
 // Debounce hook for input optimization
 function useDebounce(value, delay) {
@@ -123,7 +124,7 @@ function Ingredients() {
       resetForm();
       setIsDialogOpen(false);
     } catch (error) {
-      toast.error(error.response?.data?.detail || t('ingredients.error.save') || 'Failed to save ingredient');
+      toast.error(getErrorMessage(error, t('ingredients.error.save') || 'Failed to save ingredient'));
     }
   };
 
@@ -157,7 +158,7 @@ function Ingredients() {
       toast.success(t('ingredients.success.delete') || 'Ingredient deleted successfully');
       fetchIngredients();
     } catch (error) {
-      toast.error(error.response?.data?.detail || t('ingredients.error.delete') || 'Failed to delete ingredient');
+      toast.error(getErrorMessage(error, t('ingredients.error.delete') || 'Failed to delete ingredient'));
     }
   };
 
@@ -185,7 +186,7 @@ function Ingredients() {
       setShowBulkDeleteDialog(false);
       fetchIngredients();
     } catch (error) {
-      toast.error(error.response?.data?.detail || t('ingredients.error.bulkDelete') || 'Failed to delete ingredients');
+      toast.error(getErrorMessage(error, t('ingredients.error.bulkDelete') || 'Failed to delete ingredients'));
     }
   };
 

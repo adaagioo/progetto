@@ -12,6 +12,7 @@ import { Switch } from '../components/ui/switch';
 import { Badge } from '../components/ui/badge';
 import { Plus, Edit, Trash2, UserCheck, UserX, Key, AlertCircle, Copy, Check } from 'lucide-react';
 import { toast } from 'sonner';
+import { getErrorMessage } from '../utils/errorHandler';
 
 function UsersTab() {
   const { t } = useTranslation();
@@ -69,7 +70,7 @@ function UsersTab() {
       fetchUsers();
       resetForm();
     } catch (error) {
-      toast.error(error.response?.data?.detail || t('users.error.create') || 'Failed to create user');
+      toast.error(getErrorMessage(error, t('users.error.create') || 'Failed to create user'));
     }
   };
 
@@ -94,7 +95,7 @@ function UsersTab() {
       setIsEditDialogOpen(false);
       setEditingUser(null);
     } catch (error) {
-      toast.error(error.response?.data?.detail || t('users.error.update') || 'Failed to update user');
+      toast.error(getErrorMessage(error, t('users.error.update') || 'Failed to update user'));
     }
   };
 
@@ -106,7 +107,7 @@ function UsersTab() {
       toast.success(t('users.success.deleted') || 'User disabled successfully');
       fetchUsers();
     } catch (error) {
-      toast.error(error.response?.data?.detail || t('users.error.delete') || 'Failed to disable user');
+      toast.error(getErrorMessage(error, t('users.error.delete') || 'Failed to disable user'));
     }
   };
 
@@ -117,7 +118,7 @@ function UsersTab() {
       await axios.post(`${API}/users/${userId}/reset-password`);
       toast.success(t('users.success.resetPassword') || 'Password reset email sent');
     } catch (error) {
-      toast.error(error.response?.data?.detail || t('users.error.resetPassword') || 'Failed to send reset email');
+      toast.error(getErrorMessage(error, t('users.error.resetPassword') || 'Failed to send reset email'));
     }
   };
 
@@ -127,7 +128,7 @@ function UsersTab() {
       toast.success(!currentStatus ? t('users.success.disabled') : t('users.success.enabled') || 'User status updated');
       fetchUsers();
     } catch (error) {
-      toast.error(error.response?.data?.detail || t('users.error.update') || 'Failed to update user');
+      toast.error(getErrorMessage(error, t('users.error.update') || 'Failed to update user'));
     }
   };
 

@@ -23,7 +23,7 @@ function PrepList() {
   }, []);
 
   // RBAC check
-  const canEdit = user?.roleKey === 'admin' || user?.roleKey === 'manager';
+  const canEdit = user?.roleKey === 'owner' || user?.roleKey === 'admin' || user?.roleKey === 'manager';
 
   // Load existing prep list for date
   const loadPrepList = useCallback(async (date) => {

@@ -10,6 +10,7 @@ import { Label } from '../components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../components/ui/select';
 import { Upload, FileText, Check, X, AlertCircle, Loader2, Eye } from 'lucide-react';
 import { toast } from 'sonner';
+import { getErrorMessage } from '../utils/errorHandler';
 
 function DocumentImport() {
   const { t } = useTranslation();
@@ -106,7 +107,7 @@ function DocumentImport() {
       toast.success(t('ocr.success') || 'Document processed successfully');
     } catch (error) {
       console.error('OCR processing error:', error);
-      toast.error(error.response?.data?.detail || t('ocr.error.processing') || 'Failed to process document');
+      toast.error(getErrorMessage(error, t('ocr.error.processing') || 'Failed to process document'));
     } finally {
       setProcessing(false);
     }
@@ -188,7 +189,7 @@ function DocumentImport() {
       
     } catch (error) {
       console.error('Import error:', error);
-      toast.error(error.response?.data?.detail || t('ocr.error.import') || 'Failed to create receiving');
+      toast.error(getErrorMessage(error, t('ocr.error.import') || 'Failed to create receiving'));
     } finally {
       setImporting(false);
     }

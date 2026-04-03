@@ -45,7 +45,7 @@ function OrderList() {
   }, []);
 
   // RBAC check
-  const canEdit = user?.roleKey === 'admin' || user?.roleKey === 'manager';
+  const canEdit = user?.roleKey === 'owner' || user?.roleKey === 'admin' || user?.roleKey === 'manager';
 
   // Load existing order list for date
   const loadOrderList = useCallback(async (date) => {

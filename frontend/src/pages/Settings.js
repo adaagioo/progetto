@@ -12,6 +12,7 @@ import { Settings as SettingsIcon, Globe, DollarSign, Check, Shield } from 'luci
 import { toast } from 'sonner';
 import UsersTab from './UsersTab';
 import RBACTab from './RBACTab';
+import { getErrorMessage } from '../utils/errorHandler';
 
 function Settings() {
   const { t, i18n } = useTranslation();
@@ -54,7 +55,7 @@ function Settings() {
       i18n.changeLanguage(lang);
       toast.success(t('msg.updated'));
     } catch (error) {
-      toast.error(error.response?.data?.detail || 'Failed to update locale');
+      toast.error(getErrorMessage(error, 'Failed to update locale'));
     }
   };
 
@@ -70,7 +71,7 @@ function Settings() {
       setRestaurant({ ...restaurant, currency: currencyConfig[currencyCode] });
       toast.success(t('msg.updated'));
     } catch (error) {
-      toast.error(error.response?.data?.detail || 'Failed to update currency');
+      toast.error(getErrorMessage(error, 'Failed to update currency'));
     } finally {
       setSaving(false);
     }
@@ -87,7 +88,7 @@ function Settings() {
       setRestaurant({ ...restaurant, name });
       toast.success(t('msg.updated'));
     } catch (error) {
-      toast.error(error.response?.data?.detail || 'Failed to update restaurant');
+      toast.error(getErrorMessage(error, 'Failed to update restaurant'));
     } finally {
       setSaving(false);
     }
@@ -123,7 +124,7 @@ function Settings() {
             <Globe className="w-4 h-4 mr-2" />
             Language & Currency
           </TabsTrigger>
-          {user?.roleKey === 'admin' && (
+          {(user?.roleKey === 'owner' || user?.roleKey === 'admin') && (
             <>
               <TabsTrigger value="users" data-testid="users-tab">
                 <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">

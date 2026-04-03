@@ -13,6 +13,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '.
 import { Checkbox } from '../components/ui/checkbox';
 import { Plus, Trash2, Edit, AlertCircle, Package, X } from 'lucide-react';
 import { toast } from 'sonner';
+import { getErrorMessage } from '../utils/errorHandler';
 
 function Preparations() {
   const { t } = useTranslation();
@@ -118,7 +119,7 @@ function Preparations() {
       resetForm();
       setIsDialogOpen(false);
     } catch (error) {
-      toast.error(error.response?.data?.detail || t('preparations.error.save') || 'Failed to save preparation');
+      toast.error(getErrorMessage(error, t('preparations.error.save') || 'Failed to save preparation'));
     }
   };
 
@@ -196,7 +197,7 @@ function Preparations() {
   };
 
   // RBAC: Check if user can edit (admin or manager)
-  const canEdit = user?.roleKey === 'admin' || user?.roleKey === 'manager';
+  const canEdit = user?.roleKey === 'owner' || user?.roleKey === 'admin' || user?.roleKey === 'manager';
 
   // Filter preparations based on search
   const filteredPreparations = React.useMemo(() => {
@@ -262,7 +263,7 @@ function Preparations() {
       setShowBulkDeleteDialog(false);
       fetchPreparations();
     } catch (error) {
-      const errorMsg = error.response?.data?.detail || t('preparations.error.bulkDelete') || 'Failed to delete preparations';
+      const errorMsg = getErrorMessage(error, t('preparations.error.bulkDelete') || 'Failed to delete preparations');
       toast.error(errorMsg);
     }
   };

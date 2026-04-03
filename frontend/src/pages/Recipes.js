@@ -13,6 +13,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '.
 import { Checkbox } from '../components/ui/checkbox';
 import { Plus, Trash2, Calculator, AlertCircle, Edit, Package, X } from 'lucide-react';
 import { toast } from 'sonner';
+import { getErrorMessage } from '../utils/errorHandler';
 
 function RecipesEnhanced() {
   const { t } = useTranslation();
@@ -105,7 +106,7 @@ function RecipesEnhanced() {
   };
 
   // RBAC: Check if user can edit
-  const canEdit = user?.roleKey === 'admin' || user?.roleKey === 'manager';
+  const canEdit = user?.roleKey === 'owner' || user?.roleKey === 'admin' || user?.roleKey === 'manager';
 
   // Bulk select handlers
   const toggleSelectAll = () => {
@@ -163,7 +164,7 @@ function RecipesEnhanced() {
       setShowBulkDeleteDialog(false);
       fetchRecipes();
     } catch (error) {
-      const errorMsg = error.response?.data?.detail || t('recipes.error.bulkDelete') || 'Failed to delete recipes';
+      const errorMsg = getErrorMessage(error, t('recipes.error.bulkDelete') || 'Failed to delete recipes');
       toast.error(errorMsg);
     }
   };
@@ -399,7 +400,7 @@ function RecipesEnhanced() {
       resetForm();
       setIsDialogOpen(false);
     } catch (error) {
-      toast.error(error.response?.data?.detail || t('recipes.error.save') || 'Failed to save recipe');
+      toast.error(getErrorMessage(error, t('recipes.error.save') || 'Failed to save recipe'));
     }
   };
 

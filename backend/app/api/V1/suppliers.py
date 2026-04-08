@@ -2,7 +2,7 @@
 from __future__ import annotations
 import logging
 from typing import List
-from fastapi import APIRouter, HTTPException, Depends, status, UploadFile, File
+from fastapi import APIRouter, HTTPException, Depends, status, UploadFile, File, Form
 from backend.app.deps.auth import get_current_user
 from backend.app.core.rbac_policies import get_resource_access
 from backend.app.repositories.files_repo import get_meta, insert_meta
@@ -97,9 +97,16 @@ async def supplier_dependencies(supplier_id: str, user: dict = Depends(get_curre
 async def suppliers_attach_file(
 		supplier_id: str,
 		file: UploadFile = File(...),
+		fileType: str = Form(default="document"),
 		user: dict = Depends(get_current_user)
 ):
-	"""Upload and attach a file to a supplier"""
+	"""Upload and attach a file to a supplier
+
+	Args:
+		supplier_id: The supplier ID
+		file: The file to upload
+		fileType: Type of file - 'price_list', 'contract', 'invoice', 'document' (default)
+	"""
 	access = await get_resource_access(user, RESOURCE)
 	if not access.get("canUpdate", False):
 		raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Forbidden")
@@ -109,13 +116,14 @@ async def suppliers_attach_file(
 	storage = get_storage()
 	path, size = storage.save_file(file.filename, file.content_type, data)
 
-	# Create file metadata
+	# Create file metadata with fileType
 	meta_id = await insert_meta({
 		"filename": file.filename,
 		"contentType": file.content_type,
 		"size": size,
 		"path": path,
 		"ownerId": str(user.get("_id")) if user.get("_id") else None,
+		"fileType": fileType,
 	})
 
 	# Get the created metadata
@@ -133,6 +141,7 @@ async def suppliers_attach_file(
 		"size": meta.get("size", 0),
 		"path": meta["path"],
 		"url": url,
+		"fileType": fileType,
 	}
 
 	ok = await repo.attach_file(user["restaurantId"], supplier_id, file_ref)

@@ -100,7 +100,8 @@ async def valuation_by_specific_category(
 
 	return {
 		"category": category,
-		"totalValue": total_value,
+		"value": total_value,  # Frontend expects 'value' field
+		"totalValue": total_value,  # Keep for backward compatibility
 		"itemCount": len(category_items),
 		"items": [item.model_dump() for item in category_items]
 	}
@@ -118,15 +119,34 @@ async def valuation_default(
 	return await get_valuation_total(asOf)
 
 
-@router.get("/inventory/expiring", response_model=List[ExpiringItem])
+@router.get("/inventory/expiring")
 async def inventory_expiring(
 		days: int = Query(7, ge=1, le=90, description="Window in days to consider as expiring"),
 		user: dict = Depends(get_current_user),
 ):
+	"""
+	Get expiring inventory items.
+	Returns counts by day (day1, day2, day3) for dashboard widget,
+	plus list of items for detailed view.
+	"""
 	access = await get_resource_access(user, RESOURCE)
 	if not access.get("canView"):
 		raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Forbidden")
-	return await get_expiring_items(days)
+
+	# Get all expiring items
+	items = await get_expiring_items(days)
+
+	# Calculate counts by day for dashboard widget
+	day1_count = sum(1 for item in items if item.daysLeft <= 1)
+	day2_count = sum(1 for item in items if 1 < item.daysLeft <= 2)
+	day3_count = sum(1 for item in items if 2 < item.daysLeft <= 3)
+
+	return {
+		"day1": day1_count,
+		"day2": day2_count,
+		"day3": day3_count,
+		"items": [item.model_dump() for item in items]
+	}
 
 
 @router.get("/inventory/adjustments")

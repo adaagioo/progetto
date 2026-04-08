@@ -19,3 +19,11 @@ class KPIResponse(BaseModel):
 	valueUsage: Optional[float] = Field(None, description="Total value usage (purchases + wastage) for the period")
 	foodCostPct: Optional[float] = Field(None, description="Food cost percentage (value usage / total sales * 100)")
 	dateRange: Optional[DateRange] = Field(None, description="Date range for calculations")
+	# Additional fields for frontend compatibility
+	lowStockCount: int = Field(default=0, description="Number of items below minimum stock level")
+	expiring1Day: int = Field(default=0, description="Items expiring within 1 day")
+	expiring2Day: int = Field(default=0, description="Items expiring within 2 days")
+	expiring3Day: int = Field(default=0, description="Items expiring within 3 days")
+	lastMonthGrossMargin: Optional[float] = Field(None, description="Gross margin for last month")
+	totalRevenue: Optional[float] = Field(None, description="Total revenue (alias for totalSales)")
+	totalCogs: Optional[float] = Field(None, description="Total cost of goods sold (alias for valueUsage)")

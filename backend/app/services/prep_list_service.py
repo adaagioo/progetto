@@ -18,10 +18,13 @@ def _recipes(): return get_db()["recipes"]
 def _preps(): return get_db()["preparations"]
 
 
-async def _load_production_plan(for_date: date) -> Dict[str, Any] | None:
+async def _load_production_plan(for_date: date, restaurant_id: str = None) -> Dict[str, Any] | None:
 	"""Load production plan for a specific date"""
 	date_str = for_date.isoformat()
-	return await _production_plans().find_one({"date": date_str})
+	query = {"date": date_str}
+	if restaurant_id:
+		query["restaurantId"] = restaurant_id
+	return await _production_plans().find_one(query)
 
 
 async def _map_preparation_names(ids: List[ObjectId]) -> Dict[str, str]:
@@ -33,17 +36,17 @@ async def _map_preparation_names(ids: List[ObjectId]) -> Dict[str, str]:
 	return names
 
 
-async def compute_prep_list(for_date: date) -> Dict[str, Any]:
+async def compute_prep_list(for_date: date, restaurant_id: str = None) -> Dict[str, Any]:
 	"""Aggregate preparation tasks from the day's production plan.
 	Assumptions:
 	  - ProductionPlan: { date, items: [{ recipeId, quantity }] }
 	  - Recipe: has ingredients[] where each ingredient may have preparationId, quantity, unit, name
 	We aggregate tasks by preparationId (fallback by ingredient name).
 	"""
-	plan = await _load_production_plan(for_date)
+	plan = await _load_production_plan(for_date, restaurant_id)
 	if not plan or not plan.get("items"):
-		logger.debug(f"No production plan found for date {for_date}")
-		return {"date": for_date, "tasks": []}
+		logger.debug(f"No production plan found for date {for_date} (restaurant_id={restaurant_id})")
+		return {"date": for_date, "tasks": [], "items": []}
 
 	logger.debug(f"Found production plan with {len(plan['items'])} items")
 
@@ -78,16 +81,22 @@ async def compute_prep_list(for_date: date) -> Dict[str, Any]:
 		else:
 			prep_id_str = None
 
+		qty = round(float(t["quantity"]), 4)
 		tasks.append({
 			"preparationId": prep_id_str,  # Convert ObjectId to string
 			"recipeId": str(t.get("recipeId")) if t.get("recipeId") else None,
 			"name": resolved_name,
 			"preparationName": resolved_name,  # Frontend expects this field
-			"quantity": round(float(t["quantity"]), 4),
+			"quantity": qty,
 			"unit": t.get("unit"),
+			# Frontend expected fields
+			"forecastQty": qty,
+			"availableQty": 0,  # TODO: calculate from inventory
+			"toMakeQty": qty,  # Same as forecastQty when no inventory
+			"forecastSource": "production_plan",
 		})
 	# Sort by name for stable output
 	tasks.sort(key=lambda x: (x["name"] or "", x.get("unit") or ""))
 	logger.debug(f"Computed {len(tasks)} tasks for date {for_date}")
 	logger.debug(f"First task: {tasks[0] if tasks else 'none'}")
-	return {"date": for_date, "tasks": tasks}
+	return {"date": for_date, "tasks": tasks, "items": tasks}  # items is alias for frontend

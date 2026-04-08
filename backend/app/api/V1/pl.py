@@ -13,8 +13,66 @@ router = APIRouter()
 RESOURCE = "pl"
 
 
-@router.get("/pl", response_model=PLResponse)
-async def pl_get(start: date = Query(...), end: date = Query(...), user: dict = Depends(get_current_user)):
+@router.get("/pl", response_model=List[PL])
+async def list_pl_records_main(user: dict = Depends(get_current_user)):
+	"""
+	Get all stored P&L records.
+	This is the main endpoint used by the frontend.
+	"""
+	access = await get_resource_access(user, RESOURCE)
+	if not access.get("canView"):
+		raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Forbidden")
+
+	records = await repo.list_pl(user["restaurantId"])
+	return [PL(**p) for p in records]
+
+
+@router.post("/pl", response_model=PL, status_code=201)
+async def create_pl_record_main(payload: PLCreate, user: dict = Depends(get_current_user)):
+	"""
+	Create a stored P&L record.
+	This is the main endpoint used by the frontend.
+	"""
+	access = await get_resource_access(user, RESOURCE)
+	if not access.get("canCreate"):
+		raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Forbidden")
+
+	pl_id = await repo.create_pl(
+		user["restaurantId"],
+		payload.month,
+		payload.revenue,
+		payload.cogs,
+		payload.grossMargin,
+		payload.notes
+	)
+
+	pl_record = await repo.get_pl(pl_id, user["restaurantId"])
+	return PL(**pl_record)
+
+
+@router.delete("/pl/{pl_id}", status_code=status.HTTP_204_NO_CONTENT)
+async def delete_pl_record_main(pl_id: str, user: dict = Depends(get_current_user)):
+	"""
+	Delete a stored P&L record.
+	This is the main endpoint used by the frontend.
+	"""
+	access = await get_resource_access(user, RESOURCE)
+	if not access.get("canDelete"):
+		raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Forbidden")
+
+	deleted = await repo.delete_pl(pl_id, user["restaurantId"])
+	if not deleted:
+		raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="P&L record not found")
+
+	return None
+
+
+@router.get("/pl/compute", response_model=PLResponse)
+async def pl_compute(start: date = Query(...), end: date = Query(...), user: dict = Depends(get_current_user)):
+	"""
+	Compute P&L for a date range based on sales/inventory data.
+	Returns calculated revenue, COGS, wastage, and gross margin.
+	"""
 	access = await get_resource_access(user, RESOURCE)
 	if not access.get("canView"):
 		raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Forbidden")
@@ -71,46 +129,20 @@ async def list_pl_snapshots(
 	return [PLSnapshot(**s) for s in snapshots]
 
 
+# Legacy endpoints for backward compatibility
 @router.post("/pl/record", response_model=PL, status_code=201)
 async def create_pl_record(payload: PLCreate, user: dict = Depends(get_current_user)):
-	"""Create a stored P&L record"""
-	access = await get_resource_access(user, RESOURCE)
-	if not access.get("canCreate"):
-		raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Forbidden")
-
-	pl_id = await repo.create_pl(
-		user["restaurantId"],
-		payload.month,
-		payload.revenue,
-		payload.cogs,
-		payload.grossMargin,
-		payload.notes
-	)
-
-	pl_record = await repo.get_pl(pl_id, user["restaurantId"])
-	return PL(**pl_record)
+	"""Create a stored P&L record (legacy endpoint)"""
+	return await create_pl_record_main(payload, user)
 
 
 @router.get("/pl/records", response_model=List[PL])
 async def list_pl_records(user: dict = Depends(get_current_user)):
-	"""Get all stored P&L records"""
-	access = await get_resource_access(user, RESOURCE)
-	if not access.get("canView"):
-		raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Forbidden")
-
-	records = await repo.list_pl(user["restaurantId"])
-	return [PL(**p) for p in records]
+	"""Get all stored P&L records (legacy endpoint)"""
+	return await list_pl_records_main(user)
 
 
 @router.delete("/pl/record/{pl_id}", status_code=status.HTTP_204_NO_CONTENT)
 async def delete_pl_record(pl_id: str, user: dict = Depends(get_current_user)):
-	"""Delete a stored P&L record"""
-	access = await get_resource_access(user, RESOURCE)
-	if not access.get("canDelete"):
-		raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Forbidden")
-
-	deleted = await repo.delete_pl(pl_id, user["restaurantId"])
-	if not deleted:
-		raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="P&L record not found")
-
-	return None
+	"""Delete a stored P&L record (legacy endpoint)"""
+	return await delete_pl_record_main(pl_id, user)

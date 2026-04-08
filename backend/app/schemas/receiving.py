@@ -66,7 +66,19 @@ class Receiving(BaseModel):
 	category: Optional[str] = None
 	notes: Optional[str] = None
 	files: Optional[List[FileRef]] = None
+	total: Optional[int] = Field(default=None, description="Total value in minor units (computed)")
 
 	@field_serializer('arrivedAt')
 	def serialize_date(self, value: date) -> str:
 		return value.isoformat()
+
+	def __init__(self, **data):
+		super().__init__(**data)
+		# Compute total from lines if not provided
+		if self.total is None and self.lines:
+			total_value = 0
+			for line in self.lines:
+				if line.unitPrice is not None and line.qty is not None:
+					# unitPrice is already in minor units
+					total_value += int(line.unitPrice * line.qty)
+			object.__setattr__(self, 'total', total_value)

@@ -26,8 +26,17 @@ async def get_valuation_summary(as_of: Optional[date]) -> ValuationSummaryRespon
 
 
 async def get_valuation_total(as_of: Optional[date]) -> ValuationTotalResponse:
+	from backend.app.db.mongo import get_db
 	doc = await aggregate_valuation_summary(as_of or date.today())
-	return ValuationTotalResponse(total=doc.get("total", 0.0))
+	total_val = doc.get("total", 0.0)
+	# Count items with negative quantity for frontend warning
+	db = get_db()
+	negative_count = await db.inventory.count_documents({"quantity": {"$lt": 0}})
+	return ValuationTotalResponse(
+		total=total_val,
+		totalValue=total_val,
+		negativeCount=negative_count
+	)
 
 
 async def get_valuation_by_category(as_of: Optional[date]) -> List[ValuationByCategoryItem]:

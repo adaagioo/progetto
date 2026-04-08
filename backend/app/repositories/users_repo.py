@@ -46,7 +46,7 @@ async def insert_with_defaults(email: str, password_hash: str, locale: str | Non
 	doc = {
 		"email": email,
 		"password": password_hash,
-		"roleKey": "owner",
+		"roleKey": "admin",  # Changed from "owner" - frontend only shows UI for admin/manager
 		"locale": locale,
 		"restaurantId": "default",
 	}
@@ -60,13 +60,15 @@ async def update_password(user_id: str, password_hash: str) -> bool:
 	return res.matched_count == 1
 
 
-async def create_user(email: str, password_hash: str, role_key: str = "user", locale: str | None = None) -> str:
+async def create_user(email: str, password_hash: str, role_key: str = "user", locale: str | None = None, display_name: str | None = None) -> str:
 	doc = {
 		"email": email,
 		"password": password_hash,
 		"roleKey": role_key,
 		"locale": locale,
 		"restaurantId": "default",
+		"displayName": display_name,
+		"isDisabled": False,
 	}
 	res = await _col().insert_one(doc)
 	return str(res.inserted_id)
@@ -74,7 +76,7 @@ async def create_user(email: str, password_hash: str, role_key: str = "user", lo
 
 async def update_user(user_id: str, patch: dict) -> bool:
 	from bson import ObjectId
-	allowed = {k: v for k, v in patch.items() if k in {"email", "roleKey", "locale", "restaurantId"}}
+	allowed = {k: v for k, v in patch.items() if k in {"email", "roleKey", "locale", "restaurantId", "displayName", "isDisabled"}}
 	if not allowed:
 		return True
 	res = await _col().update_one({"_id": ObjectId(user_id)}, {"$set": allowed})
